@@ -1,116 +1,103 @@
-import { View, Text, ImageBackground, StyleSheet, TouchableOpacity } from 'react-native'
+import {
+  View,
+  Text,
+  ImageBackground,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import * as Progress from 'react-native-progress';
-import AppStyle from '../theme'
-import {PRIMARY_COLOR, card_color} from '../assets/colors/color'
+import AppStyle from '../theme';
+import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import Api from '../api/Api';
 
-const CompleteCard2=({navigation,route})=> {
-  const {quantity, sign, part, questionL, partName, isFromPL} = route.params
-  const [questionList, setQuestionList] = useState(null)
-  const [reviewList, setReviewList] = useState(null)
-  const [skill, setSkill] = useState()
-  const [skillText, setSkillText] = useState('')
-//   const [quantity1, setQuantity1] = useState(route.params.quantity)
-  const setReview= async()=>{
-    const listId=[]
+const CompleteCard2 = ({navigation, route}) => {
+  const {quantity, sign, part, questionL, partName, isFromPL} = route.params;
+  const [questionList, setQuestionList] = useState(null);
+  const [reviewList, setReviewList] = useState(null);
+  const [skill, setSkill] = useState();
+  const [skillText, setSkillText] = useState('');
+  //   const [quantity1, setQuantity1] = useState(route.params.quantity)
+  const setReview = async () => {
+    const listId = [];
     let changePart = '';
-    console.log(questionL.length)
-    for(let i = 0; i < questionL.length; i++){
-      listId.push(questionL[i].Qid)
+    console.log(questionL.length);
+    for (let i = 0; i < questionL.length; i++) {
+      listId.push(questionL[i].Qid);
     }
-    if(part=='S1'){
-    changePart = 'SpeakPart1'
-    setSkillText('Speaking')
+    if (part == 'S1') {
+      changePart = 'SpeakPart1';
+      setSkillText('Speaking');
+    } else if (part == 'S2') {
+      changePart = 'SpeakPart2';
+      setSkillText('Speaking');
+    } else if (part == 'S3') {
+      changePart = 'SpeakPart3';
+      setSkillText('Speaking');
+    } else if (part == 'S4') {
+      changePart = 'SpeakPart4';
+      setSkillText('Speaking');
+    } else if (part == 'S5') {
+      changePart = 'SpeakPart5';
+      setSkillText('Speaking');
+    } else if (part == 'W1') {
+      changePart = 'WritePart1';
+      setSkillText('Writting');
+    } else if (part == 'R2') {
+      changePart = 'WritePart2';
+      setSkillText('Writting');
+    } else if (part == 'R3') {
+      changePart = 'WritePart3';
+      setSkillText('Writting');
     }
-    else if(part=='S2'){
-      changePart = 'SpeakPart2'
-      setSkillText('Speaking')
-      }
-      else if(part=='S3'){
-        changePart = 'SpeakPart3'
-        setSkillText('Speaking')
-        }
-        else if(part=='S4'){
-          changePart = 'SpeakPart4'
-          setSkillText('Speaking')
-          }
-          else if(part=='S5'){
-            changePart = 'SpeakPart5'
-            setSkillText('Speaking')
-            }
-            else if(part=='W1'){
-              changePart = 'WritePart1'
-              setSkillText('Writting')
-              }
-              else if(part=='R2'){
-                changePart = 'WritePart2'
-                setSkillText('Writting')
-              }
-               else if(part=='R3'){
-                changePart = 'WritePart3'
-                setSkillText('Writting')
-                }
 
-    const data = await Api.getReviewQuestion({Part:changePart,listQ:listId})
-    setReviewList(data) 
-  }
-  const continuePractice = async()=>{
-    if(part=='W1'){
-      const list = await Api.getQuestion(quantity,'WritePart1')
-      setQuestionList(list) 
-      setSkill('W1')
-      }
-      else if(part=='W2'){
-        const list = await Api.getQuestion(quantity,'WritePart2')
-        setQuestionList(list) 
-        setSkill('W2')
-        }
-        else if(part=='W3'){
-          const list = await Api.getQuestion(quantity,'WritePart3')
-          setQuestionList(list) 
-          setSkill('W3')
-          }
-          else if(part=='S1'){
-            const list = await Api.getQuestion(quantity,'SpeakPart1')
-            setQuestionList(list) 
-            setSkill('S1')
-            }
-            else if(part=='S2'){
-              const list = await Api.getQuestion(quantity,'SpeakPart2')
-              setQuestionList(list) 
-              setSkill('S2')
-              }
-              else if(part=='S3'){
-                const list = await Api.getQuestion(quantity,'SpeakPart3')
-                setQuestionList(list) 
-                setSkill('S3')
-                }
-                else if(part=='S4'){
-                  const list = await Api.getQuestion(quantity,'SpeakPart4')
-                  setQuestionList(list) 
-                  setSkill('S4')
-                  }
-                  else if(part=='S5'){
-                    const list = await Api.getQuestion(quantity,'SpeakPart5')
-                    setQuestionList(list) 
-                    setSkill('S5')
-                    }
-
-         
+    const data = await Api.getReviewQuestion({Part: changePart, listQ: listId});
+    setReviewList(data);
+  };
+  const continuePractice = async () => {
+    if (part == 'W1') {
+      const list = await Api.getQuestion(quantity, 'WritePart1');
+      setQuestionList(list);
+      setSkill('W1');
+    } else if (part == 'W2') {
+      const list = await Api.getQuestion(quantity, 'WritePart2');
+      setQuestionList(list);
+      setSkill('W2');
+    } else if (part == 'W3') {
+      const list = await Api.getQuestion(quantity, 'WritePart3');
+      setQuestionList(list);
+      setSkill('W3');
+    } else if (part == 'S1') {
+      const list = await Api.getQuestion(quantity, 'SpeakPart1');
+      setQuestionList(list);
+      setSkill('S1');
+    } else if (part == 'S2') {
+      const list = await Api.getQuestion(quantity, 'SpeakPart2');
+      setQuestionList(list);
+      setSkill('S2');
+    } else if (part == 'S3') {
+      const list = await Api.getQuestion(quantity, 'SpeakPart3');
+      setQuestionList(list);
+      setSkill('S3');
+    } else if (part == 'S4') {
+      const list = await Api.getQuestion(quantity, 'SpeakPart4');
+      setQuestionList(list);
+      setSkill('S4');
+    } else if (part == 'S5') {
+      const list = await Api.getQuestion(quantity, 'SpeakPart5');
+      setQuestionList(list);
+      setSkill('S5');
     }
-  
-  useEffect(()=>{
-    if(sign!='Home'){
-      continuePractice()
+  };
+
+  useEffect(() => {
+    if (sign != 'Home') {
+      continuePractice();
     }
-      setReview()
-    
+    setReview();
+  }, []);
 
-  },[])
-
- 
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -119,10 +106,10 @@ const CompleteCard2=({navigation,route})=> {
         <TouchableOpacity
           style={{marginLeft: '2%', marginTop: 10}}
           onPress={() => {
-            if(isFromPL){
+            if (isFromPL) {
               navigation.navigate('PartPracticePlan');
-            }
-            else if (skill != null) navigation.navigate('PartFormat', {skill: skill});          
+            } else if (skill != null)
+              navigation.navigate('PartFormat', {skill: skill});
             else {
               navigation.goBack();
             }
@@ -150,7 +137,7 @@ const CompleteCard2=({navigation,route})=> {
             You have completed the exercise
           </Text>
           <Text style={[styles.TextFont, {fontWeight: '400'}]}>
-            {skillText+' '}
+            {skillText + ' '}
             <Text style={[styles.TextFont, {fontWeight: '300'}]}>
               {partName}
             </Text>
@@ -165,12 +152,12 @@ const CompleteCard2=({navigation,route})=> {
           <TouchableOpacity
             style={[AppStyle.button.button2]}
             onPress={() =>
-                navigation.push('ReviewQuestion', {
-                    questionList: reviewList,
-                    indication: 0,
-                    History: questionL,
-                    part: part,
-                  })
+              navigation.push('ReviewQuestion', {
+                questionList: reviewList,
+                indication: 0,
+                History: questionL,
+                part: part,
+              })
             }>
             <Text style={AppStyle.button.button2_Text}>Review</Text>
           </TouchableOpacity>
@@ -205,18 +192,30 @@ const CompleteCard2=({navigation,route})=> {
       </ImageBackground>
     </View>
   );
-}
+};
 const styles = StyleSheet.create({
-    container: {
-      backgroundColor: "#FFFFFF", 
-      flex:1,
-    },
-    TextFont:{
-        fontSize:22, marginLeft:5, color:'black'
-      },
-     
-      boxstyle:{
-        flexDirection:'column',width:'90%', backgroundColor:card_color, alignSelf:'center', marginTop:5, height:120, justifyContent:'space-evenly',borderWidth: 1,
-        borderColor: '#CFCFCF', borderRadius:15, alignItems:'center', 
-      },})
-export default CompleteCard2
+  container: {
+    backgroundColor: '#FFFFFF',
+    flex: 1,
+  },
+  TextFont: {
+    fontSize: 22,
+    marginLeft: 5,
+    color: 'black',
+  },
+
+  boxstyle: {
+    flexDirection: 'column',
+    width: '90%',
+    backgroundColor: card_color,
+    alignSelf: 'center',
+    marginTop: 5,
+    height: 120,
+    justifyContent: 'space-evenly',
+    borderWidth: 1,
+    borderColor: '#CFCFCF',
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+});
+export default CompleteCard2;

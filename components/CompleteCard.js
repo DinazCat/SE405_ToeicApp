@@ -121,12 +121,28 @@ const CompleteCard = ({navigation, route}) => {
     }
     return [];
   };
+  const checkSkill = () => {
+    if (part == 'L1') {
+      setSkill('L1');
+    } else if (part == 'L2') {
+      setSkill('L2');
+    } else if (part == 'L3') {
+      setSkill('L3');
+    } else if (part == 'L4') {
+      setSkill('L4');
+    } else if (part == 'R1') {
+      setSkill('R1');
+    } else if (part == 'R2') {
+      setSkill('R2');
+    } else if (part == 'R3') {
+      setSkill('R3');
+    }
+  };
 
   useEffect(() => {
-    // if(sign!='Home'){
-    //   continuePractice()
-    //   console.log('haha')
-    // }
+    if (sign != 'Home') {
+      checkSkill();
+    }
     setReview();
     SetScore();
   }, []);
