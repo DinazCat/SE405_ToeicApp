@@ -9,6 +9,7 @@ const viewstyle = StyleSheet.create({
         backgroundColor:PRIMARY_COLOR,
         alignItems:'center',
         flexDirection:'row',
+        justifyContent:'center'
     },
     component_upzone: {
         height:'8%',

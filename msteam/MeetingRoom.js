@@ -1,0 +1,163 @@
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Image,
+    ScrollView,
+    Dimensions,
+    FlatList,
+    TextInput
+  } from 'react-native';
+  import React, { useState, useEffect } from 'react';
+  import FontAwesome from 'react-native-vector-icons/FontAwesome';
+  import Slider from '@react-native-community/slider';
+  import Icon from 'react-native-vector-icons/FontAwesome5';
+  import Ionicons from 'react-native-vector-icons/Ionicons';
+  import AppStyle from '../theme'
+  import AttendeeCard from '../ComponentTeam/AttendeeCard';
+import {PRIMARY_COLOR, card_color} from '../assets/colors/color'
+const {width, height} = Dimensions.get('window');
+  const MeetingRoom = ({navigation}) => {
+    const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+    const [screenHeight, setScreenHeight] = useState(Dimensions.get('window').height);
+    const [Share,SetShare] = useState(false)
+  useEffect(() => {
+    const updateScreenWidth = () => {
+      setScreenWidth(Dimensions.get('window').width);
+      setScreenHeight(Dimensions.get('window').height);
+    };
+
+    Dimensions.addEventListener('change', updateScreenWidth);
+
+    // return () => {
+    //   Dimensions.removeEventListener('change', updateScreenWidth);
+    // };
+  }, []);
+  const data=[{
+    Name:'N.T.B.Linh'
+  },
+  {
+    Name:'N.T.B.Linh'
+  },
+  {
+    Name:'N.T.B.Linh'
+  },
+  {
+    Name:'N.T.B.Linh'
+  }
+]
+  const COLORS = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+
+const getRandomColor = () => {
+  const randomIndex = Math.floor(Math.random() * COLORS.length);
+  return COLORS[randomIndex];
+};
+    return (
+      <View style={styles.container}>
+        <View style={[AppStyle.viewstyle.component_upzone,{backgroundColor:'#363636'}]}>
+          <TouchableOpacity style={{marginLeft: '2%'}}>
+            <FontAwesome name="chevron-left" color="white" size={20} />
+          </TouchableOpacity>
+          <View>
+          <Text
+            style={{
+              textAlign: 'left',
+              color: 'white',
+              fontSize: 20,
+              marginLeft: 15,
+            }}>
+             Buổi học ngày 29/2/2024
+          </Text>
+          <Text style={{
+              textAlign: 'left',
+              color: 'white',
+              fontSize: 18,
+              marginLeft: 15,
+            }}>01:44 24 attendees</Text>
+          </View> 
+          <View style={{flex:1}}/>
+          <TouchableOpacity>
+          <Icon name="video" color="gray" size={20} />
+        </TouchableOpacity>
+       <TouchableOpacity style={{marginLeft:15, marginRight:10}}>
+       {/* <FontAwesome name="microphone" color="black" size={20} /> */}
+       <FontAwesome name="microphone-slash" color="gray" size={20} />
+        </TouchableOpacity>
+        </View>
+        {!Share&&<FlatList
+        style={{alignSelf:'center',marginTop:10}}
+      data={data}
+      renderItem={({item, index}) => (
+        <AttendeeCard
+          key={index}
+          person = {item}
+          color={getRandomColor()}
+        />
+      )}
+      numColumns={2}
+      contentContainerStyle={styles.flatListContent}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
+    />}
+       {Share&&<View style={{height:400, alignSelf:'center', justifyContent:'center', alignItems:'center'}}>
+        <View style={{width:width*0.95, height:300, backgroundColor:'black'}}>
+
+        </View>
+        </View>}
+        <View style={{flex:1}}/>
+        {Share&&<View style={{marginBottom:5}}>
+          <FlatList
+        horizontal
+       data={data}
+       renderItem={({item, index}) => (
+        <AttendeeCard
+        key={index}
+        person = {item}
+        color={getRandomColor()}
+      />
+       )}
+      />
+        </View>
+        }
+        <View
+        style={{
+          height: 50,
+          backgroundColor: 'gray',
+          flexDirection: 'row',
+          justifyContent: 'space-evenly',
+          alignItems: 'center',
+        }}>
+       
+        <TouchableOpacity onPress={()=>navigation.push('AttendeeScreen')}>
+          <Icon name="users" color="black" size={20} />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Icon name="rocketchat" color="black" size={20} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={()=>SetShare(!Share)}>
+        <Ionicons name={'arrow-up-outline'} size={20} color={ 'black' } />
+        </TouchableOpacity>
+        <TouchableOpacity  onPress={() => navigation.goBack()}>
+          <Icon name="phone-slash" color="#8B0016" size={20} />
+        </TouchableOpacity>
+      </View>
+      
+      </View>
+    );
+  };
+  const styles = StyleSheet.create({
+    container: {
+      backgroundColor: '#363636',
+      flex: 1,
+    },
+    flatListContent: {
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+      },
+      separator: {
+        // height: 10, // khoảng cách giữa các mục
+        width:10
+      },
+  });
+  export default MeetingRoom;
+  
