@@ -130,6 +130,8 @@ dependencies {
     }
     implementation project(':react-native-audio-recorder-player')
     implementation project(':react-native-fs')
+    implementation project(':rnwebrtc')
+   implementation project(':rnfgservice')
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)

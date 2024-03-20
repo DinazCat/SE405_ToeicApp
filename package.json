@@ -23,6 +23,8 @@
     "@react-navigation/drawer": "^6.6.4",
     "@react-navigation/native": "^6.1.8",
     "@react-navigation/native-stack": "^6.9.14",
+    "@videosdk.live/react-native-incallmanager": "^0.1.0",
+    "@videosdk.live/react-native-sdk": "^0.1.5",
     "axios": "^1.5.1",
     "date-fns": "^3.0.6",
     "lottie-react-native": "^6.3.1",
