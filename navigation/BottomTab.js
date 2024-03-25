@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TeamStack from './TeamStack';
+import ChatStack from './ChatStack';
 import AgendaStack from './AgendaStack';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import {Image, StyleSheet, Text, View} from "react-native";
@@ -35,7 +36,9 @@ const BottomTab=()=> {
             </View>
           ),
         }}/>
-            <Tab.Screen name="Chat" component={Chat}   options={{    
+      <Tab.Screen name="Chat"
+        component={ChatStack}
+        options={{    
           tabBarIcon: ({focused}) => (
             <View style={styles.tabIconContainer}>
               <Icon name={'rocketchat'} size={20} style={[getIconColor(focused)]}/>
