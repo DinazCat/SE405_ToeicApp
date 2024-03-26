@@ -11,12 +11,14 @@ import {
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import RegisterTeacher from './RegisterTeacher';
+import Feedback from './Feedback';
 
 const TeacherScreen = () => {
   return (
     <View style={styles.container}>
       {/* <Text>TeacherScreen</Text> */}
-      <RegisterTeacher />
+      {/* <RegisterTeacher /> */}
+      <Feedback />
     </View>
   );
 };
