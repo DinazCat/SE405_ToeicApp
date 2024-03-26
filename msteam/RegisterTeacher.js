@@ -37,7 +37,7 @@ const RegisterTeacher = ({navigation, route}) => {
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.upzone}>
-        <Text style={styles.title}>Register as a Teacher</Text>
+        <Text style={styles.title}>Register Teacher</Text>
       </View>
 
       <ScrollView style={{paddingHorizontal: 10}}>
@@ -49,7 +49,7 @@ const RegisterTeacher = ({navigation, route}) => {
             value={profileData ? profileData.name : ''}
             //onChangeText={txt => setUserData({...profileData, name: txt})}
             autoCorrect={false}
-            style={[styles.textInput]}
+            style={[styles.input]}
           />
         </View>
         <View style={styles.action}>
@@ -61,7 +61,7 @@ const RegisterTeacher = ({navigation, route}) => {
             //  value={profileData ? profileData.email : ''}
             //onChangeText={txt => setUserData({...profileData, email: txt})}
             autoCorrect={false}
-            style={[styles.textInput, {height: 40, color: '#555'}]}
+            style={[styles.input, {height: 40, color: '#555'}]}
           />
         </View>
         <View style={styles.action}>
@@ -72,7 +72,7 @@ const RegisterTeacher = ({navigation, route}) => {
             //value={profileData ? profileData.about : ''}
             //onChangeText={txt => setUserData({...profileData, about: txt})}
             autoCorrect={true}
-            style={[styles.textInput, {height: 40, color: '#555'}]}
+            style={[styles.input, {height: 40, color: '#555'}]}
           />
         </View>
         <View style={styles.action}>
@@ -82,7 +82,7 @@ const RegisterTeacher = ({navigation, route}) => {
             keyboardType="number-pad"
             placeholderTextColor={'#555'}
             autoCorrect={false}
-            style={[styles.textInput, {color: ''}]}
+            style={[styles.input, {color: ''}]}
           />
         </View>
         <View style={styles.action}>
@@ -94,7 +94,7 @@ const RegisterTeacher = ({navigation, route}) => {
             //  value={userData ? userData.email : ''}
             onChangeText={txt => setUserData({...userData, email: txt})}
             autoCorrect={false}
-            style={[styles.textInput, {height: 40, color: '#555'}]}
+            style={[styles.input, {height: 40, color: '#555'}]}
           />
         </View>
 
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#FF0000',
     paddingBottom: 5,
   },
-  textInput: {
+  input: {
     color: '#333',
     paddingLeft: 10,
     fontSize: 15,

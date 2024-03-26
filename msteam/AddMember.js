@@ -18,7 +18,7 @@ import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 const {width, height} = Dimensions.get('window');
 import ChatCard from '../ComponentTeam/ChatCard';
 
-const NewChat = ({route, navigation}) => {
+const AddMember = ({route, navigation}) => {
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -27,10 +27,10 @@ const NewChat = ({route, navigation}) => {
           onPress={() => navigation.goBack()}>
           <FontAwesome name="chevron-left" color="white" size={20} />
         </TouchableOpacity>
-        <Text style={styles.header}>New chat</Text>
+        <Text style={styles.header}>Add member</Text>
       </View>
       <View style={styles.inputContainer}>
-        <Text>To:</Text>
+        <Text>Add:</Text>
         <TextInput
           //   ref={textInputRef}
           //   value={comment}
@@ -41,15 +41,6 @@ const NewChat = ({route, navigation}) => {
           placeholderTextColor={'#666'}
           multiline={true}
           style={styles.input}
-        />
-      </View>
-      <View>
-        <Text style={styles.title}>Suggest</Text>
-        <FlatList
-          data={route.params}
-          renderItem={({item, index}) => (
-            <ChatCard key={index} item={item} navigation={navigation} />
-          )}
         />
       </View>
     </View>
@@ -82,11 +73,5 @@ const styles = StyleSheet.create({
     padding: 0,
     flex: 1,
   },
-  title: {
-    marginHorizontal: 10,
-    fontSize: 20,
-    color: 'black',
-    fontWeight: '600',
-  },
 });
-export default NewChat;
+export default AddMember;
