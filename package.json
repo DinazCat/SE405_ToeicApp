@@ -38,6 +38,7 @@
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.13.1",
     "react-native-image-crop-picker": "^0.40.1",
+    "react-native-modal": "^13.0.1",
     "react-native-modal-datetime-picker": "^17.1.0",
     "react-native-onboarding-swiper": "^1.2.0",
     "react-native-pdf": "^6.7.1",

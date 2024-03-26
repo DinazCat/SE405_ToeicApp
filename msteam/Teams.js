@@ -7,8 +7,6 @@ import {
   ScrollView,
   Dimensions,
   FlatList,
-  StatusBar,
-  Platform,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -20,8 +18,10 @@ import AppStyle from '../theme';
 import ClassCard from '../ComponentTeam/ClassCard';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 const {width, height} = Dimensions.get('window');
+import Modal from 'react-native-modal';
 
 const Teams = ({navigation}) => {
+  const [modalVisible, setModalVisible] = useState(false);
   const classData = [
     {
       className: 'Lớp luyện SW Toeic 150+',
@@ -36,6 +36,22 @@ const Teams = ({navigation}) => {
       teacherName: 'Trần Mạnh Hùng',
     },
   ];
+
+  const [screenWidth, setScreenWidth] = useState(
+    Dimensions.get('window').width,
+  );
+  const [screenHeight, setScreenHeight] = useState(
+    Dimensions.get('window').height,
+  );
+  useEffect(() => {
+    const updateScreenWidth = () => {
+      setScreenWidth(Dimensions.get('window').width);
+      setScreenHeight(Dimensions.get('window').height);
+    };
+
+    Dimensions.addEventListener('change', updateScreenWidth);
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.upzone}>
@@ -48,11 +64,6 @@ const Teams = ({navigation}) => {
           }}>
           Teams
         </Text>
-        <TouchableOpacity
-          style={{paddingRight: '5%'}}
-          onPress={() => navigation.push('NewTeam')}>
-          <Feather name={'plus'} color="white" size={28} />
-        </TouchableOpacity>
       </View>
       <Text style={AppStyle.textstyle.parttext}>Your class</Text>
       <FlatList
@@ -61,6 +72,45 @@ const Teams = ({navigation}) => {
           <ClassCard key={index} item={item} navigation={navigation} />
         )}
       />
+      <Modal
+        animationType="slide"
+        visible={modalVisible}
+        onBackdropPress={() => setModalVisible(!modalVisible)}
+        onRequestClose={() => setModalVisible(!modalVisible)}>
+        <View style={[styles.modalContainer, {width: screenWidth}]}>
+          <TouchableOpacity
+            onPress={() => {
+              setModalVisible(!modalVisible);
+              navigation.push('NewTeam');
+            }}>
+            <Text style={styles.textStyle}>Create new team</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setModalVisible(!modalVisible);
+              navigation.push('JoinTeam');
+            }}>
+            <Text style={styles.textStyle}>Join team</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+      <TouchableOpacity
+        onPress={() => setModalVisible(true)}
+        style={{
+          position: 'absolute',
+          marginLeft: screenWidth - 80,
+          marginTop: screenHeight - 120,
+          borderRadius: 25,
+          width: 50,
+          height: 50,
+          backgroundColor: PRIMARY_COLOR,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+        // onPress={() => navigation.push('New', chatData)}
+      >
+        <Feather name={'plus'} color="white" size={28} />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -68,6 +118,27 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
     flex: 1,
+  },
+  modalContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: -20,
+    flex: 1,
+    backgroundColor: card_color,
+    padding: 20,
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+  },
+  button: {
+    padding: 10,
+    flex: 1,
+  },
+  textStyle: {
+    color: 'black',
+    fontSize: 18,
   },
 });
 export default Teams;

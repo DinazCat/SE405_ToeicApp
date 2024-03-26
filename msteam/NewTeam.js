@@ -56,7 +56,10 @@ const NewTeam = ({route, navigation}) => {
         </View>
       </View>
       <View style={{width: '40%', alignSelf: 'center'}}>
-        <FormButton title={'Create team'} onPress={() => navigation.push('AddMember')} />
+        <FormButton
+          title={'Create team'}
+          onPress={() => navigation.push('TeamRoom')}
+        />
       </View>
     </View>
   );
