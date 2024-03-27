@@ -33,6 +33,7 @@ import LottieView from 'lottie-react-native';
 import RNFS from 'react-native-fs';
 import Api from '../api/Api';
 import {AuthContext} from '../navigation/AuthProvider';
+import { BackHandler } from 'react-native';
 
 Sound.setCategory('Playback');
 const {width} = Dimensions.get('window');
@@ -62,6 +63,7 @@ const QuestionScreen = ({navigation, route}) => {
   const [history, setHistory] = useState([]);
   const recordsRef = useRef([]);
   const answersRef = useRef([]);
+
 
   const saveQuestion = async id => {
     const data = await Api.getSavedQuestion();
@@ -581,6 +583,20 @@ const QuestionScreen = ({navigation, route}) => {
 
     setHistory(list);
   }, []);
+  // useEffect(() => {
+    const backAction = () => {
+
+      showAlert();
+      return true;
+    };
+
+  BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+  //   return () => backHandler.remove(); // Remove listener khi component unmount
+  // }, []);
   const showAlert = () => {
     if (buttonTitle != 'Explain')
       Alert.alert(
@@ -590,12 +606,14 @@ const QuestionScreen = ({navigation, route}) => {
           {
             text: 'OK',
             onPress: () => {
-              if (soundL != -1)
+              if (soundL != -1){
+                console.log(soundL?.length)
                 for (let i = 0; i < soundL?.length; i++) {
                   if (soundL[i].isPlaying()) {
                     soundL[i].stop();
                   }
                 }
+              }
               navigation.goBack();
             },
           },

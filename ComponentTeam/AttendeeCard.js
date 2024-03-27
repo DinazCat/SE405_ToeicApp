@@ -13,11 +13,21 @@ import {
   import Icon from 'react-native-vector-icons/FontAwesome5';
   import AppStyle from '../theme'
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color'
+import {
+  MeetingProvider,
+  useMeeting,
+  useParticipant,
+  MediaStream,
+  RTCView,
+} from "@videosdk.live/react-native-sdk";
 const {width, height} = Dimensions.get('window');
   const AttendeeCard = ({person, color}) => {
+    const { webcamStream, webcamOn, micOn, micStream } = useParticipant(person);
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
 
   useEffect(() => {
+    console.log('person'+person)
+    console.log('webcam'+webcamOn)
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
     };
@@ -69,7 +79,18 @@ const {width, height} = Dimensions.get('window');
 //   const randomIndex = Math.floor(Math.random() * COLORS.length);
 //   return COLORS[randomIndex];
 // };
-    return (  
+    return ( 
+      webcamOn && webcamStream ? (
+        <RTCView
+          streamURL={new MediaStream([webcamStream.track]).toURL()}
+          objectFit={"cover"}
+          style={{
+            height: 300,
+            marginVertical: 8,
+            marginHorizontal: 8,
+          }}
+        />
+      ) : 
         <View style={{borderRadius:15, backgroundColor:card_color, width:140, height:140, alignSelf:'center', elevation: 5, justifyContent:'center',alignItems:'center', marginHorizontal:5, marginVertical:5}}>
           <View style={[styles.UserImage,{backgroundColor:color, alignItems:'center', justifyContent:'center'}]} >
             {/* <Image
@@ -80,7 +101,7 @@ const {width, height} = Dimensions.get('window');
             /> */}
                     <Text style={{textAlign:'center'}}>NL</Text>
           </View>
-          <Text style={styles.UsernameText}>{person.Name}</Text>
+          <Text style={styles.UsernameText}>{person}</Text>
           <TouchableOpacity>
           <Icon name="microphone" color="black" size={20} />
         </TouchableOpacity>

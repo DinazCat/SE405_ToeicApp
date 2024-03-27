@@ -16,12 +16,48 @@ import {
   import Ionicons from 'react-native-vector-icons/Ionicons';
   import AppStyle from '../theme'
   import AttendeeCard from '../ComponentTeam/AttendeeCard';
+  import {
+    MeetingProvider,
+    useMeeting,
+    useParticipant,
+    MediaStream,
+    RTCView,
+  } from "@videosdk.live/react-native-sdk";
+  import { createMeeting, token } from '../api/apiVideoSDK';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color'
+import socketServices from '../api/socketService';
+import firestore from '@react-native-firebase/firestore';
 const {width, height} = Dimensions.get('window');
-  const MeetingRoom = ({navigation}) => {
+  const MeetingRoom = ({navigation,route}) => {
+    const {Cam, Mic, meetingId, toggleMic,toggleWebcam,
+      leave} = route.params;
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
     const [screenHeight, setScreenHeight] = useState(Dimensions.get('window').height);
+    const [participantsArrId , setParticipantsArrId] = useState([])
     const [Share,SetShare] = useState(false)
+    useEffect(() => {
+      listenToClassDocument()
+      // socketServices.initializeSocket()
+      // receiveParticipants()
+    }, []);
+    // const receiveParticipants = async()=>{
+    //   socketServices.on('getParticipants',(data) => {
+    //     setParticipantsArrId(data)
+    //     console.log('data: '+data)
+    //   });
+    // }
+    const listenToClassDocument = (documentId) => {
+      const documentRef = firestore().collection('Class').doc('0VA2PZf3PVGlbWlF9EiV');
+      const unsubscribe = documentRef.onSnapshot((documentSnapshot) => {
+         const data = documentSnapshot.data();
+         setParticipantsArrId(data.Participants)
+      }, (error) => {
+        console.error('Lỗi khi lắng nghe thay đổi:', error);
+      });
+    
+      // Trả về hàm unsubscribe để ngừng lắng nghe khi cần
+      return unsubscribe;
+    };
   useEffect(() => {
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
@@ -53,8 +89,30 @@ const getRandomColor = () => {
   const randomIndex = Math.floor(Math.random() * COLORS.length);
   return COLORS[randomIndex];
 };
+// const { join, leave, toggleWebcam, toggleMic, participants } = useMeeting({});
+// const participantsArrId = [...participants.keys()];
+// const { webcamStream, webcamOn, micOn, micStream } = useParticipant(participantsArrId);
+const [isMicMuted, setIsMicMuted] = useState(Mic); // State để lưu trạng thái mic
+  const handleMicToggle = () => {
+    toggleMic(); 
+    setIsMicMuted(!isMicMuted);
+  };
+  const [isCamMuted, setIsCamMuted] = useState(Cam); 
+
+  const handleCamToggle = () => {
+    toggleWebcam(); 
+    setIsCamMuted(!isCamMuted); 
+  };
     return (
-      <View style={styles.container}>
+      // <MeetingProvider
+      //   config={{
+      //     meetingId,
+      //     micEnabled: Mic,
+      //     webcamEnabled: true,
+      //     name: 'Test User',
+      //   }}
+      //   token={token}>
+          <View style={styles.container}>
         <View style={[AppStyle.viewstyle.component_upzone,{backgroundColor:'#363636'}]}>
           <TouchableOpacity style={{marginLeft: '2%'}}>
             <FontAwesome name="chevron-left" color="white" size={20} />
@@ -77,17 +135,20 @@ const getRandomColor = () => {
             }}>01:44 24 attendees</Text>
           </View> 
           <View style={{flex:1}}/>
-          <TouchableOpacity>
-          <Icon name="video" color="gray" size={20} />
-        </TouchableOpacity>
-       <TouchableOpacity style={{marginLeft:15, marginRight:10}}>
-       {/* <FontAwesome name="microphone" color="black" size={20} /> */}
-       <FontAwesome name="microphone-slash" color="gray" size={20} />
-        </TouchableOpacity>
+          <TouchableOpacity  onPress={() => {
+          handleMicToggle()
+        }}>
+           {isMicMuted==false?<FontAwesome name="microphone-slash" color="gray" size={20} />:<FontAwesome name="microphone" color="black" size={20} />}
+          </TouchableOpacity>
+          <TouchableOpacity  onPress={() => {
+          handleCamToggle()
+        }}>
+           {isCamMuted==false?<Icon name="video-slash" color="gray" size={20} />:<Icon name="video" color="gray" size={20} />}
+          </TouchableOpacity>
         </View>
-        {!Share&&<FlatList
+        {!Share&&(participantsArrId.length>0)&&<FlatList
         style={{alignSelf:'center',marginTop:10}}
-      data={data}
+      data={participantsArrId}
       renderItem={({item, index}) => (
         <AttendeeCard
           key={index}
@@ -137,12 +198,13 @@ const getRandomColor = () => {
         <TouchableOpacity onPress={()=>SetShare(!Share)}>
         <Ionicons name={'arrow-up-outline'} size={20} color={ 'black' } />
         </TouchableOpacity>
-        <TouchableOpacity  onPress={() => navigation.goBack()}>
+        <TouchableOpacity  onPress={() => {leave();navigation.goBack()}}>
           <Icon name="phone-slash" color="#8B0016" size={20} />
         </TouchableOpacity>
       </View>
       
       </View>
+        // </MeetingProvider>
     );
   };
   const styles = StyleSheet.create({
