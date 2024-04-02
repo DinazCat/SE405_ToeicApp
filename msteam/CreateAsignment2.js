@@ -4,23 +4,26 @@ import {
   View,
   TouchableOpacity,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import AppStyle from '../theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import React, {useState} from 'react';
 import IonIcon from 'react-native-vector-icons/Ionicons';
-import CheckBox from '@react-native-community/checkbox';
 import {Picker} from '@react-native-picker/picker';
+import {PRIMARY_COLOR} from '../assets/colors/color';
 
-const CreateAsignment = ({navigation}) => {
+const CreateAsignment2 = ({navigation}) => {
   const [title, setTitle] = useState();
   const [instruction, setInstruction] = useState();
   const [point, setPoint] = useState();
-  const [resourceFiles, setResourceFiles] = useState();
   const [assignTo, setAsignTo] = useState();
+  const [startDate, setStartDate] = useState();
+  const [startTime, setStartTime] = useState();
   const [dueDate, setDueDate] = useState();
   const [dueTime, setDueTime] = useState();
-  const [checked, setCheck] = useState(false);
+  const [task, setTask] = useState();
+  const [numberOfAttemps, setNumberOfAttemps] = useState();
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -35,7 +38,7 @@ const CreateAsignment = ({navigation}) => {
         <View style={{flex: 1}} />
         <Text style={styles.SaveText}>Save</Text>
       </View>
-      <View style={{paddingHorizontal: 5}}>
+      <ScrollView style={{paddingHorizontal: 5}}>
         <Text style={[styles.KeyText, {marginTop: 10}]}>Title: </Text>
         <TextInput
           multiline={true}
@@ -80,6 +83,35 @@ const CreateAsignment = ({navigation}) => {
         />
         <View style={{flexDirection: 'row'}}>
           <View style={{width: '55%'}}>
+            <Text style={[styles.KeyText, {marginTop: 10}]}>Start Date: </Text>
+            <View
+              style={[styles.Input, styles.IconInput]}
+              placeholderTextColor={'#555'}
+              width={'96%'}>
+              <Text>{startDate}</Text>
+              <View style={{flex: 1}} />
+              <TouchableOpacity>
+                <IonIcon name="calendar-outline" color={'#555'} size={20} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={{width: '44%'}}>
+            <Text style={[styles.KeyText, {marginTop: 10}]}>Start Time: </Text>
+            <View
+              style={[styles.Input, styles.IconInput]}
+              placeholderTextColor={'#555'}
+              width={'96%'}>
+              <Text>{startTime}</Text>
+              <View style={{flex: 1}} />
+              <TouchableOpacity>
+                <IonIcon name="time-outline" color={'#555'} size={20} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{width: '55%'}}>
             <Text style={[styles.KeyText, {marginTop: 10}]}>Due Date: </Text>
             <View
               style={[styles.Input, styles.IconInput]}
@@ -105,26 +137,42 @@ const CreateAsignment = ({navigation}) => {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-          }}>
           <Text style={[styles.KeyText, {marginTop: 10}]}>
-            Allow late submission:{' '}
+            Select Test or Task:
           </Text>
-          <CheckBox
-            style={{backgroundColor: '#f0f0f0', marginTop: 5}}
-            value={checked}
-            onValueChange={checked => setCheck(checked)}
+          <Picker
+            style={styles.Input}
+            selectedValue={task}
+            onValueChange={(itemValue, itemIndex) => setTask(itemValue)}>
+            <Picker.Item label="Java" value="Test ETS 1" />
+            <Picker.Item label="JavaScript" value="js" />
+            <Picker.Item label="Python" value="python" />
+            <Picker.Item label="C#" value="csharp" />
+          </Picker>
+        </View>
+
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Text style={[styles.KeyText, {marginTop: 10}]}>
+            Attempts Allowed:
+          </Text>
+          <TextInput
+            style={[styles.Input, {marginLeft: 10}]}
+            placeholderTextColor={'#555'}
+            width={'20%'}
+            value={numberOfAttemps}
+            onChangeText={txt => setNumberOfAttemps(txt)}
           />
         </View>
-      </View>
+
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Choose Test</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 };
 
-export default CreateAsignment;
+export default CreateAsignment2;
 
 const styles = StyleSheet.create({
   container: {
@@ -177,5 +225,20 @@ const styles = StyleSheet.create({
     color: 'white',
     marginRight: 10,
     fontSize: 17,
+  },
+  button: {
+    backgroundColor: PRIMARY_COLOR,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // alignSelf: 'center',
+    marginTop: '5%',
+    padding: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });

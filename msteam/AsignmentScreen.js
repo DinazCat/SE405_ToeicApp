@@ -1,10 +1,32 @@
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Dimensions,
+} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import AsignmentCard from '../ComponentTeam/AsignmentCard';
 import AppStyle from '../theme';
+import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 const AsignmentScreen = ({navigation}) => {
   const [selectedTab, setSelectedTab] = useState(0);
+  const [screenWidth, setScreenWidth] = useState(
+    Dimensions.get('window').width,
+  );
+  const [screenHeight, setScreenHeight] = useState(
+    Dimensions.get('window').height,
+  );
+  useEffect(() => {
+    const updateScreenWidth = () => {
+      setScreenWidth(Dimensions.get('window').width);
+      setScreenHeight(Dimensions.get('window').height);
+    };
+
+    Dimensions.addEventListener('change', updateScreenWidth);
+  }, []);
   const UpcommingAsignments = [
     {
       Date: '23-3-2023 Sat',
@@ -89,7 +111,7 @@ const AsignmentScreen = ({navigation}) => {
                   key={key}
                   item={item1}
                   onPress={() =>
-                    navigation.navigate('AsignmentDetail', {asignment: item1})
+                    navigation.navigate('AsignmentDetail2', {asignment: item1})
                   }
                 />
               ))}
@@ -120,6 +142,23 @@ const AsignmentScreen = ({navigation}) => {
             </>
           ))}
         </>
+      )}
+      {true && (
+        <TouchableOpacity
+          style={{
+            position: 'absolute',
+            marginLeft: screenWidth - 80,
+            marginTop: screenHeight - 120,
+            borderRadius: 25,
+            width: 50,
+            height: 50,
+            backgroundColor: PRIMARY_COLOR,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={() => navigation.navigate('CreateAsignment2')}>
+          <Icon name={'plus'} size={20} color={'white'} />
+        </TouchableOpacity>
       )}
     </View>
   );

@@ -15,7 +15,7 @@ import firestore from '@react-native-firebase/firestore';
 import {subDays, format} from 'date-fns';
 import auth from '@react-native-firebase/auth';
 import AnalysisStack from './AnalysisStack';
-import {NavigationContainter} from '@react-navigation/native'
+import {NavigationContainter} from '@react-navigation/native';
 import BottomTab from './BottomTab';
 
 const Drawer = createDrawerNavigator();
@@ -26,7 +26,7 @@ const SideMenu = () => {
 };
 function DrawerNavigator() {
   return (
-<Drawer.Navigator
+    <Drawer.Navigator
       screenOptions={{
         drawerLabelStyle: {
           fontWeight: '500',
@@ -105,6 +105,17 @@ function DrawerNavigator() {
         }}
       />
       <Drawer.Screen
+        name="Learning"
+        component={BottomTab}
+        options={{
+          drawerLabel: 'Courses',
+          drawerIcon: () => (
+            <Image source={require('../assets/classroom.png')} />
+          ),
+          headerShown: false,
+        }}
+      />
+      <Drawer.Screen
         name="Setting"
         component={SettingScreen}
         options={{
@@ -115,20 +126,7 @@ function DrawerNavigator() {
           headerShown: false,
         }}
       />
-        <Drawer.Screen
-        name="Learning"
-        component={BottomTab}
-        options={{
-          drawerLabel: 'Learning',
-          drawerIcon: () => (
-            <Image source={require('../assets/classroom.png')} />
-          ),
-          headerShown: false,
-        }}
-      />
     </Drawer.Navigator>
-
-    
   );
 }
 export default DrawerNavigator;

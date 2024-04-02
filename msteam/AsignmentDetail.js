@@ -41,7 +41,10 @@ const AsignmentDetail = ({navigation, route}) => {
 
         <TouchableOpacity
           style={[AppStyle.button.button2, {borderRadius: 7, marginTop: 50}]}>
-          <Text style={AppStyle.button.button1_Text}> Add Submission</Text>
+          <Text style={[AppStyle.button.button1_Text, {fontWeight: '500'}]}>
+            {' '}
+            Add Submission
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -64,7 +67,7 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   headerText2: {
-    color: '#f0f0f0',
+    color: 'white',
     fontSize: 15,
     marginLeft: 15,
   },
@@ -76,7 +79,7 @@ const styles = StyleSheet.create({
   },
   DueText: {
     color: '#444',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
   },
   KeyText: {

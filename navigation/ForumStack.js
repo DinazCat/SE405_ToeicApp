@@ -1,7 +1,7 @@
-import { View, Text } from 'react-native'
-import React, {useState, useEffect} from 'react'
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {View, Text} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Forum from '../screens/Forum';
 import CommentScreen from '../screens/CommentScreen';
@@ -22,7 +22,6 @@ import FixPostScreen from '../screens/FixPostScreen';
 const Stack = createNativeStackNavigator();
 
 export default function ForumStack() {
-
   return (
     <Stack.Navigator>
       <Stack.Screen
