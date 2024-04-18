@@ -56,7 +56,7 @@ const ChatCard = ({item, navigation}) => {
                 fontSize: 18,
                 fontWeight: 600,
               }}>
-              {item.user}
+              {item.roomName}
             </Text>
             <Text
               style={{

@@ -42,6 +42,7 @@ const ChatRoom = ({route, navigation}) => {
         'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
       time: '13:01',
       isMine: false,
+      type: 'text',
     },
     {
       user: {
@@ -53,6 +54,7 @@ const ChatRoom = ({route, navigation}) => {
         'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
       time: '13:02',
       isMine: true,
+      type: 'text',
     },
     {
       user: {
@@ -64,6 +66,29 @@ const ChatRoom = ({route, navigation}) => {
         'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
       time: '13:03',
       isMine: false,
+      type: 'text',
+    },
+    {
+      user: {
+        name: 'Lynh',
+        avatar:
+          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+      },
+      time: '13:03',
+      image:
+        'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+      isMine: false,
+      type: 'image',
+    },
+    {
+      user: {
+        name: 'Lynh',
+        avatar:
+          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+      },
+      time: '13:03',
+      isMine: false,
+      type: 'file',
     },
   ];
   return (
@@ -81,15 +106,19 @@ const ChatRoom = ({route, navigation}) => {
           }}
         />
         <Text style={styles.header} numberOfLines={1}>
-          {route.params.user}
+          {route.params.roomName}
         </Text>
         <View style={{flex: 1}}></View>
         <TouchableOpacity>
           <IonIcon name="call" style={styles.iconButton2} />
         </TouchableOpacity>
         <TouchableOpacity>
+          <IonIcon name="videocam" style={styles.iconButton2} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('ChatRoomOptions', route.params)}>
           <IonIcon
-            name="videocam"
+            name="alert-circle"
             style={[styles.iconButton2, {marginRight: 10}]}
           />
         </TouchableOpacity>
@@ -135,6 +164,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     flex: 1,
     display: 'flex',
+    paddingBottom: 90,
   },
   image: {
     borderRadius: 25,

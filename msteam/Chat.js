@@ -18,7 +18,7 @@ import AppStyle from '../theme';
 const Chat = ({navigation}) => {
   const chatData = [
     {
-      user: 'Nguyễn Quỳnh Hoa',
+      roomName: 'Nguyễn Quỳnh Hoa',
       time: '20/03/2024',
       imageUri:
         'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
@@ -27,7 +27,7 @@ const Chat = ({navigation}) => {
       status: 'on',
     },
     {
-      user: 'Nguyễn Anh Thư',
+      roomName: 'Nguyễn Anh Thư',
       time: '20/03/2024',
       imageUri:
         'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
@@ -36,7 +36,7 @@ const Chat = ({navigation}) => {
       status: 'off',
     },
     {
-      user: 'Trần Mạnh Hùng',
+      roomName: 'Trần Mạnh Hùng',
       time: '20/03/2024',
       imageUri:
         'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',

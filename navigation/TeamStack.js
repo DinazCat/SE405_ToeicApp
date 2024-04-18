@@ -13,6 +13,7 @@ import AsignmentScreen from '../msteam/AsignmentScreen';
 import AsignmentDetail from '../msteam/AsignmentDetail';
 import CreateAsignment from '../msteam/CreateAsignment';
 import CreateAsignment2 from '../msteam/CreateAsignment2';
+import ClassMembers from '../msteam/ClassMembers';
 
 const Stack = createNativeStackNavigator();
 export default function TeamStack() {
@@ -78,6 +79,11 @@ export default function TeamStack() {
       <Stack.Screen
         name="CreateAsignment2"
         component={CreateAsignment2}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="ClassMembers"
+        component={ClassMembers}
         options={{header: () => null}}
       />
     </Stack.Navigator>

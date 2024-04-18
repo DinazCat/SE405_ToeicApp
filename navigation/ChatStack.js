@@ -2,10 +2,13 @@ import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Chat from '../msteam/Chat';
 import ChatRoom from '../msteam/ChatRoom';
+import ChatRoomOptions from '../msteam/ChatRoomOptions';
+import ClassMembers from '../msteam/ClassMembers';
 import MeetingRoom from '../msteam/MeetingRoom';
 import ReplyScreen from '../msteam/ReplyScreen';
 import AttendeeScreen from '../msteam/AttendeeScreen';
 import NewChat from '../msteam/NewChat';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const Stack = createNativeStackNavigator();
 export default function ChatStack() {
@@ -24,6 +27,11 @@ export default function ChatStack() {
       <Stack.Screen
         name="NewChat"
         component={NewChat}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="ChatRoomOptions"
+        component={ChatRoomOptions}
         options={{header: () => null}}
       />
       {/* <Stack.Screen

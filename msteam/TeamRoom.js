@@ -628,11 +628,11 @@ const TeamRoom = ({navigation}) => {
             Recordings
           </Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity
+        <TouchableOpacity
           style={styles.historyButton}
           onPress={() => {
             setSelectedTab(4);
-            navigation.navigate('AsignmentScreen');
+            navigation.navigate('ClassMembers');
           }}>
           <Text
             style={[
@@ -641,7 +641,7 @@ const TeamRoom = ({navigation}) => {
             ]}>
             Asignments
           </Text>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
       {selectedTab == 1 && (
         <View>
