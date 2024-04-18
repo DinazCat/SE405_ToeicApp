@@ -6,7 +6,6 @@ import {
   Image,
   ScrollView,
   Dimensions,
-  ImageBackground,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
@@ -29,7 +28,7 @@ const ChatCard = ({item, navigation}) => {
       style={{marginTop: 10}}
       onPress={() => navigation.push('ChatRoom', item)}>
       <View style={[styles.container, {width: screenWidth * 0.9}]}>
-        <ImageBackground style={{position: 'relative'}}>
+        <View style={{position: 'relative'}}>
           <Image style={styles.image} source={{uri: item.imageUri}} />
           <View
             style={[
@@ -37,7 +36,7 @@ const ChatCard = ({item, navigation}) => {
               {backgroundColor: item.status === 'on' ? 'green' : 'red'},
             ]}
           />
-        </ImageBackground>
+        </View>
 
         <View
           style={{

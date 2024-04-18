@@ -11,8 +11,10 @@ import {
   TextInput,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
+import ChatMessage from '../ComponentTeam/ChatMessage';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Icon from 'react-native-vector-icons/FontAwesome5';
+import IonIcon from 'react-native-vector-icons/Ionicons';
+
 import AppStyle from '../theme';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 
@@ -31,22 +33,37 @@ const ChatRoom = ({route, navigation}) => {
 
   const chatData = [
     {
-      from: route.params.user,
-      to: 'me',
+      user: {
+        name: 'Lynh',
+        avatar:
+          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+      },
       content:
         'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+      time: '13:01',
+      isMine: false,
     },
     {
-      from: 'me',
-      to: 'me',
-      content:
-        'Me: Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
-    },
-    {
-      from: route.params.user,
-      to: 'me',
+      user: {
+        name: 'Cát',
+        avatar:
+          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+      },
       content:
         'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+      time: '13:02',
+      isMine: true,
+    },
+    {
+      user: {
+        name: 'Lynh',
+        avatar:
+          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+      },
+      content:
+        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+      time: '13:03',
+      isMine: false,
     },
   ];
   return (
@@ -63,55 +80,46 @@ const ChatRoom = ({route, navigation}) => {
             uri: route.params.imageUri,
           }}
         />
-        <Text style={styles.header}>{route.params.user}</Text>
+        <Text style={styles.header} numberOfLines={1}>
+          {route.params.user}
+        </Text>
+        <View style={{flex: 1}}></View>
+        <TouchableOpacity>
+          <IonIcon name="call" style={styles.iconButton2} />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <IonIcon
+            name="videocam"
+            style={[styles.iconButton2, {marginRight: 10}]}
+          />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.chatFlow}>
         <FlatList
           data={chatData}
           renderItem={({item, index}) => {
-            if (item.from === 'me')
-              return (
-                <View style={styles.myChatContainer}>
-                  <Text
-                    key={index}
-                    style={[
-                      styles.chatWrapper,
-                      {
-                        width: screenWidth * 0.6,
-                        color: 'white',
-                        backgroundColor: PRIMARY_COLOR,
-                      },
-                    ]}>
-                    {item.content}
-                  </Text>
-                </View>
-              );
-            else
-              return (
-                <Text
-                  key={index}
-                  style={[
-                    styles.chatWrapper,
-                    {
-                      width: screenWidth * 0.6,
-                      backgroundColor: card_color,
-                    },
-                  ]}>
-                  {item.content}
-                </Text>
-              );
+            return <ChatMessage item={item} />;
           }}
         />
       </View>
       <View style={[styles.bottomViewContainer, {backgroundColor: '#fff'}]}>
+        <TouchableOpacity>
+          <IonIcon name="image-outline" style={styles.iconButton} />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <IonIcon name="camera-outline" style={styles.iconButton} />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <IonIcon name="document-attach-outline" style={styles.iconButton} />
+        </TouchableOpacity>
         <TextInput
           //   ref={textInputRef}
           //   value={comment}
           //   onChangeText={txt => {
           //     setComment(txt);
           //   }}
-          placeholder={'Type here...'}
+          placeholder={'Text here...'}
           placeholderTextColor={'#666'}
           multiline={true}
           style={[styles.chatInput, {color: '#666'}]}
@@ -139,6 +147,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
     marginLeft: 15,
+    maxWidth: '50%',
   },
   chatFlow: {
     padding: 10,
@@ -158,17 +167,18 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     marginRight: 10,
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
-    color: '#666',
+    color: '#555',
+    marginLeft: 5,
   },
   chatInput: {
-    width: '80%',
-    marginLeft: 10,
+    marginLeft: 5,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#999',
     padding: 6,
+    flex: 1,
   },
   bottomViewContainer: {
     width: '100%',
@@ -179,6 +189,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     alignItems: 'center',
     backgroundColor: '#fff',
+  },
+  iconButton: {
+    fontSize: 25,
+    color: '#555',
+    padding: 2,
+    margin: 2,
+  },
+  iconButton2: {
+    fontSize: 25,
+    color: 'white',
+    padding: 2,
+    marginHorizontal: 7,
   },
 });
 export default ChatRoom;
