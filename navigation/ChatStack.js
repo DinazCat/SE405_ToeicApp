@@ -8,10 +8,19 @@ import MeetingRoom from '../msteam/MeetingRoom';
 import ReplyScreen from '../msteam/ReplyScreen';
 import AttendeeScreen from '../msteam/AttendeeScreen';
 import NewChat from '../msteam/NewChat';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
-export default function ChatStack() {
+export default function ChatStack({navigation, route}) {
+  React.useLayoutEffect(() => {
+    const routeName = getFocusedRouteNameFromRoute(route);
+
+    if (routeName === 'Chat' || routeName === undefined) {
+      navigation.setOptions({tabBarStyle: {display: 'flex'}});
+    } else {
+      navigation.setOptions({tabBarStyle: {display: 'none'}});
+    }
+  }, [navigation, route]);
   return (
     <Stack.Navigator>
       <Stack.Screen

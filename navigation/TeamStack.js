@@ -14,9 +14,19 @@ import AsignmentDetail from '../msteam/AsignmentDetail';
 import CreateAsignment from '../msteam/CreateAsignment';
 import CreateAsignment2 from '../msteam/CreateAsignment2';
 import ClassMembers from '../msteam/ClassMembers';
+import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
-export default function TeamStack() {
+export default function TeamStack({navigation, route}) {
+  React.useLayoutEffect(() => {
+    const routeName = getFocusedRouteNameFromRoute(route);
+
+    if (routeName === 'Teams' || routeName === undefined) {
+      navigation.setOptions({tabBarStyle: {display: 'flex'}});
+    } else {
+      navigation.setOptions({tabBarStyle: {display: 'none'}});
+    }
+  }, [navigation, route]);
   return (
     <Stack.Navigator>
       <Stack.Screen
