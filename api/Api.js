@@ -473,6 +473,22 @@ const updateSavedQuestion = async(data)=>{
     }
 
 }
+const getRecordings = async(classId)=>{
+    const endpoint = "/Meeting/getRecordings/" + classId
+    try{
+        const response = await client.get(endpoint)
+        if(response.data.success){
+            return response.data.recordings
+        }
+        else{
+            console.log("not get")
+        }     
+    }
+    catch(error){
+        console.log('error: ', error.message)
+        return [];
+    }
+}
 export default {
     getVocabLesson,
     getVocabinLesson,
@@ -510,5 +526,6 @@ export default {
     uploadTestHistory,
     getReviewQuestion,
     getSavedQuestion,
-    updateSavedQuestion
+    updateSavedQuestion,
+    getRecordings
 }
