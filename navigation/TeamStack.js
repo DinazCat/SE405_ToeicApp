@@ -14,6 +14,7 @@ import AsignmentDetail from '../msteam/AsignmentDetail';
 import CreateAsignment from '../msteam/CreateAsignment';
 import CreateAsignment2 from '../msteam/CreateAsignment2';
 import ClassMembers from '../msteam/ClassMembers';
+import ShowRecord from '../msteam/ShowRecord';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
@@ -94,6 +95,11 @@ export default function TeamStack({navigation, route}) {
       <Stack.Screen
         name="ClassMembers"
         component={ClassMembers}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="ShowRecord"
+        component={ShowRecord}
         options={{header: () => null}}
       />
     </Stack.Navigator>

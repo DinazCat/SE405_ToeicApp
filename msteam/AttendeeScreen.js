@@ -7,7 +7,8 @@ import ReplyCard from '../ComponentTeam/ReplyCard';
 import AttendeeCardLong from '../ComponentTeam/AttendeeCardLong';
 
 const {width, height} = Dimensions.get('window');
-const AttendeeScreen = ({navigation}) => {
+const AttendeeScreen = ({navigation, route}) => {
+  const {list} = route.params
 const users=[{
     Name:'Huỳnh Thị Minh',
     camera:true,
@@ -66,10 +67,10 @@ const getRandomColor = () => {
         </View> 
         <View style={{flexDirection:'row', justifyContent:'space-between', marginHorizontal:5, marginTop:20}}>
         <Text style={{color:'white', fontSize:20}}>In the meeting: 24 people </Text>
-        <Text style={{color:'#0000CD', fontSize:18,textDecorationLine: 'underline' }}>Unmute all</Text>
+        <Text style={{color:'white', fontSize:18,textDecorationLine: 'underline' }}>Unmute all</Text>
         </View>
 
-      {users.map((item, index) => (
+      {list.map((item, index) => (
            <AttendeeCardLong
            key={index}
            person = {item}

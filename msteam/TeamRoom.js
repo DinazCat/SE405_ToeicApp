@@ -21,7 +21,7 @@ import PostinTeam from '../ComponentTeam/PostinTeam';
 import RecordingCard from '../ComponentTeam/RecordingCard';
 import FileCard from '../ComponentTeam/FileCard';
 import FolderCard from '../ComponentTeam/FolderCard';
-import {createMeeting, token} from '../api/apiVideoSDK';
+import {createMeeting, token, startRecord, stopRecord} from '../api/apiVideoSDK';
 import auth from '@react-native-firebase/auth';
 import MeetingRoom from './MeetingRoom';
 import {
@@ -35,6 +35,7 @@ import socketServices from '../api/socketService';
 import {useNavigation} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import Api from '../api/Api';
+import moment from 'moment';
 const {width, height} = Dimensions.get('window');
 const TeamRoom = ({navigation}) => {
   const [meetingId, setMeetingId] = useState(null);
@@ -105,18 +106,26 @@ const TeamRoom = ({navigation}) => {
       sign: 'meeting',
     },
   ];
-  const Record = [
-    {
-      User: 'Nguyễn Quỳnh Hoa',
-      Time: '1PM at 2/24/2024',
-      Name: 'Buổi học ngày 24/2/2024',
-    },
-    {
-      User: 'Nguyễn Thị Thy',
-      Time: '1PM at 3/24/2024',
-      Name: 'Buổi học ngày 24/3/2024',
-    },
-  ];
+  // const Record = [
+  //   {
+  //     User: 'Nguyễn Quỳnh Hoa',
+  //     Time: '1PM at 2/24/2024',
+  //     Name: 'Buổi học ngày 24/2/2024',
+  //   },
+  //   {
+  //     User: 'Nguyễn Thị Thy',
+  //     Time: '1PM at 3/24/2024',
+  //     Name: 'Buổi học ngày 24/3/2024',
+  //   },
+  // ];
+  const [records, setRecords] = useState(null);
+  const getRecords = async ()=>{
+    const data = await Api.getRecordings("0VA2PZf3PVGlbWlF9EiV");
+    setRecords(data);
+  }
+  useEffect(() => {
+    getRecords()
+  }, []);
   const fileandfolder = [
     {
       User: 'Nguyễn Quỳnh Hoa',
@@ -177,7 +186,7 @@ const TeamRoom = ({navigation}) => {
   };
 
   function AttendeeCard({person, color}) {
-    const {webcamStream, webcamOn, micOn, micStream} = useParticipant(person);
+    const {webcamStream, webcamOn, micOn, micStream} = useParticipant(person.id);
     return webcamOn && webcamStream ? (
       <RTCView
         streamURL={new MediaStream([webcamStream.track]).toURL()}
@@ -209,7 +218,7 @@ const TeamRoom = ({navigation}) => {
           marginHorizontal: 5,
           marginVertical: 5,
         }}>
-        <View
+        {/* <View
           style={[
             styles.UserImage,
             {
@@ -219,8 +228,18 @@ const TeamRoom = ({navigation}) => {
             },
           ]}>
           <Text style={{textAlign: 'center'}}>NL</Text>
-        </View>
-        <Text style={styles.UsernameText}>{person}</Text>
+        </View> */}
+             <Image
+          style={styles.UserImage}
+          source={{
+            uri: person
+              ? person.image
+                ? person.image
+                : 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png'
+              : 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png',
+          }}
+        />
+        <Text style={styles.UsernameText}>{person.name}</Text>
         <TouchableOpacity>
           <Icon name="microphone" color="black" size={20} />
         </TouchableOpacity>
@@ -228,14 +247,69 @@ const TeamRoom = ({navigation}) => {
     );
   }
   function MeetingRoomtemp() {
-    const {leave, toggleWebcam, toggleMic, participants} = useMeeting({
+    const {leave, toggleWebcam, toggleMic,toggleScreenShare,presenterId, participants,end,startRecording, stopRecording } = useMeeting({
       onParticipantLeft,
+      onPresenterChanged,
+      onMeetingLeft,
+      // onRecordingStateChanged
     });
+    // function onRecordingStateChanged(data) {
+    //   const { status, } = data;
+    
+    //   if (status === Constants.recordingEvents.RECORDING_STARTING) {
+    //     console.log("Meeting recording is starting");
+    //   } else if (status === Constants.recordingEvents.RECORDING_STARTED) {
+    //     console.log("Meeting recording is started");
+    //   } else if (status === Constants.recordingEvents.RECORDING_STOPPING) {
+    //     console.log("Meeting recording is stopping");
+    //   } else if (status === Constants.recordingEvents.RECORDING_STOPPED) {
+    //     console.log("Meeting recording is stopped");
+    //   } else {
+    //     //
+    //   }
+    // }
+    const handleStartRecording = async () => {
+      startRecording(null, null, {
+        layout: {
+          type: "GRID",
+          priority: "SPEAKER",
+          gridSize: 4,
+        },
+        theme: "DARK",
+        mode: "video-and-audio",
+        quality: "high",
+        orientation: "portrait",
+      });
+      const currentDate = moment().format('D/M/YYYY_h:mm A');
+      const documentRef = firestore()
+      .collection('Class')
+      .doc('0VA2PZf3PVGlbWlF9EiV');
+    await documentRef
+      .update({
+        Recordings: firestore.FieldValue.arrayUnion({
+          id: meetingId,
+          name: currentDate,
+        }),
+      })
+      .then(() => {
+        console.log('haha');
+      });
+    };
+  
+    const handleStopRecording = () => {
+      stopRecording();
+    };
+    const { screenShareStream, screenShareOn } = useParticipant(presenterId);
+    const [myIdMeeting, setMyIdMeeting] = useState(null)
+    const [isRedording, setIsRecording] = useState(false)
     useEffect(() => {
+      const participantsArrId = [...participants.keys()];
+      setMyIdMeeting(participantsArrId[participantsArrId.length - 1])
       JoinMeeting();
     }, []);
     const JoinMeeting = async () => {
       const participantsArrId = [...participants.keys()];
+      console.log(participantsArrId)
       const documentRef = firestore()
         .collection('Class')
         .doc('0VA2PZf3PVGlbWlF9EiV');
@@ -243,13 +317,31 @@ const TeamRoom = ({navigation}) => {
         .update({
           Participants: firestore.FieldValue.arrayUnion({
             id: participantsArrId[participantsArrId.length - 1],
-            name: profileData.name,
+            name: profileData?.name,
+            image:profileData?.userImg,
           }),
         })
         .then(() => {
           console.log('haha');
         });
     };
+    const [listAttendee, setListAttendee] = useState(null)
+    useEffect(() => {
+      const docRef = firestore().collection('Class').doc('0VA2PZf3PVGlbWlF9EiV');
+
+      const unsubscribe = docRef.onSnapshot((documentSnapshot) => {
+        if (documentSnapshot.exists) {
+          // Dữ liệu tài liệu đã được cập nhật
+          setListAttendee(documentSnapshot.data().Participants);
+        } else {
+          // Tài liệu không tồn tại
+          console.log('Document does not exist!');
+        }
+      });
+  
+      // Hủy đăng ký lắng nghe khi component unmount
+      return () => unsubscribe();
+    }, []);
     //Event to determine some other participant has joined
     //  async function onParticipantJoined(participant) {
     //   console.log(" onParticipantJoined", participant);
@@ -262,6 +354,28 @@ const TeamRoom = ({navigation}) => {
     //   });
 
     // }
+     //Callback for when the presenter changes
+  function onPresenterChanged(presenterId) {
+    if(presenterId){
+      console.log(presenterId, "started screen share");
+    }else{
+      console.log("someone stopped screen share");
+    }
+  }
+  async function onMeetingLeft() {
+    console.log('onMeetingLeft');
+    setIsJoin(false);
+    setMeetingId(null);
+    const documentRef = firestore()
+    .collection('Class')
+    .doc('0VA2PZf3PVGlbWlF9EiV');
+  await documentRef
+    .update({
+      Participants: []
+    })
+    .then(() => {
+    });
+  }
     async function onParticipantLeft(participant) {
       console.log(' onParticipantLeft', participant.id);
       const documentRef = firestore()
@@ -271,7 +385,8 @@ const TeamRoom = ({navigation}) => {
         .update({
           Participants: firestore.FieldValue.arrayRemove({
             id: participant.id,
-            name: profileData.name,
+            name: profileData?.name,
+            image:profileData?.userImg,
           }),
         })
         .then(() => {
@@ -322,7 +437,24 @@ const TeamRoom = ({navigation}) => {
             </Text>
           </View>
           <View style={{flex: 1}} />
-          <TouchableOpacity
+          <TouchableOpacity style={{marginLeft:6}}
+            onPress={() => {
+              if(isRedording){
+                handleStopRecording();
+                setIsRecording(false);
+              }
+              else {
+                handleStartRecording();
+                setIsRecording(true);
+              }
+            }}>
+            {isRedording == false ? (
+              <Icon name="record-vinyl" color="gray" size={20} />
+            ) : (
+              <Icon name="record-vinyl" color="#8B0016" size={20} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={{marginLeft:6}}
             onPress={() => {
               handleMicToggle();
             }}>
@@ -332,7 +464,7 @@ const TeamRoom = ({navigation}) => {
               <FontAwesome name="microphone" color="black" size={20} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity style={{marginLeft:6}}
             onPress={() => {
               handleCamToggle();
             }}>
@@ -343,10 +475,10 @@ const TeamRoom = ({navigation}) => {
             )}
           </TouchableOpacity>
         </View>
-        {!Share && participantsArrId.length > 0 && (
+        {!screenShareOn && participantsArrId.length > 0 && (
           <FlatList
             style={{alignSelf: 'center', marginTop: 10}}
-            data={participantsArrId}
+            data={listAttendee}
             renderItem={({item, index}) => (
               <AttendeeCard
                 key={index}
@@ -359,28 +491,43 @@ const TeamRoom = ({navigation}) => {
             ItemSeparatorComponent={() => <View style={styles.separator} />}
           />
         )}
-        {Share && (
-          <View
-            style={{
-              height: 400,
-              alignSelf: 'center',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <View
-              style={{
-                width: width * 0.95,
-                height: 300,
-                backgroundColor: 'black',
-              }}></View>
-          </View>
+        {screenShareOn && screenShareStream && (
+          <>
+             <RTCView
+          streamURL={new MediaStream([screenShareStream.track]).toURL()}
+          objectFit={"contain"}
+          style={{
+            height: height*0.75,
+            width:width*0.95,
+            alignSelf:'center',
+            marginVertical:5
+          }}
+        />
+        <Text style={{color:"white", alignSelf:'center'}}>{presenterId} is sharing! </Text>
+          </>
+       
+          
+          // <View
+          //   style={{
+          //     height: 400,
+          //     alignSelf: 'center',
+          //     justifyContent: 'center',
+          //     alignItems: 'center',
+          //   }}>
+          //   <View
+          //     style={{
+          //       width: width * 0.95,
+          //       height: 300,
+          //       backgroundColor: 'black',
+          //     }}></View>
+          // </View>
         )}
-        <View style={{flex: 1}} />
-        {Share && (
+         <View style={{flex: 1}} />
+        {/*{Share &&(
           <View style={{marginBottom: 5}}>
             <FlatList
               horizontal
-              data={data}
+              data={participantsArrId}
               renderItem={({item, index}) => (
                 <AttendeeCard
                   key={index}
@@ -390,7 +537,7 @@ const TeamRoom = ({navigation}) => {
               )}
             />
           </View>
-        )}
+        )} */}
         <View
           style={{
             height: 50,
@@ -399,14 +546,15 @@ const TeamRoom = ({navigation}) => {
             justifyContent: 'space-evenly',
             alignItems: 'center',
           }}>
-          <TouchableOpacity onPress={() => navigation.push('AttendeeScreen')}>
+          <TouchableOpacity onPress={() => navigation.push('AttendeeScreen',{list:participantsArrId})}>
             <Icon name="users" color="black" size={20} />
           </TouchableOpacity>
           <TouchableOpacity>
             <Icon name="rocketchat" color="black" size={20} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => SetShare(!Share)}>
-            <Ionicons name={'arrow-up-outline'} size={20} color={'black'} />
+          <TouchableOpacity onPress={() => {toggleScreenShare()}}>
+            {(!screenShareOn||presenterId!=myIdMeeting)&&<Ionicons name={'arrow-up-outline'} size={20} color={'black'} />}
+            {screenShareOn&&presenterId==myIdMeeting&&<Ionicons name={'stop-circle-outline'} size={20} color={'#8B0016'} />}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
@@ -435,10 +583,19 @@ const TeamRoom = ({navigation}) => {
     } = useMeeting({});
     const {localWebcamOn} = useMeeting();
     //Event to determine if the meeting has been left
-    function onMeetingLeft() {
+    async function onMeetingLeft() {
       console.log('onMeetingLeft');
       setIsJoin(false);
       setMeetingId(null);
+      const documentRef = firestore()
+      .collection('Class')
+      .doc('0VA2PZf3PVGlbWlF9EiV');
+    await documentRef
+      .update({
+        Participants: []
+      })
+      .then(() => {
+      });
     }
 
     const {join} = useMeeting({});
@@ -628,11 +785,11 @@ const TeamRoom = ({navigation}) => {
             Recordings
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.historyButton}
           onPress={() => {
             setSelectedTab(4);
-            navigation.navigate('ClassMembers');
+            navigation.navigate('AsignmentScreen');
           }}>
           <Text
             style={[
@@ -641,7 +798,7 @@ const TeamRoom = ({navigation}) => {
             ]}>
             Asignments
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       {selectedTab == 1 && (
         <View>
@@ -669,8 +826,10 @@ const TeamRoom = ({navigation}) => {
       )}
       {selectedTab == 3 && (
         <FlatList
-          data={Record}
-          renderItem={({item, index}) => <RecordingCard record={item} />}
+          data={records}
+          renderItem={({item, index}) => <RecordingCard record={item} 
+          show = {()=>{navigation.push("ShowRecord",{url:item.File, name: item.Name})}}
+          />}
         />
       )}
       <TouchableOpacity
@@ -825,7 +984,9 @@ const TeamRoom = ({navigation}) => {
           {selectedTab == 3 && (
             <FlatList
               data={Record}
-              renderItem={({item, index}) => <RecordingCard record={item} />}
+              renderItem={({item, index}) => <RecordingCard record={item} 
+              show = {()=>{navigation.push("ShowRecord",{url:item.File, name: item.Name})}}
+              />}
             />
           )}
           <TouchableOpacity
