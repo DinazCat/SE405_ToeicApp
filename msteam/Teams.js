@@ -83,14 +83,14 @@ const Teams = ({navigation}) => {
               setModalVisible(!modalVisible);
               navigation.push('NewTeam');
             }}>
-            <Text style={styles.textStyle}>Create new team</Text>
+            <Text style={styles.textStyle}>Create a new class</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               setModalVisible(!modalVisible);
               navigation.push('JoinTeam');
             }}>
-            <Text style={styles.textStyle}>Join team</Text>
+            <Text style={styles.textStyle}>Join class </Text>
           </TouchableOpacity>
         </View>
       </Modal>

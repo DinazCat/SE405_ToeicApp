@@ -5,7 +5,7 @@ import messaging from '@react-native-firebase/messaging';
 import firestore from '@react-native-firebase/firestore';
 import Api from '../api/Api'
 export const AuthContext = createContext({});
-
+//
 export const AuthProvider = ({children}) => {
   const [user, setUser] = useState(null);
 
