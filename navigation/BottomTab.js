@@ -3,10 +3,10 @@ import TeamStack from './TeamStack';
 import ChatStack from './ChatStack';
 import AgendaStack from './AgendaStack';
 import AsignmentStack from './AsignmentStack';
+import TeacherStack from './TeacherStack';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import {Image, StyleSheet, Text, View} from 'react-native';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
-import TeacherScreen from '../msteam/TeacherScreen';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 const Tab = createBottomTabNavigator();
 
@@ -79,7 +79,7 @@ const BottomTab = () => {
       />
       <Tab.Screen
         name="Teacher"
-        component={TeacherScreen}
+        component={TeacherStack}
         options={{
           tabBarIcon: ({focused}) => (
             <View style={styles.tabIconContainer}>
