@@ -112,6 +112,6 @@ const styles = StyleSheet.create({
     fontSize: 25,
     padding: 5,
     marginTop: 4,
-    //marginLeft: 5
+
   },
 });

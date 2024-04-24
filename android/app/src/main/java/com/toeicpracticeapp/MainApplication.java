@@ -31,7 +31,9 @@ public class MainApplication extends Application implements ReactApplication {
       // packages.add(new MyReactNativePackage());
       // packages.add(new RNAudioRecorderPlayerPackage());
       packages.add(new ForegroundServicePackage());
+      // packages.add(new InCallManagerPackage());
       packages.add(new WebRTCModulePackage());
+
       return packages;
     }
 
