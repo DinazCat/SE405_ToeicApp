@@ -7,21 +7,49 @@ import {
   ScrollView,
   Dimensions,
   FlatList,
-  SafeAreaView,
+  Platform,
   TextInput,
+  KeyboardAvoidingView,
+  Linking,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef, useContext} from 'react';
 import ChatMessage from '../ComponentTeam/ChatMessage';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import IonIcon from 'react-native-vector-icons/Ionicons';
-
 import AppStyle from '../theme';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
+import messaging from '@react-native-firebase/messaging';
+import Incomingvideocall from '../utils/incoming-video-call';
+import Toast from 'react-native-simple-toast';
+import {token, createMeeting} from '../api/apiVideoSDK';
+import Api from '../api/Api';
+import auth from '@react-native-firebase/auth';
+import VoipPushNotification from 'react-native-voip-push-notification';
 
 const ChatRoom = ({route, navigation}) => {
+  const [user, setUser] = useState();
+  const [callee, setCallee] = useState('DxL5c5T2XYZZE0ONGGPLpj0tOsK2');
+  const [isCalling, setisCalling] = useState(false);
+  const [videosdkToken, setVideosdkToken] = useState(null);
+  const [videosdkMeeting, setVideosdkMeeting] = useState(null);
+
+  const videosdkTokenRef = useRef();
+  const videosdkMeetingRef = useRef();
+  videosdkTokenRef.current = videosdkToken;
+  videosdkMeetingRef.current = videosdkMeeting;
+
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
   );
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const data = await Api.getUserData(auth().currentUser.uid);
+      setUser(data);
+    };
+
+    getCurrentUser();
+  }, []);
 
   useEffect(() => {
     const updateScreenWidth = () => {
@@ -30,6 +58,99 @@ const ChatRoom = ({route, navigation}) => {
 
     Dimensions.addEventListener('change', updateScreenWidth);
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(remoteMessage => {
+      const {callerInfo, videoSDKInfo, type} = JSON.parse(
+        remoteMessage.data.info,
+      );
+      switch (type) {
+        case 'CALL_INITIATED':
+          console.log(10);
+          const incomingCallAnswer = ({callUUID}) => {
+            Api.updateCallStatus({
+              callerInfo,
+              type: 'ACCEPTED',
+            });
+            Incomingvideocall.endIncomingcallAnswer(callUUID);
+            setisCalling(false);
+            getTokenAndMeetingId();
+            // Linking.openURL(
+            //   `videocalling://meetingscreen/${videoSDKInfo.token}/${videoSDKInfo.meetingId}`,
+            // ).catch(err => {
+            //   console.log(`Error`, err);
+            // });
+            navigation.navigate('CallRoom', {
+              name: callerInfo.name,
+              token: videoSDKInfo.token,
+              meetingId: videoSDKInfo.meetingId,
+            });
+          };
+
+          const endIncomingCall = () => {
+            Incomingvideocall.endIncomingcallAnswer();
+            Api.updateCallStatus({callerInfo, type: 'REJECTED'});
+          };
+
+          Incomingvideocall.configure(incomingCallAnswer, endIncomingCall);
+          Incomingvideocall.displayIncomingCall(callerInfo.name);
+          console.log(10.1);
+
+          break;
+        case 'ACCEPTED':
+          console.log(11);
+          setisCalling(false);
+          getTokenAndMeetingId();
+          navigation.navigate('CallRoom', {
+            name: callee,
+            token: videosdkTokenRef.current,
+            meetingId: videosdkMeetingRef.current,
+          });
+          break;
+        case 'REJECTED':
+          console.log(12);
+          Toast.show('Call Rejected');
+          setisCalling(false);
+          break;
+        case 'DISCONNECT':
+          Platform.OS == 'android' && Incomingvideocall.endIncomingcallAnswer();
+          break;
+        default:
+          Toast.show('Call Could not placed');
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  async function getTokenAndMeetingId() {
+    const videoSDKtoken = token;
+    const videoSDKMeetingId = await createMeeting({token: videoSDKtoken});
+    setVideosdkToken(videoSDKtoken);
+    setVideosdkMeeting(videoSDKMeetingId);
+  }
+
+  const onVideoCall = async () => {
+    const calleeData = await Api.getUserData(callee);
+    if (calleeData) {
+      if (calleeData.length === 0) {
+        console.log('CallerId Does not Match');
+      } else {
+        //initiateCall() is used to send a notification to the receiving user and start the call.
+        await Api.initiateCall({
+          callerInfo: user,
+          calleeInfo: calleeData,
+          videoSDKInfo: {
+            token: videosdkTokenRef.current,
+            meetingId: videosdkMeetingRef.current,
+          },
+        });
+        setisCalling(true);
+      }
+    }
+  };
 
   const chatData = [
     {
@@ -92,7 +213,7 @@ const ChatRoom = ({route, navigation}) => {
     },
   ];
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
         <TouchableOpacity
           style={{marginLeft: '2%'}}
@@ -112,7 +233,7 @@ const ChatRoom = ({route, navigation}) => {
         <TouchableOpacity>
           <IonIcon name="call" style={styles.iconButton2} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={onVideoCall}>
           <IonIcon name="videocam" style={styles.iconButton2} />
         </TouchableOpacity>
         <TouchableOpacity
@@ -155,7 +276,7 @@ const ChatRoom = ({route, navigation}) => {
         />
         <Text style={styles.sendButton}>{'Send'}</Text>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
