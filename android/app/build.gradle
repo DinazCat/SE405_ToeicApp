@@ -102,15 +102,16 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
-        packagingOptions {
+    packagingOptions {
         pickFirst 'lib/x86/libc++_shared.so'
         pickFirst 'lib/x86_64/libjsc.so'
         pickFirst 'lib/arm64-v8a/libjsc.so'
         pickFirst 'lib/arm64-v8a/libc++_shared.so'
         pickFirst 'lib/x86_64/libc++_shared.so'
         pickFirst 'lib/armeabi-v7a/libc++_shared.so'
-      }
+    }
 }
+
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
@@ -131,8 +132,10 @@ dependencies {
     implementation project(':react-native-audio-recorder-player')
     implementation project(':react-native-fs')
     implementation project(':rnwebrtc')
-   implementation project(':rnfgservice')
+    implementation project(':rnfgservice')
+    //implementation project(':rnincallmanager')
 }
+
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"

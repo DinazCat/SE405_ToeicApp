@@ -13,3 +13,4 @@ export const createMeeting = async ({ token }) => {
   const { roomId } = await res.json();
   return roomId;
 };
+

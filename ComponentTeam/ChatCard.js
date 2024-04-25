@@ -10,6 +10,8 @@ import {
 import React, {useState, useEffect} from 'react';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 const {width, height} = Dimensions.get('window');
+import auth from '@react-native-firebase/auth';
+
 const ChatCard = ({item, navigation}) => {
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
@@ -23,10 +25,15 @@ const ChatCard = ({item, navigation}) => {
     Dimensions.addEventListener('change', updateScreenWidth);
   }, []);
 
+  const getFirstName = str => {
+    const words = str.split(' ');
+    return words[0];
+  };
+
   return (
     <TouchableOpacity
       style={{marginTop: 10}}
-      onPress={() => navigation.push('ChatRoom', item)}>
+      onPress={() => navigation.push('ChatRoom', {chatRoomData: item})}>
       <View style={[styles.container, {width: screenWidth * 0.9}]}>
         <View style={{position: 'relative'}}>
           <Image style={styles.image} source={{uri: item.imageUri}} />
@@ -56,7 +63,7 @@ const ChatCard = ({item, navigation}) => {
                 fontSize: 18,
                 fontWeight: 600,
               }}>
-              {item.roomName}
+              {item.name}
             </Text>
             <Text
               style={{
@@ -64,11 +71,21 @@ const ChatCard = ({item, navigation}) => {
                 fontSize: 14,
                 marginStart: 'auto',
               }}>
-              {item.time}
+              {item.messages[item.messages.length - 1].timestamp}
             </Text>
           </View>
           <Text numberOfLines={1} style={{color: 'gray', fontSize: 16}}>
-            {item.lastText}
+            {item.messages[item.messages.length - 1].from.userId ===
+            auth().currentUser.uid
+              ? 'You: '
+              : item.messages[item.messages.length - 1].from.name === item.name
+              ? ''
+              : getFirstName(
+                  item.messages[item.messages.length - 1].from.name,
+                ) + ': '}
+            {item.messages[item.messages.length - 1].type === 'text'
+              ? item.messages[item.messages.length - 1].content
+              : '[' + item.messages[item.messages.length - 1].type + ']'}
           </Text>
         </View>
       </View>

@@ -7,21 +7,78 @@ import {
   ScrollView,
   Dimensions,
   FlatList,
-  SafeAreaView,
+  Platform,
   TextInput,
+  KeyboardAvoidingView,
+  Linking,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef, useContext} from 'react';
 import ChatMessage from '../ComponentTeam/ChatMessage';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import IonIcon from 'react-native-vector-icons/Ionicons';
-
 import AppStyle from '../theme';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
+import messaging from '@react-native-firebase/messaging';
+import Incomingvideocall from '../utils/incoming-video-call';
+import Toast from 'react-native-simple-toast';
+import {token, createMeeting} from '../api/apiVideoSDK';
+import Api from '../api/Api';
+import auth from '@react-native-firebase/auth';
+import VoipPushNotification from 'react-native-voip-push-notification';
+import socketServices from '../api/socketService';
 
 const ChatRoom = ({route, navigation}) => {
+  const {chatRoomData} = route.params;
+  const [currentUser, setCurrentUser] = useState();
+  const [messages, setMessages] = useState(chatRoomData.messages);
+  const [inputMessage, setInputMessage] = useState('');
+  const [callee, setCallee] = useState('DxL5c5T2XYZZE0ONGGPLpj0tOsK2');
+  const [isCalling, setisCalling] = useState(false);
+  const [videosdkToken, setVideosdkToken] = useState(null);
+  const [videosdkMeeting, setVideosdkMeeting] = useState(null);
+
+  const videosdkTokenRef = useRef();
+  const videosdkMeetingRef = useRef();
+  videosdkTokenRef.current = videosdkToken;
+  videosdkMeetingRef.current = videosdkMeeting;
+
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
   );
+
+  useEffect(() => {
+    socketServices.initializeSocket();
+    socketServices.on('chat message', ({message}) => {
+      setMessages(prevMessages => [...prevMessages, {message}]);
+    });
+    // return () => {
+    //   socketServices.disconnect();
+    // };
+  }, []);
+
+  const sendMessage = () => {
+    if (!socketServices || !messageInput.trim()) return;
+    socket.emit('chat message', {
+      roomId,
+      message: {
+        from: currentUser,
+        content: messageInput,
+        time: newDate().getTime(),
+        type: 'text',
+      },
+    });
+    setInputMessage('');
+  };
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const data = await Api.getUserData(auth().currentUser.uid);
+      setCurrentUser(data);
+    };
+
+    getCurrentUser();
+    console.log(chatRoomData);
+  }, []);
 
   useEffect(() => {
     const updateScreenWidth = () => {
@@ -31,68 +88,101 @@ const ChatRoom = ({route, navigation}) => {
     Dimensions.addEventListener('change', updateScreenWidth);
   }, []);
 
-  const chatData = [
-    {
-      user: {
-        name: 'Lynh',
-        avatar:
-          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      },
-      content:
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
-      time: '13:01',
-      isMine: false,
-      type: 'text',
-    },
-    {
-      user: {
-        name: 'Cát',
-        avatar:
-          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      },
-      content:
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
-      time: '13:02',
-      isMine: true,
-      type: 'text',
-    },
-    {
-      user: {
-        name: 'Lynh',
-        avatar:
-          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      },
-      content:
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
-      time: '13:03',
-      isMine: false,
-      type: 'text',
-    },
-    {
-      user: {
-        name: 'Lynh',
-        avatar:
-          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      },
-      time: '13:03',
-      image:
-        'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      isMine: false,
-      type: 'image',
-    },
-    {
-      user: {
-        name: 'Lynh',
-        avatar:
-          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      },
-      time: '13:03',
-      isMine: false,
-      type: 'file',
-    },
-  ];
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(remoteMessage => {
+      const {callerInfo, videoSDKInfo, type} = JSON.parse(
+        remoteMessage.data.info,
+      );
+      switch (type) {
+        case 'CALL_INITIATED':
+          console.log(10);
+          const incomingCallAnswer = ({callUUID}) => {
+            Api.updateCallStatus({
+              callerInfo,
+              type: 'ACCEPTED',
+            });
+            Incomingvideocall.endIncomingcallAnswer(callUUID);
+            setisCalling(false);
+            getTokenAndMeetingId();
+            // Linking.openURL(
+            //   `videocalling://meetingscreen/${videoSDKInfo.token}/${videoSDKInfo.meetingId}`,
+            // ).catch(err => {
+            //   console.log(`Error`, err);
+            // });
+            navigation.navigate('CallRoom', {
+              name: callerInfo.name,
+              token: videoSDKInfo.token,
+              meetingId: videoSDKInfo.meetingId,
+            });
+          };
+
+          const endIncomingCall = () => {
+            Incomingvideocall.endIncomingcallAnswer();
+            Api.updateCallStatus({callerInfo, type: 'REJECTED'});
+          };
+
+          Incomingvideocall.configure(incomingCallAnswer, endIncomingCall);
+          Incomingvideocall.displayIncomingCall(callerInfo.name);
+          console.log(10.1);
+
+          break;
+        case 'ACCEPTED':
+          console.log(11);
+          setisCalling(false);
+          getTokenAndMeetingId();
+          navigation.navigate('CallRoom', {
+            name: callee,
+            token: videosdkTokenRef.current,
+            meetingId: videosdkMeetingRef.current,
+          });
+          break;
+        case 'REJECTED':
+          console.log(12);
+          Toast.show('Call Rejected');
+          setisCalling(false);
+          break;
+        case 'DISCONNECT':
+          Platform.OS == 'android' && Incomingvideocall.endIncomingcallAnswer();
+          break;
+        default:
+          Toast.show('Call Could not placed');
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  async function getTokenAndMeetingId() {
+    const videoSDKtoken = token;
+    const videoSDKMeetingId = await createMeeting({token: videoSDKtoken});
+    setVideosdkToken(videoSDKtoken);
+    setVideosdkMeeting(videoSDKMeetingId);
+  }
+
+  const onVideoCall = async () => {
+    const calleeData = await Api.getUserData(callee);
+    if (calleeData) {
+      if (calleeData.length === 0) {
+        console.log('CallerId Does not Match');
+      } else {
+        //initiateCall() is used to send a notification to the receiving user and start the call.
+        await Api.initiateCall({
+          callerInfo: currentUser,
+          calleeInfo: calleeData,
+          videoSDKInfo: {
+            token: videosdkTokenRef.current,
+            meetingId: videosdkMeetingRef.current,
+          },
+        });
+        setisCalling(true);
+      }
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
         <TouchableOpacity
           style={{marginLeft: '2%'}}
@@ -102,17 +192,17 @@ const ChatRoom = ({route, navigation}) => {
         <Image
           style={styles.image}
           source={{
-            uri: route.params.imageUri,
+            uri: chatRoomData.imageUri,
           }}
         />
         <Text style={styles.header} numberOfLines={1}>
-          {route.params.roomName}
+          {chatRoomData.name}
         </Text>
         <View style={{flex: 1}}></View>
         <TouchableOpacity>
           <IonIcon name="call" style={styles.iconButton2} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={onVideoCall}>
           <IonIcon name="videocam" style={styles.iconButton2} />
         </TouchableOpacity>
         <TouchableOpacity
@@ -126,9 +216,14 @@ const ChatRoom = ({route, navigation}) => {
 
       <View style={styles.chatFlow}>
         <FlatList
-          data={chatData}
+          data={messages}
           renderItem={({item, index}) => {
-            return <ChatMessage item={item} />;
+            return (
+              <ChatMessage
+                item={item}
+                isMine={item.from.userId === auth().currentUser.uid}
+              />
+            );
           }}
         />
       </View>
@@ -155,7 +250,7 @@ const ChatRoom = ({route, navigation}) => {
         />
         <Text style={styles.sendButton}>{'Send'}</Text>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

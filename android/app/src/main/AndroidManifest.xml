@@ -2,7 +2,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-     <uses-permission
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission
         android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
     <uses-permission
@@ -10,7 +11,7 @@
         android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -20,6 +21,11 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <uses-permission android:name="android.permission.BIND_TELECOM_CONNECTION_SERVICE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
 
     <application
       android:name=".MainApplication"
@@ -40,20 +46,40 @@
             <category android:name="android.intent.category.LAUNCHER" />
             <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
         </intent-filter>
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="videocalling" />
+        </intent-filter>
       </activity>
-       <meta-data
-      android:name="live.videosdk.rnfgservice.notification_channel_name"
-      android:value="Meeting Notification"
-     />
-    <meta-data
-    android:name="live.videosdk.rnfgservice.notification_channel_description"
-    android:value="Whenever meeting started notification will appear."
-    />
-    <meta-data
-    android:name="live.videosdk.rnfgservice.notification_color"
-    android:resource="@color/red"
-    />
-    <service android:name="live.videosdk.rnfgservice.ForegroundService" android:foregroundServiceType="mediaProjection"></service>
-    <service android:name="live.videosdk.rnfgservice.ForegroundServiceTask"></service>
+      <meta-data
+        android:name="live.videosdk.rnfgservice.notification_channel_name"
+        android:value="Meeting Notification"
+      />
+      <meta-data
+        android:name="live.videosdk.rnfgservice.notification_channel_description"
+        android:value="Whenever meeting started notification will appear."
+      />
+      <meta-data
+        android:name="live.videosdk.rnfgservice.notification_color"
+        android:resource="@color/red"
+      />
+      <service android:name="live.videosdk.rnfgservice.ForegroundService" android:foregroundServiceType="mediaProjection"></service>
+      <service android:name="live.videosdk.rnfgservice.ForegroundServiceTask"></service>
+      <service
+        android:name="app.notifee.core.ForegroundService"
+        android:foregroundServiceType="mediaProjection|camera|microphone" />
+
+      <service android:name="io.wazo.callkeep.VoiceConnectionService"
+        android:label="Wazo"
+        android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
+        android:foregroundServiceType="camera|microphone"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.telecom.ConnectionService" />
+        </intent-filter>
+      </service>
+      <service android:name="io.wazo.callkeep.RNCallKeepBackgroundMessagingService" />
     </application>
 </manifest>

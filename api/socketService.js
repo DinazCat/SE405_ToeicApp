@@ -21,7 +21,6 @@ class WSService {
       this.socket.on('error', data => {
         console.log('socket error', data);
       });
-      //  this.socket.emit('UserId',auth().currentUser.uid)
     } catch (error) {
       console.log('socket is not initialize', error);
     }

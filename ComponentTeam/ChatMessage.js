@@ -1,34 +1,32 @@
 import {View, Text, StyleSheet, Image} from 'react-native';
 import React from 'react';
 
-const ChatMessage = ({item}) => {
+const ChatMessage = ({item, isMine}) => {
   return (
     <View
       style={[
         styles.messageContainer,
-        item.isMine ? styles.mineMessage : styles.othersMessage,
+        isMine ? styles.mineMessage : styles.othersMessage,
       ]}>
-      {!item.isMine && (
-        <Image source={{uri: item.user?.avatar}} style={styles.avatar} />
+      {!isMine && (
+        <Image source={{uri: item.from?.avatar}} style={styles.avatar} />
       )}
       <View style={styles.messageContent}>
-        {!item.isMine && (
-          <Text style={styles.senderName}>{item.user?.name}</Text>
-        )}
+        {!isMine && <Text style={styles.senderName}>{item.from?.name}</Text>}
         {item.type == 'text' && (
-          <View style={!item.isMine && styles.othersMessageContent}>
+          <View style={!isMine && styles.othersMessageContent}>
             <Text style={styles.messageText}>{item.content}</Text>
-            <Text style={styles.timeText}>{item.time}</Text>
+            <Text style={styles.timeText}>{item.timestamp}</Text>
           </View>
         )}
         {item.type == 'image' && (
           <View>
             <Image style={styles.image} source={{uri: item.image}} />
-            <Text style={styles.timeText}>{item.time}</Text>
+            <Text style={styles.timeText}>{item.timestamp}</Text>
           </View>
         )}
         {item.type == 'file' && (
-          <View style={!item.isMine && styles.othersMessageContent}>
+          <View style={!isMine && styles.othersMessageContent}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Image
                 source={{
@@ -38,7 +36,7 @@ const ChatMessage = ({item}) => {
               />
               <Text style={styles.fileName}>hocvnvnvv.txt</Text>
             </View>
-            <Text style={styles.timeText}>{item.time}</Text>
+            <Text style={styles.timeText}>{item.timestamp}</Text>
           </View>
         )}
       </View>
