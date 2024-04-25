@@ -9,39 +9,126 @@ import {
   FlatList,
   TextInput,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import ChatCard from '../ComponentTeam/ChatCard';
 import AppStyle from '../theme';
+import Api from '../api/Api';
+import auth from '@react-native-firebase/auth';
 
 const Chat = ({navigation}) => {
+  const [currentUser, setCurrentUser] = useState();
+  const [userChats, setUserChats] = useState([]);
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const data = await Api.getUserData(auth().currentUser.uid);
+      setCurrentUser(data);
+    };
+
+    const getUserChats = async () => {
+      const result = await Api.getUserChatRooms();
+      setUserChats(result);
+    };
+
+    getCurrentUser();
+  }, []);
   const chatData = [
     {
-      roomName: 'Nguyễn Quỳnh Hoa',
-      time: '20/03/2024',
+      name: 'Nguyễn Quỳnh Hoa',
       imageUri:
         'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      lastText:
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+      messages: [
+        {
+          from: {
+            userId: '',
+            name: 'Lynh',
+            avatar:
+              'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+          },
+          content:
+            'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+          timestamp: '13:01',
+          type: 'text',
+        },
+        {
+          from: {
+            userId: 'DxL5c5T2XYZZE0ONGGPLpj0tOsK2',
+            name: 'Cát',
+            avatar:
+              'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+          },
+          content:
+            'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+          timestamp: '13:02',
+          type: 'text',
+        },
+      ],
       status: 'on',
     },
     {
-      roomName: 'Nguyễn Anh Thư',
-      time: '20/03/2024',
+      name: 'Nguyễn Anh Thư',
       imageUri:
         'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      lastText:
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+      messages: [
+        {
+          from: {
+            userId: '',
+            name: 'Lynh',
+            avatar:
+              'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+          },
+          content:
+            'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+          timestamp: '13:01',
+          type: 'text',
+        },
+        {
+          from: {
+            userId: '',
+            name: 'Cát tường',
+            avatar:
+              'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+          },
+          content:
+            'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+          timestamp: '13:02',
+          type: 'text',
+        },
+      ],
       status: 'off',
     },
     {
-      roomName: 'Trần Mạnh Hùng',
-      time: '20/03/2024',
+      name: 'Trần Mạnh Hùng',
       imageUri:
         'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      lastText:
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+      messages: [
+        {
+          from: {
+            userId: '',
+            name: 'Lynh',
+            avatar:
+              'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+          },
+          content:
+            'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+          timestamp: '13:01',
+          type: 'text',
+        },
+        {
+          from: {
+            userId: '12',
+            name: 'Trần Mạnh Hùng',
+            avatar:
+              'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
+          },
+          content:
+            'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+          timestamp: '13:02',
+          type: 'text',
+        },
+      ],
       status: 'on',
     },
   ];
@@ -85,7 +172,12 @@ const Chat = ({navigation}) => {
           justifyContent: 'center',
           alignItems: 'center',
         }}
-        onPress={() => navigation.push('NewChat', chatData)}>
+        onPress={() =>
+          navigation.push('NewChat', {
+            userChats: chatData,
+            currentUser: currentUser,
+          })
+        }>
         <Icon name={'pen'} color="white" size={20} />
       </TouchableOpacity>
     </View>

@@ -25,9 +25,13 @@ import {token, createMeeting} from '../api/apiVideoSDK';
 import Api from '../api/Api';
 import auth from '@react-native-firebase/auth';
 import VoipPushNotification from 'react-native-voip-push-notification';
+import socketServices from '../api/socketService';
 
 const ChatRoom = ({route, navigation}) => {
-  const [user, setUser] = useState();
+  const {chatRoomData} = route.params;
+  const [currentUser, setCurrentUser] = useState();
+  const [messages, setMessages] = useState(chatRoomData.messages);
+  const [inputMessage, setInputMessage] = useState('');
   const [callee, setCallee] = useState('DxL5c5T2XYZZE0ONGGPLpj0tOsK2');
   const [isCalling, setisCalling] = useState(false);
   const [videosdkToken, setVideosdkToken] = useState(null);
@@ -43,12 +47,37 @@ const ChatRoom = ({route, navigation}) => {
   );
 
   useEffect(() => {
+    socketServices.initializeSocket();
+    socketServices.on('chat message', ({message}) => {
+      setMessages(prevMessages => [...prevMessages, {message}]);
+    });
+    // return () => {
+    //   socketServices.disconnect();
+    // };
+  }, []);
+
+  const sendMessage = () => {
+    if (!socketServices || !messageInput.trim()) return;
+    socket.emit('chat message', {
+      roomId,
+      message: {
+        from: currentUser,
+        content: messageInput,
+        time: newDate().getTime(),
+        type: 'text',
+      },
+    });
+    setInputMessage('');
+  };
+
+  useEffect(() => {
     const getCurrentUser = async () => {
       const data = await Api.getUserData(auth().currentUser.uid);
-      setUser(data);
+      setCurrentUser(data);
     };
 
     getCurrentUser();
+    console.log(chatRoomData);
   }, []);
 
   useEffect(() => {
@@ -140,7 +169,7 @@ const ChatRoom = ({route, navigation}) => {
       } else {
         //initiateCall() is used to send a notification to the receiving user and start the call.
         await Api.initiateCall({
-          callerInfo: user,
+          callerInfo: currentUser,
           calleeInfo: calleeData,
           videoSDKInfo: {
             token: videosdkTokenRef.current,
@@ -152,66 +181,6 @@ const ChatRoom = ({route, navigation}) => {
     }
   };
 
-  const chatData = [
-    {
-      user: {
-        name: 'Lynh',
-        avatar:
-          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      },
-      content:
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
-      time: '13:01',
-      isMine: false,
-      type: 'text',
-    },
-    {
-      user: {
-        name: 'Cát',
-        avatar:
-          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      },
-      content:
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
-      time: '13:02',
-      isMine: true,
-      type: 'text',
-    },
-    {
-      user: {
-        name: 'Lynh',
-        avatar:
-          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      },
-      content:
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
-      time: '13:03',
-      isMine: false,
-      type: 'text',
-    },
-    {
-      user: {
-        name: 'Lynh',
-        avatar:
-          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      },
-      time: '13:03',
-      image:
-        'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      isMine: false,
-      type: 'image',
-    },
-    {
-      user: {
-        name: 'Lynh',
-        avatar:
-          'https://tse4.mm.bing.net/th?id=OIP.0W2heCtOqQ7YgOhGPnYdEwHaFL&pid=Api&P=0&h=220',
-      },
-      time: '13:03',
-      isMine: false,
-      type: 'file',
-    },
-  ];
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -223,11 +192,11 @@ const ChatRoom = ({route, navigation}) => {
         <Image
           style={styles.image}
           source={{
-            uri: route.params.imageUri,
+            uri: chatRoomData.imageUri,
           }}
         />
         <Text style={styles.header} numberOfLines={1}>
-          {route.params.roomName}
+          {chatRoomData.name}
         </Text>
         <View style={{flex: 1}}></View>
         <TouchableOpacity>
@@ -247,9 +216,14 @@ const ChatRoom = ({route, navigation}) => {
 
       <View style={styles.chatFlow}>
         <FlatList
-          data={chatData}
+          data={messages}
           renderItem={({item, index}) => {
-            return <ChatMessage item={item} />;
+            return (
+              <ChatMessage
+                item={item}
+                isMine={item.from.userId === auth().currentUser.uid}
+              />
+            );
           }}
         />
       </View>

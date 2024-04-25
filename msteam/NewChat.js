@@ -19,6 +19,7 @@ import ChatCard from '../ComponentTeam/ChatCard';
 import Api from '../api/Api';
 
 const NewChat = ({route, navigation}) => {
+  const {userChats, currentUser} = route.params;
   const [searchInput, setSearchInput] = useState('');
   const [filterUsers, setFilterUsers] = useState([]);
   const users = useRef();
@@ -42,6 +43,48 @@ const NewChat = ({route, navigation}) => {
       console.log(searchResult);
       setFilterUsers(searchResult);
     } else setFilterUsers([]);
+  };
+
+  const onNewChatCardPress = item => {
+    const chatExisted = userChats.find(chatroom => {
+      if (chatroom.users.length === 2) {
+        const haveUser = chatroom.users.some(user => user.userId === item.id);
+        return haveUser;
+      }
+      return false;
+    });
+
+    if (chatExisted) {
+      navigation.push('ChatRoom', {
+        chatRoomData: {
+          ...chatExisted,
+          imageUri: chatExisted.imageUri ? chatExisted.imageUri : item.userImg,
+          roomName: chatExisted.name ? chatExisted.name : item.name,
+        },
+      });
+    } else {
+      navigation.push('ChatRoom', {
+        chatRoomData: {
+          isNewRoom: true,
+          imageUri: chatExisted.imageUri ? chatExisted.imageUri : item.userImg,
+          roomName: chatExisted.name ? chatExisted.name : item.name,
+        },
+      });
+      const newChatRoom = {
+        users: [
+          {
+            userId: currentUser.id,
+            name: currentUser.name,
+            avatar: currentUser.userImg,
+          },
+          {
+            userId: item.id,
+            name: item.name,
+            avatar: item.userImg,
+          },
+        ],
+      };
+    }
   };
 
   return (
@@ -70,7 +113,12 @@ const NewChat = ({route, navigation}) => {
           <FlatList
             data={filterUsers}
             renderItem={({item, index}) => (
-              <NewChatCard key={index} item={item} navigation={navigation} />
+              <NewChatCard
+                key={index}
+                item={item}
+                navigation={navigation}
+                onPress={() => onNewChatCardPress(item)}
+              />
             )}
             showsVerticalScrollIndicator={false}
           />
@@ -81,7 +129,7 @@ const NewChat = ({route, navigation}) => {
             )}
             <Text style={styles.title}>Suggest</Text>
             <FlatList
-              data={route.params}
+              data={userChats}
               renderItem={({item, index}) => (
                 <ChatCard key={index} item={item} navigation={navigation} />
               )}
@@ -93,16 +141,9 @@ const NewChat = ({route, navigation}) => {
   );
 };
 
-const NewChatCard = ({item, navigation}) => {
+const NewChatCard = ({item, onPress}) => {
   return (
-    <TouchableOpacity
-      style={{marginTop: 10}}
-      onPress={() =>
-        navigation.push('ChatRoom', {
-          imageUri: item.userImg,
-          roomName: item.name,
-        })
-      }>
+    <TouchableOpacity style={{marginTop: 10}} onPress={onPress}>
       <View style={[styles.cardContainer]}>
         <View style={{position: 'relative'}}>
           <Image
