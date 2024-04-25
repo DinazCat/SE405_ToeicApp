@@ -3,126 +3,56 @@ import {
   Text,
   View,
   TouchableOpacity,
-  ImageBackground,
-  TextInput,
   Alert,
   Image,
   ScrollView,
   Modal,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FormButton from '../components/FormButton';
 import ImagePicker from 'react-native-image-crop-picker';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import Api from '../api/Api';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
-import axios from 'axios';
 
 const GetImageTeacher = ({navigation, route}) => {
   const [openModal, setOpenModal] = useState(false);
-  const [image, setimage] = useState();
-  const [profileData, setProfileData] = useState(null);
-  const [age, setAge] = useState('');
-  const [image1, setImage1] = useState();
-  const [image2, setImage2] = useState([]);
+  const [typeImage, setTypeImage] = useState('');
+  const [toeicCert, setToeicCert] = useState();
+  const [otherCert, setOtherCert] = useState([]);
+  // const {profileData} = useState(null);
 
-  const getProfile = async () => {
-    const data = await Api.getUserData(auth().currentUser.uid);
-    setProfileData(data);
-  };
-
-  useEffect(() => {
-    getProfile();
-    if (profileData?.age) setAge(profileData.age);
-  }, []);
-
-  const uploadToeicCertificate = () => {
-    ImagePicker.openPicker({
-      width: 400,
-      height: 150,
-      crop: true,
-    }).then(image => {
-      setImage1(image.path);
-    });
-  };
-
-  const uploadOtherCertificates = () => {
-    ImagePicker.openPicker({
-      width: 400,
-      height: 150,
-      crop: true,
-      multiple: true,
-    }).then(image => {
-      image.forEach(img => {
-        image2.push(img.path);
-      });
-    });
-  };
-
-  const uploadImage = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('image', {
-        uri: image,
-        name: 'image.jpg',
-        type: 'image/jpg',
-      });
-      console.log(1);
-      const response = await axios.post(
-        'http://192.168.1.11:3000/upload',
-        formData,
-      );
-      console.log(2);
-      console.log(response.data.photo);
-      const data = {
-        name: profileData.name,
-        about: profileData.about,
-        email: profileData.email,
-        userImg: response.data.photo,
-        age: age,
-      };
-      await Api.updateUserPrivate(data);
-      Alert.alert('Success!', 'Your profile updated');
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  const pickImageAsync = async () => {
+  const openLibrary = async () => {
     setOpenModal(false);
     ImagePicker.openPicker({
-      width: 300,
-      height: 300,
+      width: 400,
+      height: 200,
       cropping: true,
     }).then(img => {
-      setimage(img.path);
+      if (typeImage === 'toeicCert') setToeicCert(img.path);
+      else if (typeImage === 'otherCert')
+        setOtherCert([...otherCert, img.path]);
     });
   };
 
   const openCamera = () => {
     setOpenModal(false);
     ImagePicker.openCamera({
-      compressImageMaxWidth: 300,
-      compressImageMaxHeight: 300,
+      width: 400,
+      height: 200,
       cropping: true,
-      compressImageQuality: 0.7,
-    }).then(img => setimage(img.path));
+    }).then(img => {
+      if (typeImage === 'toeicCert') setToeicCert(img.path);
+      else if (typeImage === 'otherCert')
+        setOtherCert([...otherCert, img.path]);
+    });
   };
 
-  const saveProfile = async () => {
-    if (image == null) {
-      const data = {
-        id: profileData.id,
-        name: profileData.name,
-        about: profileData.about,
-        email: profileData.email,
-        age: age,
-      };
-      await Api.updateUser(data);
-      Alert.alert('Success!', 'Your profile updated');
-    } else uploadImage();
+  const onNext = async () => {
+    console.log(toeicCert, otherCert);
+    navigation.push('GetBankAccount', {});
   };
 
   //Render Modal to choose upload image by take photo now or upload from library
@@ -131,9 +61,12 @@ const GetImageTeacher = ({navigation, route}) => {
       <Modal visible={openModal} animationType="slide" transparent={true}>
         <View style={styles.modal}>
           <TouchableOpacity
-            style={{padding: 5}}
+            style={styles.closeButton}
             onPress={() => setOpenModal(false)}>
-            <Icon name={'times-circle'} style={styles.closeButton} />
+            <Icon
+              name={'times-circle'}
+              style={{color: 'white', fontSize: 20}}
+            />
           </TouchableOpacity>
 
           <View style={styles.popover}>
@@ -144,7 +77,7 @@ const GetImageTeacher = ({navigation, route}) => {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={pickImageAsync}>
+            <TouchableOpacity onPress={openLibrary}>
               <View style={styles.popoverItem}>
                 <Icon name="photo-video" size={35} color={card_color} />
                 <Text style={styles.popoverText}>Libraries</Text>
@@ -179,82 +112,87 @@ const GetImageTeacher = ({navigation, route}) => {
           <View style={[styles.step]} />
         </View>
 
+        {/*Display toeic certificate image*/}
+        {toeicCert && (
+          <View style={{marginVertical: 20}}>
+            <Text style={styles.title}>Your Toeic Certificate: </Text>
+            <View style={{position: 'relative'}}>
+              <TouchableOpacity
+                style={[
+                  styles.closeButton,
+                  {position: 'absolute', zIndex: 1, right: 0, top: 10},
+                ]}
+                onPress={() => setToeicCert('')}>
+                <Icon
+                  name={'times-circle'}
+                  style={{color: 'white', fontSize: 20}}
+                />
+              </TouchableOpacity>
+              <Image source={{uri: toeicCert}} style={styles.image} />
+            </View>
+          </View>
+        )}
+
+        {/*Display other certificates image*/}
+        {otherCert.length !== 0 && (
+          <View style={{marginVertical: 20}}>
+            <Text style={styles.title}>Your Other Certificates: </Text>
+            {otherCert.map((item, index) => (
+              <View key={index} style={{position: 'relative'}}>
+                <TouchableOpacity
+                  style={[
+                    styles.closeButton,
+                    {position: 'absolute', zIndex: 1, right: 0, top: 10},
+                  ]}
+                  onPress={() =>
+                    setOtherCert(otherCert.filter(i => i !== item))
+                  }>
+                  <Icon
+                    name={'times-circle'}
+                    style={{color: 'white', fontSize: 20}}
+                  />
+                </TouchableOpacity>
+                <Image source={{uri: item}} style={styles.image} />
+              </View>
+            ))}
+          </View>
+        )}
+
         <View style={styles.buttonRow}>
           <TouchableOpacity
-            style={[styles.buttonContainer, {backgroundColor: PRIMARY_COLOR}]}
-            onPress={() => setOpenModal(true)}>
+            style={styles.buttonContainer}
+            onPress={() => {
+              setOpenModal(true);
+              setTypeImage('toeicCert');
+            }}>
             <Text style={styles.buttonText}>
               Upload Your{'\n'}
               <Text style={{fontWeight: 600}}>Toeic Certificate</Text>
             </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
-            style={[styles.buttonContainer, {backgroundColor: PRIMARY_COLOR}]}
-            onPress={() => setOpenModal(true)}>
+            style={styles.buttonContainer}
+            onPress={() => {
+              setOpenModal(true);
+              setTypeImage('otherCert');
+            }}>
             <Text style={styles.buttonText}>
               Upload Your{'\n'}
               <Text style={{fontWeight: 600}}>Other Certificates</Text>
             </Text>
           </TouchableOpacity>
         </View>
-        {image1 && <Image source={{uri: image1}} style={styles.image} />}
-        {image2.map((item, index) => (
-          <Image key={index} source={{uri: item}} style={styles.image} />
-        ))}
 
-        <View style={{alignItems: 'center'}}>
-          <TouchableOpacity
-            onPress={() => {
-              setOpenModal(true);
-            }}>
-            <View>
-              <ImageBackground
-                source={{
-                  uri: image
-                    ? image
-                    : profileData
-                    ? profileData.userImg
-                      ? profileData.userImg
-                      : 'https://cdn-icons-png.flaticon.com/512/1144/1144811.png'
-                    : 'https://cdn-icons-png.flaticon.com/512/1144/1144811.png',
-                }}
-                style={{height: 100, width: 100}}
-                imageStyle={{borderRadius: 50}}>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <MaterialCommunityIcons
-                    name="camera"
-                    size={35}
-                    color="#fff"
-                    style={styles.cameraIcon}
-                  />
-                </View>
-              </ImageBackground>
-            </View>
-          </TouchableOpacity>
+        <TouchableOpacity onPress={onNext} disabled={!toeicCert ? true : false}>
           <Text
-            style={{
-              marginVertical: 10,
-              fontSize: 20,
-              fontWeight: 'bold',
-              color: '#222',
-            }}>
-            {profileData
-              ? profileData.name
-                ? profileData.name
-                : profileData.email
-              : 'Your name'}
+            style={[
+              styles.button,
+              {color: !toeicCert ? 'lightgray' : 'green'},
+            ]}>
+            Next
           </Text>
-        </View>
-
-        <View style={{width: '40%', flexDirection: 'row'}}>
-          <View width={'70%'}></View>
-          <FormButton title={'Update'} onPress={saveProfile} />
-        </View>
+        </TouchableOpacity>
       </ScrollView>
       {RenderModal()}
     </View>
@@ -313,17 +251,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: PRIMARY_COLOR,
   },
   buttonText: {
     color: '#fff',
     fontSize: 15,
     textAlign: 'center',
-  },
-  image: {
-    width: 380,
-    height: 150,
-    alignSelf: 'center',
-    marginVertical: 10,
   },
   modal: {
     height: 160,
@@ -340,10 +273,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   closeButton: {
-    color: 'white',
-    fontSize: 20,
-    marginRight: 10,
-    marginTop: 5,
+    padding: 10,
+    paddingRight: 15,
+    paddingTop: 7,
   },
   popover: {
     borderRadius: 10,
@@ -362,32 +294,24 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: 'white',
   },
-  cameraIcon: {
-    opacity: 0.8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#fff',
-    borderRadius: 10,
+  title: {
+    fontSize: 17,
+    color: '#555',
+    marginTop: 5,
   },
-  action: {
-    flexDirection: 'row',
+  image: {
+    width: 380,
+    height: 200,
+    alignSelf: 'center',
     marginTop: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f2f2f2',
-    paddingBottom: 3,
-    alignItems: 'center',
   },
-  actionError: {
-    flexDirection: 'row',
-    marginTop: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#FF0000',
-    paddingBottom: 5,
-  },
-  textInput: {
-    color: '#333',
-    paddingLeft: 10,
-    fontSize: 15,
+  button: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 17,
+    color: 'green',
+    fontStyle: 'italic',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
   },
 });
