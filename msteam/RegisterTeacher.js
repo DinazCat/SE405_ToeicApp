@@ -3,20 +3,19 @@ import {
   Text,
   View,
   TouchableOpacity,
-  ImageBackground,
   TextInput,
   ScrollView,
   Alert,
-  Image,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
+
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import ImagePicker from 'react-native-image-crop-picker';
+
+import {PRIMARY_COLOR} from '../assets/colors/color';
 import Api from '../api/Api';
 import auth from '@react-native-firebase/auth';
 import FormInput from '../components/FormInput';
-import FormButton from '../components/FormButton';
 import moment from 'moment';
 
 const RegisterTeacher = ({navigation}) => {
@@ -30,54 +29,28 @@ const RegisterTeacher = ({navigation}) => {
     return date;
   });
   const [birthdate, setBirthdate] = useState(initBirthdate);
-  const [university, setUniversity] = useState('');
   const [phone, setPhone] = useState('');
+  const [university, setUniversity] = useState('');
   const [score, setScore] = useState('');
-  const [isVisible, setIsVisible] = useState(false);
-  const [image1, setImage1] = useState();
-  const [image2, setImage2] = useState([]);
-  const [skills, setSkills] = useState([]);
   const [otherCertificates, setOtherCertificates] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [openPicker, setOpenPicker] = useState(false);
 
   const getProfile = async () => {
     const data = await Api.getUserData(auth().currentUser.uid);
     setProfileData(data);
-    setName(data.name);
   };
 
   useEffect(() => {
     getProfile();
   }, []);
 
-  const uploadToeicCertificate = () => {
-    ImagePicker.openPicker({
-      width: 400,
-      height: 150,
-      crop: true,
-    }).then(image => {
-      setImage1(image.path);
-    });
-  };
-
-  const uploadOtherCertificates = () => {
-    ImagePicker.openPicker({
-      width: 400,
-      height: 150,
-      crop: true,
-      multiple: true,
-    }).then(image => {
-      image.forEach(img => {
-        image2.push(img.path);
-      });
-    });
-  };
-
   const showDatePicker = () => {
-    setIsVisible(true);
+    setOpenPicker(true);
   };
 
   const hideDatePicker = () => {
-    setIsVisible(false);
+    setOpenPicker(false);
   };
 
   const handleConfirm = date => {
@@ -89,10 +62,9 @@ const RegisterTeacher = ({navigation}) => {
     if (
       name === '' ||
       birthdate === '' ||
-      university === '' ||
       phone === '' ||
+      university === '' ||
       score === '' ||
-      image1 === '' ||
       skills.length === 0
     ) {
       Alert.alert(
@@ -108,177 +80,166 @@ const RegisterTeacher = ({navigation}) => {
       return;
     }
 
-    navigation.push('BankAccountTeacher', {
-      type: 'Teacher',
+    navigation.push('GetImageTeacher', {
       id: profileData.id,
       name: name,
-      birthdate: birthdate,
+      birthdate: `${birthdate.getDate()}/${
+        birthdate.getMonth() + 1
+      }/${birthdate.getFullYear()}`,
       university: university,
       phone: phone,
       score: score,
-      toeicCertificate: image1,
-      otherCertificates: image2,
+      otherCertificate: otherCertificates,
       skills: skills,
     });
   };
 
   return (
-    <ImageBackground
-      source={require('../assets/bg1.jpg')}
-      resizeMode="cover"
-      style={{flex: 1}}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Register Teacher</Text>
+    <View style={styles.container}>
+      <Text style={styles.headerTitle}>Register Teacher</Text>
 
-        <ScrollView style={{width: '100%'}}>
-          <FormInput
-            lbValue={name}
-            onChangeText={value => setName(value)}
-            placeholderText="Full name"
-            iconType="user"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+      <ScrollView style={{width: '100%'}}>
+        <View style={styles.stepContainer}>
+          <View style={[styles.step, {backgroundColor: PRIMARY_COLOR}]} />
+          <View style={[styles.step]} />
+          <View style={[styles.step]} />
+        </View>
 
-          <TouchableOpacity
-            style={styles.inputContainer}
-            onPress={showDatePicker}>
-            <View style={styles.iconStyle}>
-              <FontAwesome5 name="calendar" size={22} color="#666" light />
-            </View>
-            <Text>{moment(birthdate).format('DD/MM/YYYY')}</Text>
-          </TouchableOpacity>
-          <DateTimePickerModal
-            isVisible={isVisible}
-            mode="date"
-            date={birthdate}
-            maximumDate={initBirthdate}
-            onConfirm={handleConfirm}
-            onCancel={hideDatePicker}
-          />
+        <Text style={styles.title}>Enter Your Full Name</Text>
+        <FormInput
+          onChangeText={value => setName(value)}
+          iconType="user"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
 
-          <FormInput
-            lbValue={phone}
-            onChangeText={value => setPhone(value)}
-            placeholderText="Phone"
-            iconType="phone-alt"
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="numeric"
-          />
-
-          <FormInput
-            lbValue={university}
-            onChangeText={value => setUniversity(value)}
-            placeholderText="University"
-            iconType="school"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <FormInput
-            onChangeText={value => setScore(value)}
-            placeholderText="Toeic score"
-            iconType="certificate"
-            keyboardType="numeric"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <Text style={{color: 'red'}}>*Required Toeic score is 880+</Text>
-
-          <TouchableOpacity
-            style={styles.buttonContainer}
-            onPress={uploadToeicCertificate}>
-            <Text style={styles.buttonText}>{'Upload Toeic certificate'}</Text>
-          </TouchableOpacity>
-          {image1 && <Image source={{uri: image1}} style={styles.image} />}
-
-          <View style={styles.multilineContainer}>
-            <View style={styles.iconStyle}>
-              <FontAwesome5 name="certificate" size={22} color="#666" light />
-            </View>
-            <TextInput
-              style={styles.input}
-              multiline
-              value={otherCertificates}
-              onChangeText={value => {
-                temp = value.trim().split('\n');
-                setOtherCertificates(temp);
-              }}
-              placeholder="Other certificates"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+        <Text style={styles.title}>Enter Your Birthdate</Text>
+        <TouchableOpacity
+          style={styles.inputContainer}
+          onPress={showDatePicker}>
+          <View style={styles.iconStyle}>
+            <FontAwesome5 name="calendar" size={22} color="#666" light />
           </View>
+          <Text style={{fontSize: 16, color: '#333', padding: 2}}>
+            {moment(birthdate).format('DD/MM/YYYY')}
+          </Text>
+        </TouchableOpacity>
+        <DateTimePickerModal
+          isVisible={openPicker}
+          mode="date"
+          date={birthdate}
+          maximumDate={initBirthdate}
+          onConfirm={handleConfirm}
+          onCancel={hideDatePicker}
+        />
+        <Text style={styles.note}>
+          *You must be 18 years or older to register
+        </Text>
 
-          <TouchableOpacity
-            style={styles.buttonContainer}
-            onPress={uploadOtherCertificates}>
-            <Text style={styles.buttonText}>{'Upload other certificates'}</Text>
-          </TouchableOpacity>
+        <Text style={styles.title}>Enter Your Phone Number</Text>
+        <FormInput
+          onChangeText={value => setPhone(value)}
+          iconType="phone-alt"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="numeric"
+        />
 
-          {image2.map((item, index) => (
-            <Image key={index} source={{uri: item}} style={styles.image} />
-          ))}
+        <Text style={styles.title}>Enter Your University</Text>
+        <FormInput
+          onChangeText={value => setUniversity(value)}
+          iconType="school"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
 
-          <FormInput
-            lbValue={skills}
+        <Text style={styles.title}>Enter Your Toeic Score</Text>
+        <FormInput
+          onChangeText={value => setScore(value)}
+          iconType="certificate"
+          keyboardType="numeric"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <Text style={styles.note}>*Required Toeic score is 880+</Text>
+
+        <Text style={styles.title}>Enter Your Other Certificates</Text>
+        <View style={styles.multilineContainer}>
+          <View style={styles.iconStyle}>
+            <FontAwesome5 name="certificate" size={22} color="#666" light />
+          </View>
+          <TextInput
+            style={styles.input}
+            multiline
             onChangeText={value => {
-              temp = value.split(',');
-              setSkills(temp);
+              temp = value.trim().split('\n');
+              setOtherCertificates(temp);
             }}
-            placeholderText="Skills"
-            iconType="pen-fancy"
             autoCapitalize="none"
             autoCorrect={false}
           />
-          <Text style={{color: 'red'}}>*Each skill is separated by a ","</Text>
+        </View>
 
-          <View style={{width: '40%', alignSelf: 'center'}}>
-            <FormButton title={'Next'} onPress={onNext} />
-          </View>
-        </ScrollView>
-      </View>
-    </ImageBackground>
+        <Text style={styles.title}>Enter Your Skills</Text>
+        <FormInput
+          onChangeText={value => {
+            temp = value.split(',');
+            setSkills(temp);
+          }}
+          iconType="pen-fancy"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <Text style={styles.note}>*Each skill is separated by a ","</Text>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            paddingBottom: 30,
+          }}>
+          <TouchableOpacity onPress={() => navigation.navigate('Homeinstack')}>
+            <Text style={styles.button}>Later</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onNext}>
+            <Text style={styles.button}>Next</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
-  title: {
-    fontFamily: 'Kufam-SemiBoldItalic',
-    fontSize: 32,
-    marginBottom: 10,
-    marginTop: 30,
-    color: '#000',
+  headerTitle: {
+    fontSize: 24,
+    color: 'green',
+    marginBottom: 20,
   },
-  buttonContainer: {
-    marginTop: 5,
-    marginBottom: 10,
-    width: '100%',
-    padding: 10,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 25,
-    borderColor: '#ccc',
-    borderWidth: 1,
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#9ACC1C',
-  },
-  image: {
-    width: 380,
-    height: 150,
+  stepContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 20,
+    marginBottom: 20,
     alignSelf: 'center',
-    marginVertical: 10,
+  },
+  step: {
+    height: 10,
+    width: 10,
+    borderRadius: 50,
+    backgroundColor: 'lightgray',
+  },
+  title: {
+    fontSize: 17,
+    color: '#555',
+    marginTop: 5,
   },
   inputContainer: {
     marginTop: 5,
@@ -319,6 +280,21 @@ const styles = StyleSheet.create({
     flex: 1,
     flexBasis: 'auto',
     minHeight: 50,
+  },
+  note: {
+    marginTop: -10,
+    marginBottom: 10,
+    fontWeight: 600,
+    color: PRIMARY_COLOR,
+  },
+  button: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 17,
+    color: 'green',
+    fontStyle: 'italic',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
   },
 });
 

@@ -4,12 +4,12 @@ import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
 import { AuthContext } from '../navigation/AuthProvider';
 
-const SignupScreen = ({navigation}) => {
+const SignupScreen = ({navigation, route}) => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
+  const type = route.params.type;
   const {register, googleLogin} = useContext(AuthContext);
 
   return (
@@ -55,8 +55,8 @@ const SignupScreen = ({navigation}) => {
       <FormButton
         title="Sign up"
         onPress={() => {
-          if(password == confirmPassword){
-            register(email, password, name)
+          if (password == confirmPassword) {
+              register(email, password, name, type)
           }
           else{
             alert('Password confirmation does not match!')
@@ -67,7 +67,7 @@ const SignupScreen = ({navigation}) => {
 
       {Platform.OS === 'android' ? (
         <TouchableOpacity style={styles.googleButton}
-        onPress={() => googleLogin()}>
+        onPress={() => googleLogin(type)}>
                 <Image style={styles.iconWrapper}
                 source={require('../assets/google.png')}/>
           <View style={styles.btnTxtWrapper}>
