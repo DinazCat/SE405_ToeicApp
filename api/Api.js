@@ -469,6 +469,29 @@ const updateCallStatus = async ({callerInfo, type}) => {
   }
 };
 
+const getUserChatRooms = async userId => {
+  const endpoint = '/ChatRoom/getUserChatRoom/' + userId;
+  try {
+    const response = await client.get(endpoint);
+    if (response.data.success) {
+      return response.data.list;
+    } else {
+      console.log('not get');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+    return {};
+  }
+};
+
+const addNewChat = async data => {
+  try {
+    const response = await client.post('/ChatRoom/add', data);
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+
 export default {
   getVocabLesson,
   getVocabinLesson,
@@ -510,4 +533,6 @@ export default {
   getRecordings,
   initiateCall,
   updateCallStatus,
+  getUserChatRooms,
+  addNewChat,
 };
