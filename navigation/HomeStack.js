@@ -48,7 +48,7 @@ export default function HomeStack() {
       console.error(error),
     );
 
-    if (userData && (userData.targetScore || userData.toeicCertificate)) {
+    if (userData && (userData.targetScore || userData.toeicCertificateImage)) {
       setInitialScreen('Homeinstack');
       setLoading(false);
     } else if (userData.type === 'Teacher') {

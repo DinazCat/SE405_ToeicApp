@@ -34,12 +34,12 @@ const GetBankAccount = ({navigation, route}) => {
       return;
     }
     const teacherData = {
+      ...profileData,
       bankInformation: {
-        ...profileData,
-        bank: bank,
+        bankName: bank,
         accountNumber: accountNumber,
         accountName: accountName,
-        branch: branch,
+        branchName: branch,
       },
     };
     console.log(profileData);
