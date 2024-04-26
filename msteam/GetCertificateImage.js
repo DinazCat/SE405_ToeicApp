@@ -3,32 +3,28 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Alert,
   Image,
   ScrollView,
   Modal,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import axios from 'axios';
+import React, {useState} from 'react';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import FormButton from '../components/FormButton';
 import ImagePicker from 'react-native-image-crop-picker';
-import Icon from 'react-native-vector-icons/FontAwesome5';
-import Api from '../api/Api';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 
-const GetImageTeacher = ({navigation, route}) => {
+const GetCertificateImage = ({navigation, route}) => {
   const [openModal, setOpenModal] = useState(false);
   const [typeImage, setTypeImage] = useState('');
   const [toeicCert, setToeicCert] = useState();
   const [otherCert, setOtherCert] = useState([]);
-  // const {profileData} = useState(null);
+  const {...profileData} = route.params;
 
   const openLibrary = async () => {
     setOpenModal(false);
     ImagePicker.openPicker({
-      width: 400,
-      height: 200,
+      width: 300,
+      height: 150,
       cropping: true,
     }).then(img => {
       if (typeImage === 'toeicCert') setToeicCert(img.path);
@@ -40,8 +36,8 @@ const GetImageTeacher = ({navigation, route}) => {
   const openCamera = () => {
     setOpenModal(false);
     ImagePicker.openCamera({
-      width: 400,
-      height: 200,
+      width: 300,
+      height: 150,
       cropping: true,
     }).then(img => {
       if (typeImage === 'toeicCert') setToeicCert(img.path);
@@ -51,8 +47,11 @@ const GetImageTeacher = ({navigation, route}) => {
   };
 
   const onNext = async () => {
-    console.log(toeicCert, otherCert);
-    navigation.push('GetBankAccount', {});
+    navigation.push('GetBankAccount', {
+      ...profileData,
+      toeicCertificateImage: toeicCert,
+      otherCertificateImages: otherCert,
+    });
   };
 
   //Render Modal to choose upload image by take photo now or upload from library
@@ -63,7 +62,7 @@ const GetImageTeacher = ({navigation, route}) => {
           <TouchableOpacity
             style={styles.closeButton}
             onPress={() => setOpenModal(false)}>
-            <Icon
+            <FontAwesome5
               name={'times-circle'}
               style={{color: 'white', fontSize: 20}}
             />
@@ -72,14 +71,14 @@ const GetImageTeacher = ({navigation, route}) => {
           <View style={styles.popover}>
             <TouchableOpacity onPress={openCamera}>
               <View style={styles.popoverItem}>
-                <Icon name="camera" size={35} color={card_color} />
+                <FontAwesome5 name="camera" size={35} color={card_color} />
                 <Text style={styles.popoverText}>Take photo</Text>
               </View>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={openLibrary}>
               <View style={styles.popoverItem}>
-                <Icon name="photo-video" size={35} color={card_color} />
+                <FontAwesome5 name="photo-video" size={35} color={card_color} />
                 <Text style={styles.popoverText}>Libraries</Text>
               </View>
             </TouchableOpacity>
@@ -107,26 +106,24 @@ const GetImageTeacher = ({navigation, route}) => {
 
       <ScrollView style={{width: '100%'}}>
         <View style={styles.stepContainer}>
-          <View style={[styles.step]} onPress={() => navigation.goBack()} />
+          <TouchableOpacity
+            style={[styles.step]}
+            onPress={() => navigation.goBack()}
+          />
           <View style={[styles.step, {backgroundColor: PRIMARY_COLOR}]} />
           <View style={[styles.step]} />
         </View>
 
         {/*Display toeic certificate image*/}
         {toeicCert && (
-          <View style={{marginVertical: 20}}>
-            <Text style={styles.title}>Your Toeic Certificate: </Text>
-            <View style={{position: 'relative'}}>
+          <View
+            style={{display: 'flex', alignItems: 'center', marginBottom: 20}}>
+            <Text style={styles.title}>Your Toeic Certificate:</Text>
+            <View style={{position: 'relative', width: 300, height: 150}}>
               <TouchableOpacity
-                style={[
-                  styles.closeButton,
-                  {position: 'absolute', zIndex: 1, right: 0, top: 10},
-                ]}
+                style={styles.removeImage}
                 onPress={() => setToeicCert('')}>
-                <Icon
-                  name={'times-circle'}
-                  style={{color: 'white', fontSize: 20}}
-                />
+                <Ionicons name="close" style={{color: 'white'}} size={20} />
               </TouchableOpacity>
               <Image source={{uri: toeicCert}} style={styles.image} />
             </View>
@@ -135,22 +132,24 @@ const GetImageTeacher = ({navigation, route}) => {
 
         {/*Display other certificates image*/}
         {otherCert.length !== 0 && (
-          <View style={{marginVertical: 20}}>
-            <Text style={styles.title}>Your Other Certificates: </Text>
+          <View
+            style={{display: 'flex', alignItems: 'center', marginBottom: 10}}>
+            <Text style={[styles.title, {}]}>Your Other Certificates: </Text>
             {otherCert.map((item, index) => (
-              <View key={index} style={{position: 'relative'}}>
+              <View
+                key={index}
+                style={{
+                  position: 'relative',
+                  width: 300,
+                  height: 150,
+                  marginBottom: 10,
+                }}>
                 <TouchableOpacity
-                  style={[
-                    styles.closeButton,
-                    {position: 'absolute', zIndex: 1, right: 0, top: 10},
-                  ]}
+                  style={styles.removeImage}
                   onPress={() =>
                     setOtherCert(otherCert.filter(i => i !== item))
                   }>
-                  <Icon
-                    name={'times-circle'}
-                    style={{color: 'white', fontSize: 20}}
-                  />
+                  <Ionicons name="close" style={{color: 'white'}} size={20} />
                 </TouchableOpacity>
                 <Image source={{uri: item}} style={styles.image} />
               </View>
@@ -199,7 +198,7 @@ const GetImageTeacher = ({navigation, route}) => {
   );
 };
 
-export default GetImageTeacher;
+export default GetCertificateImage;
 
 const styles = StyleSheet.create({
   container: {
@@ -219,6 +218,7 @@ const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
     left: 0,
+    zIndex: 2,
   },
   headerTitle: {
     fontSize: 24,
@@ -230,8 +230,8 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     gap: 20,
-    marginBottom: 20,
     alignSelf: 'center',
+    marginBottom: 20,
   },
   step: {
     height: 10,
@@ -297,13 +297,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     color: '#555',
-    marginTop: 5,
+    fontStyle: 'italic',
+    width: '100%',
+    marginBottom: 5,
   },
   image: {
-    width: 380,
-    height: 200,
+    width: 300,
+    height: 150,
     alignSelf: 'center',
-    marginTop: 10,
   },
   button: {
     textAlign: 'center',
@@ -313,5 +314,12 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
+  },
+  removeImage: {
+    position: 'absolute',
+    padding: 2,
+    zIndex: 1,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.28)',
   },
 });

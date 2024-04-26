@@ -23,9 +23,7 @@ import TestQuestions from '../screens/TestQuestions';
 import CompleteTestCard from '../components/CompleteTestCard';
 import InTestCard from '../components/InTestCard';
 import SavedQuestionScreen from '../screens/SavedQuestionScreen';
-import RegisterTeacher from '../msteam/RegisterTeacher';
-import GetBankAccount from '../msteam/GetBankAccount';
-import GetImageTeacher from '../msteam/GetImageTeacher';
+import RegisterTeacherStack from './RegisterTeacherStack';
 
 const Stack = createNativeStackNavigator();
 export default function HomeStack() {
@@ -54,7 +52,7 @@ export default function HomeStack() {
       setInitialScreen('Homeinstack');
       setLoading(false);
     } else if (userData.type === 'Teacher') {
-      setInitialScreen('GetImageTeacher');
+      setInitialScreen('RegisterTeacherStack');
       setLoading(false);
     } else if (userData != 0) {
       setInitialScreen('GetUserGoal');
@@ -203,18 +201,8 @@ export default function HomeStack() {
         options={{header: () => null}}
       />
       <Stack.Screen
-        name="RegisterTeacher"
-        component={RegisterTeacher}
-        options={{header: () => null}}
-      />
-      <Stack.Screen
-        name="GetImageTeacher"
-        component={GetImageTeacher}
-        options={{header: () => null}}
-      />
-      <Stack.Screen
-        name="GetBankAccount"
-        component={GetBankAccount}
+        name="RegisterTeacherStack"
+        component={RegisterTeacherStack}
         options={{header: () => null}}
       />
     </Stack.Navigator>

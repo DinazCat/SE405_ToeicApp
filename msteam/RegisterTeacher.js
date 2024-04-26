@@ -6,17 +6,21 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  Modal,
+  Image,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
+import moment from 'moment';
 
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 
-import {PRIMARY_COLOR} from '../assets/colors/color';
+import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import Api from '../api/Api';
 import auth from '@react-native-firebase/auth';
 import FormInput from '../components/FormInput';
-import moment from 'moment';
 
 const RegisterTeacher = ({navigation}) => {
   const [profileData, setProfileData] = useState(null);
@@ -34,7 +38,11 @@ const RegisterTeacher = ({navigation}) => {
   const [score, setScore] = useState('');
   const [otherCertificates, setOtherCertificates] = useState([]);
   const [skills, setSkills] = useState([]);
+  const [typeImage, setTypeImage] = useState();
+  const [frontImage, setFrontImage] = useState('');
+  const [backImage, setBackImage] = useState('');
   const [openPicker, setOpenPicker] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   const getProfile = async () => {
     const data = await Api.getUserData(auth().currentUser.uid);
@@ -58,6 +66,30 @@ const RegisterTeacher = ({navigation}) => {
     setBirthdate(date);
   };
 
+  const openLibrary = async () => {
+    setOpenModal(false);
+    ImagePicker.openPicker({
+      width: 300,
+      height: 150,
+      cropping: true,
+    }).then(img => {
+      if (typeImage === 'front') setFrontImage(img.path);
+      else if (typeImage === 'back') setBackImage(img.path);
+    });
+  };
+
+  const openCamera = () => {
+    setOpenModal(false);
+    ImagePicker.openCamera({
+      width: 300,
+      height: 150,
+      cropping: true,
+    }).then(img => {
+      if (typeImage === 'front') setFrontImage(img.path);
+      else if (typeImage === 'back') setBackImage(img.path);
+    });
+  };
+
   const onNext = () => {
     if (
       name === '' ||
@@ -72,6 +104,9 @@ const RegisterTeacher = ({navigation}) => {
         'Please enter complete information',
       );
       return;
+    } else if (frontImage === '' || backImage === '') {
+      Alert.alert('Input cannot be blank!', 'Please upload your ID card ');
+      return;
     } else if (score < 880 || score > 990) {
       Alert.alert(
         'Invalid score',
@@ -80,7 +115,7 @@ const RegisterTeacher = ({navigation}) => {
       return;
     }
 
-    navigation.push('GetImageTeacher', {
+    navigation.push('GetCertificateImage', {
       id: profileData.id,
       name: name,
       birthdate: `${birthdate.getDate()}/${
@@ -91,8 +126,43 @@ const RegisterTeacher = ({navigation}) => {
       score: score,
       otherCertificate: otherCertificates,
       skills: skills,
+      frontIDImage: frontImage,
+      backIDImage: backImage,
     });
   };
+
+  function RenderModal() {
+    return (
+      <Modal visible={openModal} animationType="slide" transparent={true}>
+        <View style={styles.modal}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setOpenModal(false)}>
+            <FontAwesome5
+              name={'times-circle'}
+              style={{color: 'white', fontSize: 20}}
+            />
+          </TouchableOpacity>
+
+          <View style={styles.popover}>
+            <TouchableOpacity onPress={openCamera}>
+              <View style={styles.popoverItem}>
+                <FontAwesome5 name="camera" size={35} color={card_color} />
+                <Text style={styles.popoverText}>Take photo</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={openLibrary}>
+              <View style={styles.popoverItem}>
+                <FontAwesome5 name="photo-video" size={35} color={card_color} />
+                <Text style={styles.popoverText}>Libraries</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -179,25 +249,110 @@ const RegisterTeacher = ({navigation}) => {
             autoCorrect={false}
           />
         </View>
+        <Text style={styles.note}>*Each certificate is on a row</Text>
 
         <Text style={styles.title}>Enter Your Skills</Text>
-        <FormInput
-          onChangeText={value => {
-            temp = value.split(',');
-            setSkills(temp);
-          }}
-          iconType="pen-fancy"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        <Text style={styles.note}>*Each skill is separated by a ","</Text>
+        <View style={styles.multilineContainer}>
+          <View style={styles.iconStyle}>
+            <FontAwesome5 name="pen-fancy" size={22} color="#666" light />
+          </View>
+          <TextInput
+            style={styles.input}
+            multiline
+            onChangeText={value => {
+              temp = value.trim().split('\n');
+              setSkills(temp);
+            }}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </View>
+        <Text style={styles.note}>*Each skill is on a row</Text>
 
         <View
           style={{
+            display: 'flex',
+            width: '100%',
             flexDirection: 'row',
-            justifyContent: 'space-around',
-            paddingBottom: 30,
+            gap: 10,
           }}>
+          <View
+            style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
+          />
+          <Text style={[styles.title, {fontWeight: '600'}]}>
+            Upload Your ID Card
+          </Text>
+          <View
+            style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
+          />
+        </View>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={() => {
+              setOpenModal(true);
+              setTypeImage('front');
+            }}>
+            <FontAwesome5 name="camera" size={35} color={card_color} />
+            <Text style={styles.buttonText}>Front</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={() => {
+              setOpenModal(true);
+              setTypeImage('back');
+            }}>
+            <FontAwesome5 name="camera" size={35} color={card_color} />
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+        </View>
+
+        {frontImage && (
+          <View style={{marginTop: 15, display: 'flex', alignItems: 'center'}}>
+            <Text
+              style={[
+                styles.title,
+                {fontStyle: 'italic', width: '100%', marginBottom: 5},
+              ]}>
+              The front of the ID card
+            </Text>
+            <View
+              style={{
+                position: 'relative',
+                width: 300,
+                height: 150,
+              }}>
+              <TouchableOpacity
+                style={styles.removeImage}
+                onPress={() => setFrontImage('')}>
+                <Ionicons name="close" style={{color: 'white'}} size={20} />
+              </TouchableOpacity>
+              <Image source={{uri: frontImage}} style={styles.image} />
+            </View>
+          </View>
+        )}
+
+        {backImage && (
+          <View style={{marginTop: 15, display: 'flex', alignItems: 'center'}}>
+            <Text
+              style={[
+                styles.title,
+                {fontStyle: 'italic', width: '100%', marginBottom: 5},
+              ]}>
+              The back of the ID card
+            </Text>
+            <View style={{position: 'relative', width: 300, height: 150}}>
+              <TouchableOpacity
+                style={styles.removeImage}
+                onPress={() => setBackImage('')}>
+                <Ionicons name="close" style={{color: 'white'}} size={20} />
+              </TouchableOpacity>
+              <Image source={{uri: backImage}} style={styles.image} />
+            </View>
+          </View>
+        )}
+
+        <View style={{flexDirection: 'row', justifyContent: 'space-around'}}>
           <TouchableOpacity onPress={() => navigation.navigate('Homeinstack')}>
             <Text style={styles.button}>Later</Text>
           </TouchableOpacity>
@@ -206,6 +361,7 @@ const RegisterTeacher = ({navigation}) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      {RenderModal()}
     </View>
   );
 };
@@ -284,8 +440,28 @@ const styles = StyleSheet.create({
   note: {
     marginTop: -10,
     marginBottom: 10,
-    fontWeight: 600,
+    fontWeight: '600',
     color: PRIMARY_COLOR,
+  },
+  buttonRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 32,
+    marginTop: 10,
+  },
+  buttonContainer: {
+    display: 'flex',
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: PRIMARY_COLOR,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 15,
+    textAlign: 'center',
   },
   button: {
     textAlign: 'center',
@@ -295,6 +471,54 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
+  },
+  modal: {
+    height: 160,
+    width: 300,
+    borderRadius: 15,
+    backgroundColor: PRIMARY_COLOR,
+    borderColor: 'white',
+    borderWidth: 2,
+    alignSelf: 'center',
+    marginVertical: 300,
+    position: 'absolute',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+  },
+  closeButton: {
+    padding: 10,
+    paddingRight: 15,
+    paddingTop: 7,
+  },
+  popover: {
+    borderRadius: 10,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  popoverItem: {
+    alignItems: 'center',
+    margin: 16,
+  },
+  popoverText: {
+    fontSize: 16,
+    marginTop: 8,
+    color: 'white',
+  },
+  image: {
+    width: 300,
+    height: 150,
+    alignSelf: 'center',
+  },
+  removeImage: {
+    position: 'absolute',
+    padding: 2,
+    zIndex: 1,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.28)',
   },
 });
 

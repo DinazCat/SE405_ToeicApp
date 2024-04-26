@@ -2,29 +2,23 @@ import {
   StyleSheet,
   Text,
   View,
-  ImageBackground,
+  TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Api from '../api/Api';
 import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
-import Api from '../api/Api';
+import {PRIMARY_COLOR} from '../assets/colors/color';
 
 const GetBankAccount = ({navigation, route}) => {
   const [bank, setBank] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
   const [branch, setBranch] = useState('');
-
-  //   const getProfile = async () => {
-  //     const data = await Api.getUserData(auth().currentUser.uid);
-  //     setProfileData(data);
-  //     setName(data.name);
-  //   };
-
-  //   useEffect(() => {
-  //     getProfile();
-  //   }, []);
+  const {...profileData} = route.params;
 
   const onSave = async () => {
     if (
@@ -39,93 +33,133 @@ const GetBankAccount = ({navigation, route}) => {
       );
       return;
     }
-
     const teacherData = {
-      ...route.params,
       bankInformation: {
+        ...profileData,
         bank: bank,
         accountNumber: accountNumber,
         accountName: accountName,
         branch: branch,
       },
     };
-    console.log(teacherData);
-
-    await Api.updateUser(teacherData)
+    console.log(profileData);
+    await Api.updateUserPrivate(teacherData)
       .then(() => {
-        navigation.navigate('Teams');
+        navigation.navigate('Homeinstack');
       })
       .catch(error => console.error(error));
   };
 
   return (
-    <ImageBackground
-      source={require('../assets/bg1.jpg')}
-      resizeMode="cover"
-      style={{flex: 1}}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Register Teacher</Text>
-
-        <ScrollView style={{width: '100%'}}>
-          <FormInput
-            lbValue={bank}
-            onChangeText={value => setBank(value)}
-            placeholderText="Bank name"
-            iconType="hotel"
-            autoCapitalize="none"
-            autoCorrect={false}
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}>
+          <Ionicons
+            name="arrow-back"
+            size={28}
+            backgroundColor="transparent"
+            color={'green'}
           />
-
-          <FormInput
-            lbValue={accountNumber}
-            onChangeText={value => setAccountNumber(value)}
-            placeholderText="Account number"
-            iconType="money-check"
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="numeric"
-          />
-
-          <FormInput
-            lbValue={accountName}
-            onChangeText={value => setAccountName(value)}
-            placeholderText="Account name"
-            iconType="user"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <FormInput
-            lbValue={branch}
-            onChangeText={value => setBranch(value)}
-            placeholderText="Branch"
-            iconType="hotel"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <View style={{width: '40%', alignSelf: 'center'}}>
-            <FormButton title={'Register'} onPress={onSave} />
-          </View>
-        </ScrollView>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Register Teacher</Text>
       </View>
-    </ImageBackground>
+
+      <ScrollView style={{width: '100%'}}>
+        <View style={styles.stepContainer}>
+          <View style={[styles.step]} />
+          <TouchableOpacity
+            style={[styles.step]}
+            onPress={() => navigation.goBack()}
+          />
+          <View style={[styles.step, {backgroundColor: PRIMARY_COLOR}]} />
+        </View>
+
+        <Text style={styles.title}>Enter Bank Name</Text>
+        <FormInput
+          onChangeText={value => setBank(value)}
+          iconType="hotel"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <Text style={styles.title}>Enter Account Number</Text>
+        <FormInput
+          onChangeText={value => setAccountNumber(value)}
+          iconType="money-check"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="numeric"
+        />
+
+        <Text style={styles.title}>Enter Account Name</Text>
+        <FormInput
+          onChangeText={value => setAccountName(value)}
+          iconType="user"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <Text style={styles.title}>Enter Bank Branch</Text>
+        <FormInput
+          onChangeText={value => setBranch(value)}
+          iconType="hotel"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <View style={{width: '40%', alignSelf: 'center'}}>
+          <FormButton title={'Complete'} onPress={onSave} />
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
+  headerContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    width: '100%',
+    position: 'relative',
+    marginBottom: 20,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 0,
+    zIndex: 2,
+  },
+  headerTitle: {
+    fontSize: 24,
+    color: 'green',
+    width: '100%',
+    textAlign: 'center',
+  },
+  stepContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 20,
+    marginBottom: 20,
+    alignSelf: 'center',
+  },
+  step: {
+    height: 10,
+    width: 10,
+    borderRadius: 50,
+    backgroundColor: 'lightgray',
+  },
   title: {
-    fontFamily: 'Kufam-SemiBoldItalic',
-    fontSize: 32,
-    marginBottom: 10,
-    marginTop: 30,
-    color: '#000',
+    fontSize: 17,
+    color: '#555',
+    marginTop: 5,
   },
 });
 
