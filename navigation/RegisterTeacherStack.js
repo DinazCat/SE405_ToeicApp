@@ -1,7 +1,9 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import RegisterTeacher from '../msteam/RegisterTeacher';
-import BankAccountTeacher from '../msteam/BankAccountTeacher';
+import GetBankAccount from '../msteam/GetBankAccount';
+import GetCertificateImage from '../msteam/GetCertificateImage';
+
 const Stack = createNativeStackNavigator();
 export default function RegisterTeacherStack() {
   return (
@@ -12,8 +14,13 @@ export default function RegisterTeacherStack() {
         options={{header: () => null}}
       />
       <Stack.Screen
-        name="BankAccountTeacher"
-        component={BankAccountTeacher}
+        name="GetCertificateImage"
+        component={GetCertificateImage}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="GetBankAccount"
+        component={GetBankAccount}
         options={{header: () => null}}
       />
     </Stack.Navigator>
