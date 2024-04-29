@@ -109,7 +109,7 @@ const Teams = ({navigation}) => {
         }}
         // onPress={() => navigation.push('New', chatData)}
       >
-        <Feather name={'plus'} color="white" size={28} />
+        <Icon name={'plus'} color="white" size={20} />
       </TouchableOpacity>
     </View>
   );

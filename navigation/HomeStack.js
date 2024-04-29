@@ -59,7 +59,7 @@ export default function HomeStack() {
       setLoading(false);
     }
   };
-  //GetBankAccount RegisterTeacher GetImageTeacher
+
   useEffect(() => {
     isUserGoalDataNull();
   }, []);

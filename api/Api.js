@@ -492,6 +492,15 @@ const addNewChat = async data => {
   }
 };
 
+const addClass = async data => {
+  try {
+    const response = await client.post('/Class/add', data);
+    return response.data;
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+
 export default {
   getVocabLesson,
   getVocabinLesson,
@@ -535,4 +544,5 @@ export default {
   updateCallStatus,
   getUserChatRooms,
   addNewChat,
+  addClass,
 };

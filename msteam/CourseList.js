@@ -1,12 +1,7 @@
 import {View, Text, StyleSheet, TouchableOpacity, FlatList} from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import DropDownPicker from 'react-native-dropdown-picker';
-import FormButton from '../components/FormButton';
 import AppStyle from '../theme';
-import TeacherPublicCard from '../ComponentTeam/TeacherPublicCard';
 import CourseCard from '../ComponentTeam/CourseCard';
 
 const classData = [
