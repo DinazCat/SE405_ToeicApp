@@ -5,16 +5,22 @@ import AppStyle from '../theme';
 import CourseCard from '../ComponentTeam/CourseCard';
 import Api from '../api/Api';
 
-const CourseList = ({navigation}) => {
+const CourseList = ({navigation, route}) => {
   const [classes, setClasses] = useState([]);
+  const teacherId = route.params?.teacherId;
+
+  const getAllClasses = async () => {
+    const data = await Api.getAllClasses();
+    setClasses(data);
+  };
+  const getClassesByUserTeacher = async () => {
+    const data = await Api.getClassesByUser(teacherId);
+    setClasses(data);
+  };
 
   useEffect(() => {
-    const getAllClasses = async () => {
-      const data = await Api.getAllClasses();
-      setClasses(data);
-    };
-
-    getAllClasses();
+    if (teacherId) getClassesByUserTeacher();
+    else getAllClasses();
   }, []);
 
   return (
@@ -29,13 +35,23 @@ const CourseList = ({navigation}) => {
       </View>
 
       <View style={{flex: 1, paddingTop: 20}}>
-        <FlatList
-          style={{flex: 1}}
-          data={classes}
-          renderItem={({item, index}) => (
-            <CourseCard key={index} item={item} navigation={navigation} />
-          )}
-        />
+        {classes?.length !== 0 ? (
+          <FlatList
+            style={{flex: 1}}
+            data={classes}
+            renderItem={({item, index}) => (
+              <CourseCard key={index} item={item} navigation={navigation} />
+            )}
+          />
+        ) : (
+          <View style={{marginHorizontal: 10}}>
+            {teacherId && (
+              <Text style={{fontSize: 15}}>
+                Teacher doesn't have any courses yet.
+              </Text>
+            )}
+          </View>
+        )}
       </View>
     </View>
   );

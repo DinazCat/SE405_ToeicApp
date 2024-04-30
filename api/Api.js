@@ -536,6 +536,19 @@ const registerCourse = async data => {
   }
 };
 
+const getAllTeachers = async () => {
+  try {
+    const response = await client.get('/Teachers');
+    if (response.data.success) {
+      return response.data.teachers;
+    } else {
+      console.log('not get classes');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+
 export default {
   getVocabLesson,
   getVocabinLesson,
@@ -583,4 +596,5 @@ export default {
   getAllClasses,
   getClassesByUser,
   registerCourse,
+  getAllTeachers,
 };
