@@ -514,6 +514,20 @@ const getAllClasses = async () => {
   }
 };
 
+const getClassesByUserTeacher = async userId => {
+  try {
+    const response = await client.get('/Classes/' + userId);
+    if (response.data.success) {
+      return response.data.classes;
+    } else {
+      console.log('not get classes');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+    return [];
+  }
+};
+
 export default {
   getVocabLesson,
   getVocabinLesson,
@@ -559,4 +573,5 @@ export default {
   addNewChat,
   addClass,
   getAllClasses,
+  getClassesByUserTeacher,
 };

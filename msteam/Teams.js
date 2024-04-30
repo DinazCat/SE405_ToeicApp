@@ -8,7 +8,7 @@ import {
   Dimensions,
   FlatList,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -21,10 +21,12 @@ const {width, height} = Dimensions.get('window');
 import Modal from 'react-native-modal';
 import Api from '../api/Api';
 import {useFocusEffect} from '@react-navigation/native';
+import {AuthContext} from '../navigation/AuthProvider';
 
 const Teams = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [classes, setClasses] = useState([]);
+  const {user} = useContext(AuthContext);
 
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
@@ -33,8 +35,8 @@ const Teams = ({navigation}) => {
     Dimensions.get('window').height,
   );
 
-  const getAllClasses = async () => {
-    const data = await Api.getAllClasses();
+  const getClassesByUserTeacher = async () => {
+    const data = await Api.getClassesByUserTeacher(user.uid);
     setClasses(data);
   };
 
@@ -49,7 +51,7 @@ const Teams = ({navigation}) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      getAllClasses();
+      getClassesByUserTeacher();
     }, []),
   );
 
