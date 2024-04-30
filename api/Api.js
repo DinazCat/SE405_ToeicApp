@@ -514,7 +514,7 @@ const getAllClasses = async () => {
   }
 };
 
-const getClassesByUserTeacher = async userId => {
+const getClassesByUser = async userId => {
   try {
     const response = await client.get('/Classes/' + userId);
     if (response.data.success) {
@@ -525,6 +525,14 @@ const getClassesByUserTeacher = async userId => {
   } catch (error) {
     console.log('error: ', error.message);
     return [];
+  }
+};
+
+const registerCourse = async data => {
+  try {
+    await client.post('/Class/register', data);
+  } catch (error) {
+    console.log('error: ', error.message);
   }
 };
 
@@ -573,5 +581,6 @@ export default {
   addNewChat,
   addClass,
   getAllClasses,
-  getClassesByUserTeacher,
+  getClassesByUser,
+  registerCourse,
 };

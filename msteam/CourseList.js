@@ -15,8 +15,8 @@ const CourseList = ({navigation}) => {
     };
 
     getAllClasses();
-    console.log(classes);
   }, []);
+
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>

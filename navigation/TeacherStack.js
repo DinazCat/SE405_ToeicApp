@@ -5,6 +5,8 @@ import TeacherScreen from '../msteam/TeacherScreen';
 import MyTeacher from '../msteam/MyTeacher';
 import TeacherList from '../msteam/TeacherList';
 import CourseList from '../msteam/CourseList';
+import DetailCourse from '../msteam/DetailCourse';
+import RegisterCourse from '../msteam/RegisterCourse';
 
 const Stack = createNativeStackNavigator();
 export default function TeacherStack({navigation, route}) {
@@ -37,6 +39,16 @@ export default function TeacherStack({navigation, route}) {
       <Stack.Screen
         name="CourseList"
         component={CourseList}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="DetailCourse"
+        component={DetailCourse}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="RegisterCourse"
+        component={RegisterCourse}
         options={{header: () => null}}
       />
     </Stack.Navigator>

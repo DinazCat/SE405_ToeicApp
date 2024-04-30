@@ -1,8 +1,14 @@
-import {View, Text, StyleSheet, Dimensions} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
 import React, {useState, useEffect} from 'react';
-import {card_color} from '../assets/colors/color';
+import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 
-const CourseCard = ({item}) => {
+const CourseCard = ({navigation, item}) => {
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
   );
@@ -43,6 +49,19 @@ const CourseCard = ({item}) => {
         {' - '}
         <Text style={styles.bold}>{item.Finish_Date}</Text>
       </Text>
+
+      <View style={styles.buttonWrapper}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.push('DetailCourse', {course: item})}>
+          <Text style={styles.buttonText}>View detail</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.push('RegisterCourse', {course: item})}>
+          <Text style={styles.buttonText}>Register course</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -87,6 +106,26 @@ const styles = StyleSheet.create({
   },
   color: {
     color: '#9ACC1C',
+  },
+  buttonWrapper: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 20,
+    marginTop: 5,
+  },
+  button: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: PRIMARY_COLOR,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  buttonText: {
+    fontSize: 16,
+    color: card_color,
+    fontWeight: '600',
   },
 });
 

@@ -24,7 +24,6 @@ import {useFocusEffect} from '@react-navigation/native';
 import {AuthContext} from '../navigation/AuthProvider';
 
 const Teams = ({navigation}) => {
-  const [modalVisible, setModalVisible] = useState(false);
   const [classes, setClasses] = useState([]);
   const {user} = useContext(AuthContext);
 
@@ -36,7 +35,7 @@ const Teams = ({navigation}) => {
   );
 
   const getClassesByUserTeacher = async () => {
-    const data = await Api.getClassesByUserTeacher(user.uid);
+    const data = await Api.getClassesByUser(user.uid);
     setClasses(data);
   };
 
@@ -75,43 +74,12 @@ const Teams = ({navigation}) => {
           <ClassCard key={index} item={item} navigation={navigation} />
         )}
       />
-      <Modal
-        animationType="slide"
-        visible={modalVisible}
-        onBackdropPress={() => setModalVisible(!modalVisible)}
-        onRequestClose={() => setModalVisible(!modalVisible)}>
-        <View style={[styles.modalContainer, {width: screenWidth}]}>
-          <TouchableOpacity
-            onPress={() => {
-              setModalVisible(!modalVisible);
-              navigation.push('NewTeam');
-            }}>
-            <Text style={styles.textStyle}>Create a new class</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setModalVisible(!modalVisible);
-              navigation.push('JoinTeam');
-            }}>
-            <Text style={styles.textStyle}>Join class </Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
       <TouchableOpacity
-        onPress={() => setModalVisible(true)}
-        style={{
-          position: 'absolute',
-          marginLeft: screenWidth - 80,
-          marginTop: screenHeight - 120,
-          borderRadius: 25,
-          width: 50,
-          height: 50,
-          backgroundColor: PRIMARY_COLOR,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        // onPress={() => navigation.push('New', chatData)}
-      >
+        style={[
+          styles.addButton,
+          {marginLeft: screenWidth - 80, marginTop: screenHeight - 120},
+        ]}
+        onPress={() => navigation.push('NewTeam')}>
         <Icon name={'plus'} color="white" size={20} />
       </TouchableOpacity>
     </View>
@@ -142,6 +110,16 @@ const styles = StyleSheet.create({
   textStyle: {
     color: 'black',
     fontSize: 18,
+  },
+  addButton: {
+    position: 'absolute',
+
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+    backgroundColor: PRIMARY_COLOR,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 export default Teams;
