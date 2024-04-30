@@ -494,10 +494,23 @@ const addNewChat = async data => {
 
 const addClass = async data => {
   try {
-    const response = await client.post('/Class/add', data);
-    return response.data;
+    await client.post('/Class/add', data);
   } catch (error) {
     console.log('error: ', error.message);
+  }
+};
+
+const getAllClasses = async () => {
+  try {
+    const response = await client.get('/Classes');
+    if (response.data.success) {
+      return response.data.classes;
+    } else {
+      console.log('not get classes');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+    return [];
   }
 };
 
@@ -545,4 +558,5 @@ export default {
   getUserChatRooms,
   addNewChat,
   addClass,
+  getAllClasses,
 };

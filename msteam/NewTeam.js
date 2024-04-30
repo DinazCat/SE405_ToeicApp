@@ -22,7 +22,7 @@ import {AuthContext} from '../navigation/AuthProvider';
 
 const tuitionList = [
   {
-    label: 'Tuition: 2.000.000 đ',
+    label: `Tuition: 2.000.000 đ`,
     value: 2000000,
   },
   {
@@ -65,6 +65,24 @@ const NewTeam = ({navigation, route}) => {
       Alert.alert(
         'Input cannot be blank!',
         'Please enter complete information',
+      );
+      return;
+    } else if (maximumStudents <= 0 || maximumStudents > 100) {
+      Alert.alert(
+        'Invalid maximum student value!',
+        'The maximum number of students must be greater than 0 and not exceed 100',
+      );
+      return;
+    } else if (level <= 0) {
+      Alert.alert(
+        'Level cannot be equal to 0!',
+        'Please re-enter current score',
+      );
+      return;
+    } else if (level > 990) {
+      Alert.alert(
+        'Level cannot be more than 990!',
+        'Please re-enter current score',
       );
       return;
     } else if (endDate < expectedEndDate) {

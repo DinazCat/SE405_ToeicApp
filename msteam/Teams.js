@@ -19,23 +19,12 @@ import ClassCard from '../ComponentTeam/ClassCard';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 const {width, height} = Dimensions.get('window');
 import Modal from 'react-native-modal';
+import Api from '../api/Api';
+import {useFocusEffect} from '@react-navigation/native';
 
 const Teams = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const classData = [
-    {
-      className: 'Lớp luyện SW Toeic 150+',
-      teacherName: 'Nguyễn Quỳnh Hoa',
-    },
-    {
-      className: 'Lớp luyện LR Toeic 800+',
-      teacherName: 'Nguyễn Anh Thư',
-    },
-    {
-      className: 'Lớp luyện giao tiếp',
-      teacherName: 'Trần Mạnh Hùng',
-    },
-  ];
+  const [classes, setClasses] = useState([]);
 
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
@@ -43,6 +32,12 @@ const Teams = ({navigation}) => {
   const [screenHeight, setScreenHeight] = useState(
     Dimensions.get('window').height,
   );
+
+  const getAllClasses = async () => {
+    const data = await Api.getAllClasses();
+    setClasses(data);
+  };
+
   useEffect(() => {
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
@@ -51,6 +46,12 @@ const Teams = ({navigation}) => {
 
     Dimensions.addEventListener('change', updateScreenWidth);
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      getAllClasses();
+    }, []),
+  );
 
   return (
     <View style={styles.container}>
@@ -67,7 +68,7 @@ const Teams = ({navigation}) => {
       </View>
       <Text style={AppStyle.textstyle.parttext}>Your class</Text>
       <FlatList
-        data={classData}
+        data={classes}
         renderItem={({item, index}) => (
           <ClassCard key={index} item={item} navigation={navigation} />
         )}
