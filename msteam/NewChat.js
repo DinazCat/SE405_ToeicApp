@@ -40,14 +40,13 @@ const NewChat = ({route, navigation}) => {
           user.name.toLowerCase().includes(txt.toLowerCase()) ||
           user.email.toLowerCase().includes(txt.toLowerCase()),
       );
-      console.log(searchResult);
       setFilterUsers(searchResult);
     } else setFilterUsers([]);
   };
 
   const onNewChatCardPress = item => {
     const chatExisted = userChats.find(chatroom => {
-      if (chatroom.users.length === 2) {
+      if (chatroom.users?.length === 2) {
         const haveUser = chatroom.users.some(user => user.userId === item.id);
         return haveUser;
       }
@@ -59,31 +58,17 @@ const NewChat = ({route, navigation}) => {
         chatRoomData: {
           ...chatExisted,
           imageUri: chatExisted.imageUri ? chatExisted.imageUri : item.userImg,
-          roomName: chatExisted.name ? chatExisted.name : item.name,
+          name: chatExisted.name ? chatExisted.name : item.name,
         },
       });
     } else {
       navigation.push('ChatRoom', {
         chatRoomData: {
-          isNewRoom: true,
-          imageUri: chatExisted.imageUri ? chatExisted.imageUri : item.userImg,
-          roomName: chatExisted.name ? chatExisted.name : item.name,
+          isNewChat: true,
+          imageUri: item.userImg,
+          name: item.name,
         },
       });
-      const newChatRoom = {
-        users: [
-          {
-            userId: currentUser.id,
-            name: currentUser.name,
-            avatar: currentUser.userImg,
-          },
-          {
-            userId: item.id,
-            name: item.name,
-            avatar: item.userImg,
-          },
-        ],
-      };
     }
   };
 

@@ -31,6 +31,7 @@ const ChatRoom = ({route, navigation}) => {
   const {chatRoomData} = route.params;
   const [currentUser, setCurrentUser] = useState();
   const [messages, setMessages] = useState(chatRoomData.messages);
+  const [haveMesssage, setHaveMessage] = useState(!chatRoomData.isNewChat);
   const [inputMessage, setInputMessage] = useState('');
   const [callee, setCallee] = useState('DxL5c5T2XYZZE0ONGGPLpj0tOsK2');
   const [isCalling, setisCalling] = useState(false);
@@ -56,18 +57,60 @@ const ChatRoom = ({route, navigation}) => {
     // };
   }, []);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!socketServices || !messageInput.trim()) return;
-    socket.emit('chat message', {
-      roomId,
-      message: {
-        from: currentUser,
-        content: messageInput,
-        time: newDate().getTime(),
-        type: 'text',
-      },
-    });
-    setInputMessage('');
+    if (haveMesssage) {
+      socket.emit('chat message', {
+        roomId,
+        message: {
+          from: currentUser,
+          content: messageInput,
+          time: newDate().getTime(),
+          type: 'text',
+        },
+      });
+      setInputMessage('');
+    } else {
+      const newChatRoom = {
+        users: [
+          {
+            userId: currentUser.id,
+            name: currentUser.name,
+            avatar: currentUser.userImg,
+          },
+          {
+            userId: item.id,
+            name: item.name,
+            avatar: item.userImg,
+          },
+        ],
+        messages: [
+          {
+            from: {
+              userId: currentUser.useId,
+              name: currentUser.name,
+              avatar: currentUser.userImg,
+            },
+            content: messageInput,
+            timestamp: newDate().getTime(),
+            type: 'text',
+          },
+        ],
+      };
+      const result = await Api.addNewChat(chatRoomData);
+      if (result) {
+        socket.emit('chat message', {
+          roomId,
+          message: {
+            from: currentUser,
+            content: messageInput,
+            time: newDate().getTime(),
+            type: 'text',
+          },
+        });
+        setInputMessage('');
+      }
+    }
   };
 
   useEffect(() => {
@@ -77,7 +120,6 @@ const ChatRoom = ({route, navigation}) => {
     };
 
     getCurrentUser();
-    console.log(chatRoomData);
   }, []);
 
   useEffect(() => {
@@ -213,20 +255,37 @@ const ChatRoom = ({route, navigation}) => {
           />
         </TouchableOpacity>
       </View>
-
-      <View style={styles.chatFlow}>
-        <FlatList
-          data={messages}
-          renderItem={({item, index}) => {
-            return (
-              <ChatMessage
-                item={item}
-                isMine={item.from.userId === auth().currentUser.uid}
-              />
-            );
-          }}
-        />
-      </View>
+      {haveMesssage ? (
+        <View
+          style={{
+            backgroundColor: '#f0f0f0',
+            borderRadius: 5,
+            marginTop: '5%',
+            marginHorizontal: 10,
+            padding: 5,
+            borderColor: '#AAA',
+            borderWidth: 1,
+          }}>
+          <Text style={{color: '#555'}}>
+            You don't have messages with this person yet. Send your first
+            message...{' '}
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.chatFlow}>
+          <FlatList
+            data={messages}
+            renderItem={({item, index}) => {
+              return (
+                <ChatMessage
+                  item={item}
+                  isMine={item.from.userId === auth().currentUser.uid}
+                />
+              );
+            }}
+          />
+        </View>
+      )}
       <View style={[styles.bottomViewContainer, {backgroundColor: '#fff'}]}>
         <TouchableOpacity>
           <IonIcon name="image-outline" style={styles.iconButton} />
@@ -238,17 +297,22 @@ const ChatRoom = ({route, navigation}) => {
           <IonIcon name="document-attach-outline" style={styles.iconButton} />
         </TouchableOpacity>
         <TextInput
-          //   ref={textInputRef}
-          //   value={comment}
-          //   onChangeText={txt => {
-          //     setComment(txt);
-          //   }}
-          placeholder={'Text here...'}
+          value={inputMessage}
+          onChangeText={txt => {
+            setInputMessage(txt);
+          }}
+          placeholder={'Type here...'}
           placeholderTextColor={'#666'}
           multiline={true}
           style={[styles.chatInput, {color: '#666'}]}
         />
-        <Text style={styles.sendButton}>{'Send'}</Text>
+        <Text
+          style={[
+            styles.sendButton,
+            {color: !inputMessage.trim() ? '#555' : PRIMARY_COLOR},
+          ]}>
+          {'Send'}
+        </Text>
       </View>
     </KeyboardAvoidingView>
   );
@@ -294,7 +358,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
     fontSize: 17,
     fontWeight: '600',
-    color: '#555',
     marginLeft: 5,
   },
   chatInput: {

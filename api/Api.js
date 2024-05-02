@@ -487,8 +487,10 @@ const getUserChatRooms = async userId => {
 const addNewChat = async data => {
   try {
     const response = await client.post('/ChatRoom/add', data);
+    return response.id;
   } catch (error) {
     console.log('error: ', error.message);
+    return null;
   }
 };
 
