@@ -16,6 +16,13 @@ import {PRIMARY_COLOR, card_color} from '../assets/colors/color'
 const {width, height} = Dimensions.get('window');
 const RecordingCard = ({record, show}) => {
   const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+  const convertTime = (seconds)=>{
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    const format = (val) => `0${val}`.slice(-2);
+    return `${format(hours)}:${format(minutes)}:${format(remainingSeconds)}`;
+  }
 
 useEffect(() => {
   const updateScreenWidth = () => {
@@ -78,8 +85,8 @@ const PopupMenu = () =>{
           <TouchableOpacity onPress={show}>
             <Text style={[styles.UsernameText]}>{record?.Name}</Text>
           </TouchableOpacity>
-          {/* <Text style={styles.PostTime}>{record?.Time}</Text>
-          <Text style={styles.PostTime}>By {record?.User}</Text> */}
+          <Text style={styles.PostTime}>{convertTime(record?.Duration)}</Text>
+          <Text style={styles.PostTime}>By {record?.userName}</Text>
         </View>
         <View style={{flex:1}}/>
         <PopupMenu/>
@@ -118,7 +125,6 @@ const styles = StyleSheet.create({
   },
   PostTime:{
       fontSize: 13,
-      color:"white",
       color: '#888',
   },
   MenuButton:{
