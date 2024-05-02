@@ -7,6 +7,7 @@ import {
   ScrollView,
   Dimensions,
   FlatList,
+  Modal,
   SafeAreaView,
   TextInput,
 } from 'react-native';
@@ -21,14 +22,10 @@ import PostinTeam from '../ComponentTeam/PostinTeam';
 import RecordingCard from '../ComponentTeam/RecordingCard';
 import FileCard from '../ComponentTeam/FileCard';
 import FolderCard from '../ComponentTeam/FolderCard';
-import {
-  createMeeting,
-  token,
-  startRecord,
-  stopRecord,
-} from '../api/apiVideoSDK';
+import {createMeeting, token, startRecord, stopRecord} from '../api/apiVideoSDK';
 import auth from '@react-native-firebase/auth';
 import MeetingRoom from './MeetingRoom';
+import DateItem from '../ComponentTeam/DateItem';
 import {
   MeetingProvider,
   useMeeting,
@@ -52,7 +49,83 @@ const TeamRoom = ({navigation}) => {
     '#ff00ff',
     '#00ffff',
   ];
+  const [classInfo, setClassInfo] = useState(null)
+  const [rangeDate, setRangeDate] = useState(null)
+ 
+  const getInFoClass = async()=>{
+    const classtemp = await firestore()
+    .collection('Class')
+    .doc('0VA2PZf3PVGlbWlF9EiV')
+    .get();
+    setClassInfo(classtemp.data())
+    const content = await Api.getRangeDate('0VA2PZf3PVGlbWlF9EiV')
+    setRangeDate(content)
+    // RealTimePost(content)
+  }
 
+
+  useEffect(() => {
+    getInFoClass();
+  }, []);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+  const Side = () => {
+  
+    return (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isModalVisible}
+          onRequestClose={toggleModal}>
+            <View 
+             style={{
+              height: 300,
+              width: '100%',
+              borderRadius: 15,
+              backgroundColor: PRIMARY_COLOR,
+              position: 'absolute',
+              marginTop: 480,
+              borderColor: 'black',
+              //borderWidth: 1,
+            }}
+            >
+              <TouchableOpacity
+            style={{marginLeft: 350, padding: 5}}
+            onPress={() => toggleModal()}>
+            <Icon
+              name={'times-circle'}
+              style={{color: 'black', fontSize: 20, marginRight: 10}}
+            />
+          </TouchableOpacity>
+          <View style={{flexDirection:'row', justifyContent:'space-evenly', width:390, alignSelf:'center'}}>
+          <View style={styles.buttonzone}>
+              <TouchableOpacity
+                style={styles.buttonmain}
+                onPress={() => {}}>
+                <Image
+                  source={require('../assets/contract.png')}
+                  resizeMode="contain"></Image>
+              </TouchableOpacity>
+              <Text style={[AppStyle.textstyle.normaltext,{width:'auto'}]}>Assignments</Text>
+            </View>
+          <View style={styles.buttonzone}>
+              <TouchableOpacity
+                style={styles.buttonmain}
+                onPress={() => {}}>
+                <Image
+                  source={require('../assets/timetable.png')}
+                  resizeMode="contain"></Image>
+              </TouchableOpacity>
+              <Text style={[AppStyle.textstyle.normaltext,{width:'auto'}]}>Schedule</Text>
+            </View>
+            </View>
+          
+              </View>
+        </Modal>
+    )
+  }
   const getRandomColor = () => {
     const randomIndex = Math.floor(Math.random() * COLORS.length);
     return COLORS[randomIndex];
@@ -89,6 +162,7 @@ const TeamRoom = ({navigation}) => {
     Dimensions.get('window').height,
   );
   const [isJoin, setIsJoin] = useState(false);
+  const [realJoin, setRealJoin] = useState(false);
   useEffect(() => {
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
@@ -124,12 +198,12 @@ const TeamRoom = ({navigation}) => {
   //   },
   // ];
   const [records, setRecords] = useState(null);
-  const getRecords = async () => {
-    const data = await Api.getRecordings('0VA2PZf3PVGlbWlF9EiV');
+  const getRecords = async ()=>{
+    const data = await Api.getRecordings("0VA2PZf3PVGlbWlF9EiV");
     setRecords(data);
-  };
+  }
   useEffect(() => {
-    getRecords();
+    getRecords()
   }, []);
   const fileandfolder = [
     {
@@ -191,9 +265,7 @@ const TeamRoom = ({navigation}) => {
   };
 
   function AttendeeCard({person, color}) {
-    const {webcamStream, webcamOn, micOn, micStream} = useParticipant(
-      person.id,
-    );
+    const {webcamStream, webcamOn, micOn, micStream} = useParticipant(person.id);
     return webcamOn && webcamStream ? (
       <RTCView
         streamURL={new MediaStream([webcamStream.track]).toURL()}
@@ -236,7 +308,7 @@ const TeamRoom = ({navigation}) => {
           ]}>
           <Text style={{textAlign: 'center'}}>NL</Text>
         </View> */}
-        <Image
+             <Image
           style={styles.UserImage}
           source={{
             uri: person
@@ -253,53 +325,49 @@ const TeamRoom = ({navigation}) => {
       </View>
     );
   }
-
   function MeetingRoomtemp() {
-    const {
-      leave,
-      toggleWebcam,
-      toggleMic,
-      toggleScreenShare,
-      presenterId,
-      participants,
-      end,
-      startRecording,
-      stopRecording,
-    } = useMeeting({
+    const {leave, toggleWebcam, toggleMic,toggleScreenShare,presenterId, participants,end,startRecording, stopRecording } = useMeeting({
       onParticipantLeft,
       onPresenterChanged,
       onMeetingLeft,
-      // onRecordingStateChanged
+      onRecordingStateChanged
     });
-    // function onRecordingStateChanged(data) {
-    //   const { status, } = data;
+    const [idPersonRecord, setIsIdPersonRecord] = useState(null)
+    const [count_Record, setcount_Record] = useState(0)
 
-    //   if (status === Constants.recordingEvents.RECORDING_STARTING) {
-    //     console.log("Meeting recording is starting");
-    //   } else if (status === Constants.recordingEvents.RECORDING_STARTED) {
-    //     console.log("Meeting recording is started");
-    //   } else if (status === Constants.recordingEvents.RECORDING_STOPPING) {
-    //     console.log("Meeting recording is stopping");
-    //   } else if (status === Constants.recordingEvents.RECORDING_STOPPED) {
-    //     console.log("Meeting recording is stopped");
-    //   } else {
-    //     //
-    //   }
-    // }
+   function onRecordingStateChanged(data) {
+      const { status, id} = data;
+    console.log(data)
+    setIsIdPersonRecord(id)
+      if (status === "RECORDING_STARTING") {
+        setIsRecording(true);
+        console.log("Meeting recording is starting");
+      } else if (status === "RECORDING_STOPPED") {
+        setIsRecording(false);
+        console.log("Meeting recording is stopped");
+      } else {
+        //
+      }
+    }
+
     const handleStartRecording = async () => {
       startRecording(null, null, {
         layout: {
-          type: 'GRID',
-          priority: 'SPEAKER',
+          type: "GRID",
+          priority: "SPEAKER",
           gridSize: 4,
         },
-        theme: 'DARK',
-        mode: 'video-and-audio',
-        quality: 'high',
-        orientation: 'portrait',
+        theme: "DARK",
+        mode: "video-and-audio",
+        quality: "high",
+        orientation: "portrait",
       });
-      const currentDate = moment().format('D/M/YYYY_h:mm A');
-      const documentRef = firestore()
+     
+    };
+  
+    const handleStopRecording = async () => {
+        const currentDate = moment().format('D/M/YYYY_h:mm A');
+        const documentRef = firestore()
         .collection('Class')
         .doc('0VA2PZf3PVGlbWlF9EiV');
       await documentRef
@@ -307,27 +375,32 @@ const TeamRoom = ({navigation}) => {
           Recordings: firestore.FieldValue.arrayUnion({
             id: meetingId,
             name: currentDate,
+            user:profileData?.name,
+            count:count_Record+1,
+            composerId:idPersonRecord,
           }),
         })
         .then(() => {
           console.log('haha');
+          setcount_Record(count_Record+1);
         });
+        console.log("kkkk")
+        stopRecording();
+      setIsRecording1(false);
     };
-
-    const handleStopRecording = () => {
-      stopRecording();
-    };
-    const {screenShareStream, screenShareOn} = useParticipant(presenterId);
-    const [myIdMeeting, setMyIdMeeting] = useState(null);
-    const [isRedording, setIsRecording] = useState(false);
+    const { screenShareStream, screenShareOn } = useParticipant(presenterId);
+    const [myIdMeeting, setMyIdMeeting] = useState(null)
+    const [isRedording, setIsRecording] = useState(false)
+    const [isRedording1, setIsRecording1] = useState(false)
     useEffect(() => {
       const participantsArrId = [...participants.keys()];
-      setMyIdMeeting(participantsArrId[participantsArrId.length - 1]);
+      setMyIdMeeting(participantsArrId[participantsArrId.length - 1])
       JoinMeeting();
     }, []);
     const JoinMeeting = async () => {
       const participantsArrId = [...participants.keys()];
-      console.log(participantsArrId);
+      const e = [...participants]
+      console.log(e)
       const documentRef = firestore()
         .collection('Class')
         .doc('0VA2PZf3PVGlbWlF9EiV');
@@ -336,20 +409,18 @@ const TeamRoom = ({navigation}) => {
           Participants: firestore.FieldValue.arrayUnion({
             id: participantsArrId[participantsArrId.length - 1],
             name: profileData?.name,
-            image: profileData?.userImg,
+            image:profileData?.userImg,
           }),
         })
         .then(() => {
           console.log('haha');
         });
     };
-    const [listAttendee, setListAttendee] = useState(null);
+    const [listAttendee, setListAttendee] = useState(null)
     useEffect(() => {
-      const docRef = firestore()
-        .collection('Class')
-        .doc('0VA2PZf3PVGlbWlF9EiV');
+      const docRef = firestore().collection('Class').doc('0VA2PZf3PVGlbWlF9EiV');
 
-      const unsubscribe = docRef.onSnapshot(documentSnapshot => {
+      const unsubscribe = docRef.onSnapshot((documentSnapshot) => {
         if (documentSnapshot.exists) {
           // Dữ liệu tài liệu đã được cập nhật
           setListAttendee(documentSnapshot.data().Participants);
@@ -358,7 +429,7 @@ const TeamRoom = ({navigation}) => {
           console.log('Document does not exist!');
         }
       });
-
+  
       // Hủy đăng ký lắng nghe khi component unmount
       return () => unsubscribe();
     }, []);
@@ -374,27 +445,28 @@ const TeamRoom = ({navigation}) => {
     //   });
 
     // }
-    //Callback for when the presenter changes
-    function onPresenterChanged(presenterId) {
-      if (presenterId) {
-        console.log(presenterId, 'started screen share');
-      } else {
-        console.log('someone stopped screen share');
-      }
+     //Callback for when the presenter changes
+  function onPresenterChanged(presenterId) {
+    if(presenterId){
+      console.log(presenterId, "started screen share");
+    }else{
+      console.log("someone stopped screen share");
     }
-    async function onMeetingLeft() {
-      console.log('onMeetingLeft');
-      setIsJoin(false);
-      setMeetingId(null);
-      const documentRef = firestore()
-        .collection('Class')
-        .doc('0VA2PZf3PVGlbWlF9EiV');
-      await documentRef
-        .update({
-          Participants: [],
-        })
-        .then(() => {});
-    }
+  }
+  async function onMeetingLeft() {
+    console.log('onMeetingLeft');
+    setIsJoin(false);
+    setMeetingId(null);
+    const documentRef = firestore()
+    .collection('Class')
+    .doc('0VA2PZf3PVGlbWlF9EiV');
+  await documentRef
+    .update({
+      Participants: []
+    })
+    .then(() => {
+    });
+  }
     async function onParticipantLeft(participant) {
       console.log(' onParticipantLeft', participant.id);
       const documentRef = firestore()
@@ -405,7 +477,7 @@ const TeamRoom = ({navigation}) => {
           Participants: firestore.FieldValue.arrayRemove({
             id: participant.id,
             name: profileData?.name,
-            image: profileData?.userImg,
+            image:profileData?.userImg,
           }),
         })
         .then(() => {
@@ -425,6 +497,8 @@ const TeamRoom = ({navigation}) => {
       toggleWebcam();
       setIsCamMuted(!isCamMuted);
     };
+
+
     return (
       <View style={styles.container2}>
         <View
@@ -432,7 +506,7 @@ const TeamRoom = ({navigation}) => {
             AppStyle.viewstyle.component_upzone,
             {backgroundColor: '#363636'},
           ]}>
-          <TouchableOpacity style={{marginLeft: '2%'}}>
+          <TouchableOpacity style={{marginLeft: '2%'}} onPress={()=>{setIsJoin(false)}}>
             <FontAwesome name="chevron-left" color="white" size={20} />
           </TouchableOpacity>
           <View>
@@ -456,15 +530,14 @@ const TeamRoom = ({navigation}) => {
             </Text>
           </View>
           <View style={{flex: 1}} />
-          <TouchableOpacity
-            style={{marginLeft: 6}}
+          <TouchableOpacity style={{marginLeft:6}}
             onPress={() => {
-              if (isRedording) {
+              if(isRedording1){
                 handleStopRecording();
-                setIsRecording(false);
-              } else {
+              }
+              else {
+                setIsRecording1(true);
                 handleStartRecording();
-                setIsRecording(true);
               }
             }}>
             {isRedording == false ? (
@@ -473,8 +546,7 @@ const TeamRoom = ({navigation}) => {
               <Icon name="record-vinyl" color="#8B0016" size={20} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
-            style={{marginLeft: 6}}
+          <TouchableOpacity style={{marginLeft:6}}
             onPress={() => {
               handleMicToggle();
             }}>
@@ -484,8 +556,7 @@ const TeamRoom = ({navigation}) => {
               <FontAwesome name="microphone" color="black" size={20} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
-            style={{marginLeft: 6}}
+          <TouchableOpacity style={{marginLeft:6}}
             onPress={() => {
               handleCamToggle();
             }}>
@@ -514,21 +585,20 @@ const TeamRoom = ({navigation}) => {
         )}
         {screenShareOn && screenShareStream && (
           <>
-            <RTCView
-              streamURL={new MediaStream([screenShareStream.track]).toURL()}
-              objectFit={'contain'}
-              style={{
-                height: height * 0.75,
-                width: width * 0.95,
-                alignSelf: 'center',
-                marginVertical: 5,
-              }}
-            />
-            <Text style={{color: 'white', alignSelf: 'center'}}>
-              {presenterId} is sharing!{' '}
-            </Text>
+             <RTCView
+          streamURL={new MediaStream([screenShareStream.track]).toURL()}
+          objectFit={"contain"}
+          style={{
+            height: height*0.75,
+            width:width*0.95,
+            alignSelf:'center',
+            marginVertical:5
+          }}
+        />
+        <Text style={{color:"white", alignSelf:'center'}}>{profileData?.name} is sharing! </Text>
           </>
-
+       
+          
           // <View
           //   style={{
           //     height: 400,
@@ -544,7 +614,7 @@ const TeamRoom = ({navigation}) => {
           //     }}></View>
           // </View>
         )}
-        <View style={{flex: 1}} />
+         <View style={{flex: 1}} />
         {/*{Share &&(
           <View style={{marginBottom: 5}}>
             <FlatList
@@ -568,35 +638,22 @@ const TeamRoom = ({navigation}) => {
             justifyContent: 'space-evenly',
             alignItems: 'center',
           }}>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.push('AttendeeScreen', {list: participantsArrId})
-            }>
+          <TouchableOpacity onPress={() => navigation.push('AttendeeScreen',{list:participantsArrId})}>
             <Icon name="users" color="black" size={20} />
           </TouchableOpacity>
           <TouchableOpacity>
             <Icon name="rocketchat" color="black" size={20} />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              toggleScreenShare();
-            }}>
-            {(!screenShareOn || presenterId != myIdMeeting) && (
-              <Ionicons name={'arrow-up-outline'} size={20} color={'black'} />
-            )}
-            {screenShareOn && presenterId == myIdMeeting && (
-              <Ionicons
-                name={'stop-circle-outline'}
-                size={20}
-                color={'#8B0016'}
-              />
-            )}
+          <TouchableOpacity onPress={() => {toggleScreenShare()}}>
+            {(!screenShareOn||presenterId!=myIdMeeting)&&<Ionicons name={'arrow-up-outline'} size={20} color={'black'} />}
+            {screenShareOn&&presenterId==myIdMeeting&&<Ionicons name={'stop-circle-outline'} size={20} color={'#8B0016'} />}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               leave();
               setMeetingId(null);
               setIsJoin(false);
+              setRealJoin(false)
             }}>
             <Icon name="phone-slash" color="#8B0016" size={20} />
           </TouchableOpacity>
@@ -622,15 +679,17 @@ const TeamRoom = ({navigation}) => {
     async function onMeetingLeft() {
       console.log('onMeetingLeft');
       setIsJoin(false);
+      setRealJoin(false)
       setMeetingId(null);
       const documentRef = firestore()
-        .collection('Class')
-        .doc('0VA2PZf3PVGlbWlF9EiV');
-      await documentRef
-        .update({
-          Participants: [],
-        })
-        .then(() => {});
+      .collection('Class')
+      .doc('0VA2PZf3PVGlbWlF9EiV');
+    await documentRef
+      .update({
+        Participants: []
+      })
+      .then(() => {
+      });
     }
 
     const {join} = useMeeting({});
@@ -647,6 +706,7 @@ const TeamRoom = ({navigation}) => {
     };
 
     const handleCamToggle = () => {
+      console.log('kkkkk');
       toggleWebcam();
       console.log('jk' + localWebcamOn);
       setIsCamMuted(!isCamMuted);
@@ -684,9 +744,9 @@ const TeamRoom = ({navigation}) => {
               handleMicToggle();
             }}>
             {isMicMuted == false ? (
-              <FontAwesome name="microphone-slash" color="white" size={20} />
+              <FontAwesome name="microphone-slash" color="gray" size={20} />
             ) : (
-              <FontAwesome name="microphone" color="white" size={20} />
+              <FontAwesome name="microphone" color="black" size={20} />
             )}
           </TouchableOpacity>
           <TouchableOpacity
@@ -694,20 +754,20 @@ const TeamRoom = ({navigation}) => {
               handleCamToggle();
             }}>
             {isCamMuted == false ? (
-              <Icon name="video-slash" color="white" size={20} />
+              <Icon name="video-slash" color="gray" size={20} />
             ) : (
-              <Icon name="video" color="white" size={20} />
+              <Icon name="video" color="gray" size={20} />
             )}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               end();
             }}>
-            <Text style={{color: 'black', fontWeight: '600'}}>End</Text>
+            <Text>End</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
+        {!realJoin&&<TouchableOpacity
           style={{
             backgroundColor: 'white',
             width: 50,
@@ -719,9 +779,24 @@ const TeamRoom = ({navigation}) => {
           onPress={() => {
             join();
             setIsJoin(true);
+            setRealJoin(true)
           }}>
-          <Text style={{color: '#555'}}>Join</Text>
-        </TouchableOpacity>
+          <Text>Join</Text>
+        </TouchableOpacity>}
+        {realJoin&&<TouchableOpacity
+          style={{
+            backgroundColor: 'white',
+            width: 50,
+            borderRadius: 20,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={() => {
+            setIsJoin(true);
+          }}>
+          <Text>Join</Text>
+        </TouchableOpacity>}
       </View>
     );
   }
@@ -755,16 +830,18 @@ const TeamRoom = ({navigation}) => {
           <Icon name={'video'} color="white" size={20} />
         </TouchableOpacity>
       </View>
-      <View
-        style={{
-          width: '90%',
-          height: 40,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          alignSelf: 'center',
-        }}>
-        <TouchableOpacity
+      <View       style={{height:40}}>
+      <ScrollView
+      horizontal={true}>
+        <View 
+           style={{
+        alignItems: 'center',
+        alignSelf: 'center',
+        height:40,
+        flexDirection:'row'
+          }}
+          >
+          <TouchableOpacity
           style={[styles.historyButton]}
           onPress={() => {
             setSelectedTab(1);
@@ -798,6 +875,7 @@ const TeamRoom = ({navigation}) => {
             Files
           </Text>
         </TouchableOpacity>
+        
         <View
           style={{
             width: 1,
@@ -819,6 +897,28 @@ const TeamRoom = ({navigation}) => {
             Recordings
           </Text>
         </TouchableOpacity>
+        <View
+          style={{
+            width: 1,
+            height: 30,
+            backgroundColor: 'black',
+            marginHorizontal: 10,
+          }}
+        />
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => {
+            toggleModal();
+          }}>
+          <Text
+            style={[
+              AppStyle.button.buttonText,
+              {color: selectedTab == 4 ? PRIMARY_COLOR : 'black'},
+            ]}>
+            More
+          </Text>
+        </TouchableOpacity>
+       
         {/* <TouchableOpacity
           style={styles.historyButton}
           onPress={() => {
@@ -833,14 +933,17 @@ const TeamRoom = ({navigation}) => {
             Asignments
           </Text>
         </TouchableOpacity> */}
+
+          </View>
+      </ScrollView>
       </View>
       {selectedTab == 1 && (
         <View>
           {
             <FlatList
-              data={postData}
+              data={rangeDate}
               renderItem={({item, index}) => (
-                <PostinTeam key={index} item={item} />
+                <DateItem item={item} key={index}/>
               )}
             />
           }
@@ -861,17 +964,9 @@ const TeamRoom = ({navigation}) => {
       {selectedTab == 3 && (
         <FlatList
           data={records}
-          renderItem={({item, index}) => (
-            <RecordingCard
-              record={item}
-              show={() => {
-                navigation.push('ShowRecord', {
-                  url: item.File,
-                  name: item.Name,
-                });
-              }}
-            />
-          )}
+          renderItem={({item, index}) => <RecordingCard record={item} 
+          show = {()=>{navigation.push("ShowRecord",{url:item.File, name: item.Name})}}
+          />}
         />
       )}
       <TouchableOpacity
@@ -886,13 +981,14 @@ const TeamRoom = ({navigation}) => {
           justifyContent: 'center',
           alignItems: 'center',
         }}
-        onPress={() => navigation.push('NewPost')}>
+        onPress={() => navigation.push('NewPost',{classId:'0VA2PZf3PVGlbWlF9EiV', userInfo:profileData})}>
         {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
         {selectedTab == 2 && <PopupMenu />}
         {selectedTab == 3 && (
           <Ionicons name={'arrow-up-outline'} size={20} color={'white'} />
         )}
       </TouchableOpacity>
+      {Side()}
     </View>
   ) : (
     <MeetingProvider
@@ -1000,15 +1096,15 @@ const TeamRoom = ({navigation}) => {
           </View>
           {selectedTab == 1 && (
             <View>
+             <MeetingView />
               {
-                <FlatList
-                  data={postData}
-                  renderItem={({item, index}) => (
-                    <PostinTeam key={index} item={item} />
-                  )}
-                />
+               <FlatList
+               data={rangeDate}
+               renderItem={({item, index}) => (
+                 <DateItem item={item} key={index}/>
+               )}
+             />
               }
-              <MeetingView />
             </View>
           )}
           {selectedTab == 2 && (
@@ -1026,17 +1122,9 @@ const TeamRoom = ({navigation}) => {
           {selectedTab == 3 && (
             <FlatList
               data={Record}
-              renderItem={({item, index}) => (
-                <RecordingCard
-                  record={item}
-                  show={() => {
-                    navigation.push('ShowRecord', {
-                      url: item.File,
-                      name: item.Name,
-                    });
-                  }}
-                />
-              )}
+              renderItem={({item, index}) => <RecordingCard record={item} 
+              show = {()=>{navigation.push("ShowRecord",{url:item.File, name: item.Name})}}
+              />}
             />
           )}
           <TouchableOpacity
@@ -1051,13 +1139,14 @@ const TeamRoom = ({navigation}) => {
               justifyContent: 'center',
               alignItems: 'center',
             }}
-            onPress={() => navigation.push('NewPost')}>
+            onPress={() => navigation.push('NewPost', {classId:'0VA2PZf3PVGlbWlF9EiV'})}>
             {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
             {selectedTab == 2 && <PopupMenu />}
             {selectedTab == 3 && (
               <Ionicons name={'arrow-up-outline'} size={20} color={'white'} />
             )}
           </TouchableOpacity>
+          {Side()}
         </View>
       )}
     </MeetingProvider>
@@ -1070,7 +1159,7 @@ const styles = StyleSheet.create({
   },
   historyButton: {
     height: 30,
-    width: '30%',
+    width: 100,
     borderBottomColor: '#000',
     borderBottomWidth: 1,
   },
@@ -1157,6 +1246,20 @@ const styles = StyleSheet.create({
     width: 60,
     alignSelf: 'center',
     paddingVertical: 5,
+  },
+  buttonmain: {
+    height: 90,
+    borderRadius: 20,
+    backgroundColor: PRIMARY_COLOR,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomColor: 'black',
+    borderBottomWidth: 2,
+  },
+  buttonzone: {
+    flexDirection: 'column',
+    width: 100,
+    height: 120,
   },
 });
 export default TeamRoom;
