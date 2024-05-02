@@ -49,7 +49,7 @@ const LoginScreen = ({navigation}) => {
 
         <TouchableOpacity
           style={{width: '100%', alignItems: 'center'}}
-          onPress={() => navigation.navigate('Signup')}>
+          onPress={() => navigation.navigate('Signup', {type: 'Teacher'})}>
           <Text
             style={{
               fontSize: 16,
@@ -67,7 +67,7 @@ const LoginScreen = ({navigation}) => {
         {Platform.OS === 'android' ? (
           <TouchableOpacity
             style={styles.googleButton}
-            onPress={() => googleLogin()}>
+            onPress={() => googleLogin('Student')}>
             <Image
               style={styles.iconWrapper}
               source={require('../assets/google.png')}
@@ -80,7 +80,7 @@ const LoginScreen = ({navigation}) => {
 
         <TouchableOpacity
           style={styles.textButton}
-          onPress={() => navigation.navigate('Signup')}>
+          onPress={() => navigation.navigate('Signup', {type: 'Student'})}>
           <Text style={styles.navButtonText}>
             Don't have an acount?{' '}
             <Text style={{fontWeight: 'bold', color: '#000'}}>Create here</Text>

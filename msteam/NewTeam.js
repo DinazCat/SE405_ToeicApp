@@ -4,36 +4,42 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import DropDownPicker from 'react-native-dropdown-picker';
-import FormButton from '../components/FormButton';
-import AppStyle from '../theme';
+import React, {useState, useEffect, useContext} from 'react';
 import moment from 'moment';
 
-const NewTeam = ({route, navigation}) => {
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import IonIcon from 'react-native-vector-icons/Ionicons';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import DropDownPicker from 'react-native-dropdown-picker';
+
+import AppStyle from '../theme';
+import {PRIMARY_COLOR} from '../assets/colors/color';
+import FormButton from '../components/FormButton';
+import Api from '../api/Api';
+import {AuthContext} from '../navigation/AuthProvider';
+
+const tuitionList = [
+  {
+    label: `Tuition: 2.000.000 đ`,
+    value: 2000000,
+  },
+  {
+    label: 'Tuition: 2.500.000 đ',
+    value: 2500000,
+  },
+  {
+    label: 'Tuition: 3.000.000 đ',
+    value: 3000000,
+  },
+];
+
+const NewTeam = ({navigation, route}) => {
   const [className, setClassName] = useState('');
   const [maximumStudents, setMaximumStudents] = useState('');
   const [level, setLevel] = useState('');
   const [tuition, setTuition] = useState('');
-  const [tuitionList, setTuitionList] = useState([
-    {
-      label: 'Tuition: 2.000.000 đ',
-      value: 2000000,
-    },
-    {
-      label: 'Tuition: 2.500.000 đ',
-      value: 2500000,
-    },
-    {
-      label: 'Tuition: 3.000.000 đ',
-      value: 3000000,
-    },
-  ]);
-
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(() => {
     const date = new Date();
@@ -42,23 +48,68 @@ const NewTeam = ({route, navigation}) => {
   });
 
   const [openDropdown, setOpenDropdown] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const showDatePicker = () => {
-    setIsVisible(true);
-  };
+  const [openDate1, setOpenDate1] = useState(false);
+  const [openDate2, setOpenDate2] = useState(false);
+  const {user} = useContext(AuthContext);
 
-  const hideDatePicker = () => {
-    setIsVisible(false);
-  };
+  const onSave = async () => {
+    const expectedEndDate = new Date(startDate);
+    expectedEndDate.setMonth(expectedEndDate.getMonth() + 1);
 
-  const handleStartDate = date => {
-    hideDatePicker();
-    setStartDate(date);
-  };
+    if (
+      className === '' ||
+      maximumStudents === '' ||
+      level === '' ||
+      tuition === ''
+    ) {
+      Alert.alert(
+        'Input cannot be blank!',
+        'Please enter complete information',
+      );
+      return;
+    } else if (maximumStudents <= 0 || maximumStudents > 100) {
+      Alert.alert(
+        'Invalid maximum student value!',
+        'The maximum number of students must be greater than 0 and not exceed 100',
+      );
+      return;
+    } else if (level <= 0) {
+      Alert.alert(
+        'Level cannot be equal to 0!',
+        'Please re-enter current score',
+      );
+      return;
+    } else if (level > 990) {
+      Alert.alert(
+        'Level cannot be more than 990!',
+        'Please re-enter current score',
+      );
+      return;
+    } else if (endDate < expectedEndDate) {
+      Alert.alert(
+        'Invalid end date value!',
+        'The end date must be at least 1 month greater than the start date',
+      );
+      return;
+    }
 
-  const handleEndDate = date => {
-    hideDatePicker();
-    setEndDate(date);
+    await Api.addClass({
+      userId: user.uid,
+      ClassName: className,
+      Finish_Date: `${endDate.getDate()}/${
+        endDate.getMonth() + 1
+      }/${endDate.getFullYear()}`,
+      Start_Date: `${startDate.getDate()}/${
+        startDate.getMonth() + 1
+      }/${startDate.getFullYear()}`,
+      MaximumStudents: maximumStudents,
+      Level: level,
+      Tuition: tuition,
+    })
+      .then(() => {
+        navigation.navigate('Teams');
+      })
+      .catch(error => console.error(error));
   };
 
   return (
@@ -72,93 +123,100 @@ const NewTeam = ({route, navigation}) => {
         <Text style={styles.header}>Create a new class</Text>
       </View>
 
-      <View style={styles.inputContainer}>
-        <View style={styles.action}>
-          <TextInput
-            placeholder={'Class name'}
-            placeholderTextColor={'#555'}
-            value={className}
-            onChangeText={value => setClassName(value)}
-            autoCorrect={false}
-            style={styles.input}
-          />
-        </View>
-
-        <View style={styles.action}>
-          <TextInput
-            placeholder={'Maximum students of the class'}
-            placeholderTextColor={'#555'}
-            value={maximumStudents}
-            onChangeText={value => setMaximumStudents(value)}
-            autoCorrect={false}
-            style={styles.input}
-            keyboardType="numeric"
-          />
-        </View>
-
-        <View style={styles.action}>
-          <TextInput
-            placeholder={'Level (Ex: 550)'}
-            placeholderTextColor={'#555'}
-            value={level}
-            onChangeText={value => setLevel(value)}
-            autoCorrect={false}
-            style={styles.input}
-            keyboardType="numeric"
-          />
-        </View>
-
-        <View style={[styles.action, {zIndex: 1}]}>
-          <DropDownPicker
-            placeholder="Select a tuition"
-            items={tuitionList}
-            open={openDropdown}
-            setOpen={() => setOpenDropdown(!openDropdown)}
-            value={tuition}
-            containerStyle={{
-              width: '95%',
-            }}
-            style={{
-              borderWidth: 0,
-            }}
-            itemStyle={{
-              justifyContent: 'flex-start',
-            }}
-            dropDownStyle={{backgroundColor: '#fafafa'}}
-            setValue={item => setTuition(item)}
-            maxHeight={100}
-          />
-        </View>
-
-        <TouchableOpacity style={styles.action} onPress={showDatePicker}>
-          <Text style={[styles.input, {paddingTop: 8}]}>
-            {moment(startDate).format('DD/MM/YYYY')}
-          </Text>
-        </TouchableOpacity>
-        <DateTimePickerModal
-          isVisible={isVisible}
-          mode="date"
-          date={startDate}
-          onConfirm={handleStartDate}
-          onCancel={hideDatePicker}
+      <View style={{paddingHorizontal: 5}}>
+        <Text style={styles.title}>Class name: </Text>
+        <TextInput
+          value={className}
+          style={styles.input}
+          placeholderTextColor={'#555'}
+          onChangeText={value => setClassName(value)}
         />
 
-        <TouchableOpacity style={styles.action} onPress={showDatePicker}>
-          <Text style={[styles.input, {paddingTop: 8}]}>
-            {moment(endDate).format('DD/MM/YYYY')}
-          </Text>
-        </TouchableOpacity>
-        <DateTimePickerModal
-          isVisible={isVisible}
-          mode="date"
-          date={endDate}
-          onConfirm={handleEndDate}
-          onCancel={hideDatePicker}
+        <Text style={styles.title}>Maximum students: </Text>
+        <TextInput
+          value={maximumStudents}
+          style={styles.input}
+          onChangeText={value => setMaximumStudents(value)}
+          keyboardType="numeric"
         />
+
+        <Text style={styles.title}>Level: </Text>
+        <TextInput
+          value={level}
+          style={styles.input}
+          onChangeText={value => setLevel(value)}
+          keyboardType="numeric"
+        />
+        <Text style={styles.note}>Ex: Level 550+</Text>
+
+        <Text style={styles.title}>Tuition: </Text>
+        <DropDownPicker
+          placeholder="Select a tuition"
+          items={tuitionList}
+          open={openDropdown}
+          setOpen={() => setOpenDropdown(!openDropdown)}
+          value={tuition}
+          setValue={item => setTuition(item)}
+          maxHeight={160}
+          style={[styles.input, {zIndex: 1}]}
+          placeholderStyle={{fontSize: 16, color: '#555'}}
+          labelStyle={{fontSize: 16, color: '#333'}}
+          listItemContainer={{height: 40}}
+          listItemLabelStyle={{fontSize: 16, color: '#333'}}
+          dropDownContainerStyle={{backgroundColor: '#fafafa'}}
+        />
+
+        <View style={{flexDirection: 'row'}}>
+          <View style={{flex: 1}}>
+            <Text style={styles.title}>Start date: </Text>
+            <TouchableOpacity
+              style={styles.inputContainer}
+              onPress={() => setOpenDate1(true)}>
+              <TextInput style={styles.inputText} editable={false}>
+                {moment(startDate).format('DD/MM/YYYY')}
+              </TextInput>
+              <IonIcon name="calendar-outline" color={'#555'} size={20} />
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={openDate1}
+              mode="date"
+              minimumDate={new Date()}
+              date={startDate}
+              onConfirm={date => {
+                setOpenDate1(false);
+                setStartDate(date);
+              }}
+              onCancel={() => setOpenDate1(false)}
+            />
+          </View>
+
+          <View style={{flex: 1}}>
+            <Text style={styles.title}>End date: </Text>
+            <TouchableOpacity
+              style={styles.inputContainer}
+              onPress={() => setOpenDate2(true)}>
+              <TextInput style={styles.inputText} editable={false}>
+                {moment(endDate).format('DD/MM/YYYY')}
+              </TextInput>
+              <IonIcon name="calendar-outline" color={'#555'} size={20} />
+            </TouchableOpacity>
+            <DateTimePickerModal
+              isVisible={openDate2}
+              mode="date"
+              minimumDate={new Date()}
+              date={endDate}
+              onConfirm={date => {
+                setOpenDate2(false);
+                setEndDate(date);
+              }}
+              onCancel={() => setOpenDate2(false)}
+            />
+          </View>
+        </View>
       </View>
 
       <View style={{width: '40%', alignSelf: 'center'}}>
-        <FormButton title={'Create'} onPress={() => navigation.push('Teams')} />
+        <FormButton title={'Create'} onPress={onSave} />
       </View>
     </View>
   );
@@ -178,20 +236,52 @@ const styles = StyleSheet.create({
   inputContainer: {
     display: 'flex',
     flexDirection: 'column',
-    margin: 20,
+    margin: 5,
   },
-  action: {
-    flexDirection: 'row',
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f2f2f2',
+  title: {
+    color: '#000',
+    fontSize: 17,
+    fontWeight: 'bold',
+    marginLeft: 5,
+    marginTop: 10,
   },
   input: {
-    color: '#333',
+    fontSize: 16,
+    borderColor: '#DDD',
+    borderRadius: 5,
+    borderWidth: 1,
+    margin: 5,
+    marginLeft: 3,
+    padding: 5,
     paddingLeft: 10,
-    fontSize: 15,
-    color: '#555',
-    height: 40,
+    textAlignVertical: 'center',
+    alignSelf: 'center',
+    color: '#333',
+    width: '96%',
+  },
+  inputContainer: {
+    borderColor: '#DDD',
+    borderRadius: 5,
+    borderWidth: 1,
+    margin: 5,
+    marginLeft: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 5,
+  },
+  inputText: {
+    fontSize: 16,
+    color: '#333',
+    padding: 5,
+    paddingLeft: 10,
+    textAlignVertical: 'center',
+    flex: 1,
+  },
+  note: {
+    marginTop: -2,
+    marginLeft: 5,
+    fontWeight: '600',
+    color: PRIMARY_COLOR,
   },
 });
 

@@ -1,37 +1,22 @@
 import {View, Text, StyleSheet, TouchableOpacity, FlatList} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import DropDownPicker from 'react-native-dropdown-picker';
-import FormButton from '../components/FormButton';
 import AppStyle from '../theme';
-import TeacherPublicCard from '../ComponentTeam/TeacherPublicCard';
-
-const classData = [
-  {
-    teacherName: 'Nguyễn Quỳnh Hoa',
-    stars: 4,
-    writedReview: false,
-  },
-  {
-    teacherName: 'Nguyễn Anh Thư',
-    stars: 4.5,
-    writedReview: true,
-  },
-  {
-    teacherName: 'Trần Mạnh Hùng',
-    stars: 5,
-    writedReview: false,
-  },
-  {
-    teacherName: 'Trần Mạnh Hùng',
-    stars: 5,
-    writedReview: true,
-  },
-];
+import TeacherCard from '../ComponentTeam/TeacherCard';
+import Api from '../api/Api';
 
 const TeacherList = ({navigation}) => {
+  const [teachers, setTeachers] = useState([]);
+
+  useEffect(() => {
+    const getAllTeachers = async () => {
+      const data = await Api.getAllTeachers();
+      setTeachers(data);
+    };
+
+    getAllTeachers();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -45,9 +30,14 @@ const TeacherList = ({navigation}) => {
 
       <FlatList
         style={{padding: 10, flex: 1}}
-        data={classData}
+        data={teachers}
         renderItem={({item, index}) => (
-          <TeacherPublicCard key={index} item={item} navigation={navigation} />
+          <TeacherCard
+            key={index}
+            item={item}
+            navigation={navigation}
+            viewCourse={true}
+          />
         )}
       />
     </View>
