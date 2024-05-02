@@ -2,15 +2,13 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  Image,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 
-const CourseCard = ({item}) => {
+const CourseCard = ({navigation, item}) => {
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
   );
@@ -24,34 +22,46 @@ const CourseCard = ({item}) => {
   }, []);
 
   return (
-    <View
-      style={[
-        styles.container,
-        {width: screenWidth * 0.9, backgroundColor: card_color},
-      ]}>
-      <Text style={[styles.mainText, styles.color]}>{item.className}</Text>
-      <Text style={[styles.text, styles.italic]}>{item.teacherName}</Text>
+    <View style={[styles.container, {width: screenWidth * 0.9}]}>
+      <Text style={[styles.mainText, styles.color]}>{item.ClassName}</Text>
+      <Text style={[styles.text, {fontWeight: '600'}]}>{item.userName}</Text>
       <View style={styles.row}>
         <Text style={styles.text}>
           {'Level: '}
-          <Text style={[styles.bold, styles.italic, styles.color]}>
-            {item.level}
-          </Text>
+          <Text style={[styles.bold, styles.color]}>{item.Level}+</Text>
         </Text>
         <Text style={[styles.bold, styles.italic]}>
-          {item.joinedStudents}/{item.maximumStudents} students
+          {item.Participants?.length}/{item.MaximumStudents} students
         </Text>
       </View>
       <Text style={styles.text}>
         {'Tuition: '}
-        <Text style={[styles.bold]}>{item.tuition}</Text>
+        <Text style={[styles.bold]}>
+          {item.Tuition?.toLocaleString('it-IT', {
+            style: 'currency',
+            currency: 'VND',
+          })}
+        </Text>
       </Text>
       <Text style={styles.text}>
         {'Duration: '}
-        <Text style={styles.bold}>{item.startDate}</Text>
+        <Text style={styles.bold}>{item.Start_Date}</Text>
         {' - '}
-        <Text style={styles.bold}>{item.endDate}</Text>
+        <Text style={styles.bold}>{item.Finish_Date}</Text>
       </Text>
+
+      <View style={styles.buttonWrapper}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.push('DetailCourse', {course: item})}>
+          <Text style={styles.buttonText}>View detail</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.push('RegisterCourse', {course: item})}>
+          <Text style={styles.buttonText}>Register course</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -69,6 +79,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingBottom: 12,
     gap: 4,
+    backgroundColor: card_color,
   },
   row: {
     display: 'flex',
@@ -95,6 +106,26 @@ const styles = StyleSheet.create({
   },
   color: {
     color: '#9ACC1C',
+  },
+  buttonWrapper: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 20,
+    marginTop: 5,
+  },
+  button: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: PRIMARY_COLOR,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  buttonText: {
+    fontSize: 16,
+    color: card_color,
+    fontWeight: '600',
   },
 });
 

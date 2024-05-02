@@ -9,7 +9,7 @@ import {
 import React, {useState, useEffect} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-const TeacherCard = ({item}) => {
+const TeacherCard = ({item, navigation, writeReview, viewCourse}) => {
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
   );
@@ -30,7 +30,7 @@ const TeacherCard = ({item}) => {
           uri: 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png',
         }}
       />
-      <Text style={styles.mainText}>{item.teacherName}</Text>
+      <Text style={styles.mainText}>{item.name}</Text>
       <View style={{flexDirection: 'row', alignSelf: 'center', marginTop: 5}}>
         <Text>{item.stars}</Text>
         <FontAwesome
@@ -42,17 +42,32 @@ const TeacherCard = ({item}) => {
         <Text>/ 0 Review</Text>
       </View>
       <View style={styles.buttonWrapper}>
-        <TouchableOpacity style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.buttonContainer}
+          onPress={() =>
+            navigation.navigate('ProfileTeacher', {profile: item})
+          }>
           <Text style={styles.buttonText}>View Profile</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.buttonContainer,
-            {backgroundColor: item.writedReview ? '#f0f0f0' : '#D0E895'},
-          ]}
-          disabled={item.writedReview}>
-          <Text style={styles.buttonText}>Write a review</Text>
-        </TouchableOpacity>
+        {viewCourse ? (
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={() =>
+              navigation.navigate('CourseList', {teacherId: item.id})
+            }>
+            <Text style={styles.buttonText}>Course list</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.buttonContainer,
+              {backgroundColor: item.writedReview ? '#f0f0f0' : '#D0E895'},
+            ]}
+            disabled={item.writedReview}
+            onPress={writeReview}>
+            <Text style={styles.buttonText}>Write review</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

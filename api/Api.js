@@ -492,6 +492,63 @@ const addNewChat = async data => {
   }
 };
 
+const addClass = async data => {
+  try {
+    await client.post('/Class/add', data);
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+
+const getAllClasses = async () => {
+  try {
+    const response = await client.get('/Classes');
+    if (response.data.success) {
+      return response.data.classes;
+    } else {
+      console.log('not get classes');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+    return [];
+  }
+};
+
+const getClassesByUser = async userId => {
+  try {
+    const response = await client.get('/Classes/' + userId);
+    if (response.data.success) {
+      return response.data.classes;
+    } else {
+      console.log('not get classes');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+    return [];
+  }
+};
+
+const registerCourse = async data => {
+  try {
+    await client.post('/Class/register', data);
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+
+const getAllTeachers = async () => {
+  try {
+    const response = await client.get('/Teachers');
+    if (response.data.success) {
+      return response.data.teachers;
+    } else {
+      console.log('not get classes');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+
 export default {
   getVocabLesson,
   getVocabinLesson,
@@ -535,4 +592,9 @@ export default {
   updateCallStatus,
   getUserChatRooms,
   addNewChat,
+  addClass,
+  getAllClasses,
+  getClassesByUser,
+  registerCourse,
+  getAllTeachers,
 };

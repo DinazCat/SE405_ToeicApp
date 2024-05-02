@@ -8,7 +8,7 @@ import {
   Dimensions,
   FlatList,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -19,23 +19,13 @@ import ClassCard from '../ComponentTeam/ClassCard';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 const {width, height} = Dimensions.get('window');
 import Modal from 'react-native-modal';
+import Api from '../api/Api';
+import {useFocusEffect} from '@react-navigation/native';
+import {AuthContext} from '../navigation/AuthProvider';
 
 const Teams = ({navigation}) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  const classData = [
-    {
-      className: 'Lớp luyện SW Toeic 150+',
-      teacherName: 'Nguyễn Quỳnh Hoa',
-    },
-    {
-      className: 'Lớp luyện LR Toeic 800+',
-      teacherName: 'Nguyễn Anh Thư',
-    },
-    {
-      className: 'Lớp luyện giao tiếp',
-      teacherName: 'Trần Mạnh Hùng',
-    },
-  ];
+  const [classes, setClasses] = useState([]);
+  const {user} = useContext(AuthContext);
 
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
@@ -43,6 +33,12 @@ const Teams = ({navigation}) => {
   const [screenHeight, setScreenHeight] = useState(
     Dimensions.get('window').height,
   );
+
+  const getClassesByUserTeacher = async () => {
+    const data = await Api.getClassesByUser(user.uid);
+    setClasses(data);
+  };
+
   useEffect(() => {
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
@@ -51,6 +47,12 @@ const Teams = ({navigation}) => {
 
     Dimensions.addEventListener('change', updateScreenWidth);
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      getClassesByUserTeacher();
+    }, []),
+  );
 
   return (
     <View style={styles.container}>
@@ -67,49 +69,18 @@ const Teams = ({navigation}) => {
       </View>
       <Text style={AppStyle.textstyle.parttext}>Your class</Text>
       <FlatList
-        data={classData}
+        data={classes}
         renderItem={({item, index}) => (
           <ClassCard key={index} item={item} navigation={navigation} />
         )}
       />
-      <Modal
-        animationType="slide"
-        visible={modalVisible}
-        onBackdropPress={() => setModalVisible(!modalVisible)}
-        onRequestClose={() => setModalVisible(!modalVisible)}>
-        <View style={[styles.modalContainer, {width: screenWidth}]}>
-          <TouchableOpacity
-            onPress={() => {
-              setModalVisible(!modalVisible);
-              navigation.push('NewTeam');
-            }}>
-            <Text style={styles.textStyle}>Create a new class</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setModalVisible(!modalVisible);
-              navigation.push('JoinTeam');
-            }}>
-            <Text style={styles.textStyle}>Join class </Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
       <TouchableOpacity
-        onPress={() => setModalVisible(true)}
-        style={{
-          position: 'absolute',
-          marginLeft: screenWidth - 80,
-          marginTop: screenHeight - 120,
-          borderRadius: 25,
-          width: 50,
-          height: 50,
-          backgroundColor: PRIMARY_COLOR,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        // onPress={() => navigation.push('New', chatData)}
-      >
-        <Feather name={'plus'} color="white" size={28} />
+        style={[
+          styles.addButton,
+          {marginLeft: screenWidth - 80, marginTop: screenHeight - 120},
+        ]}
+        onPress={() => navigation.push('NewTeam')}>
+        <Icon name={'plus'} color="white" size={20} />
       </TouchableOpacity>
     </View>
   );
@@ -139,6 +110,16 @@ const styles = StyleSheet.create({
   textStyle: {
     color: 'black',
     fontSize: 18,
+  },
+  addButton: {
+    position: 'absolute',
+
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+    backgroundColor: PRIMARY_COLOR,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 export default Teams;
