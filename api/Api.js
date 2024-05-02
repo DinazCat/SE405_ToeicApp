@@ -549,6 +549,43 @@ const getAllTeachers = async () => {
   }
 };
 
+// router.get('/Agenda/getAgendaOfUser/:userId',getAgendaOfUser)
+const getAgendaOfUser = async(userId)=>{
+  const endpoint = "/Agenda/getAgendaOfUser/" + userId
+  try{
+      const response = await client.get(endpoint)
+      if(response.data.success){
+          return response.data.list
+      }
+      else{
+          console.log("not get")
+      }
+      
+  }
+  catch(error){
+      console.log('error: ', error.message)
+      return [];
+  }
+}
+// router.get('/Meeting/getRangeDate/:classId',getRangeDate)
+const getRangeDate = async(classId)=>{
+  const endpoint = "/Meeting/getRangeDate/" + classId
+  try{
+      const response = await client.get(endpoint)
+      if(response.data.success){
+          return response.data.RangeDate
+      }
+      else{
+          console.log("not get")
+      }
+      
+  }
+  catch(error){
+      console.log('error: ', error.message)
+      return [];
+  }
+}
+
 export default {
   getVocabLesson,
   getVocabinLesson,
@@ -597,4 +634,6 @@ export default {
   getClassesByUser,
   registerCourse,
   getAllTeachers,
+    getAgendaOfUser,
+    getRangeDate
 };
