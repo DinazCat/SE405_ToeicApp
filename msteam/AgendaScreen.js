@@ -9,7 +9,7 @@ import {
   FlatList,
   TextInput
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -20,6 +20,7 @@ import moment from 'moment';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import Api from '../api/Api';
+import {AuthContext} from '../navigation/AuthProvider';
 
 
 const {width, height} = Dimensions.get('window');
@@ -28,6 +29,7 @@ const date = new Date(time);
 return date.toISOString().split('T')[0];
 }
 const AgendaScreen = ({navigation}) => {
+  const {user, isTeacher} = useContext(AuthContext);
   const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
   const [screenHeight, setScreenHeight] = useState(Dimensions.get('window').height);
 useEffect(() => {
@@ -182,10 +184,10 @@ const renderItem = (item)=>{
       maxDate={setVisibleDays()[1]}
       renderItem={renderItem}
       />}
-      <TouchableOpacity style={{position:'absolute',marginLeft: screenWidth-80, marginTop:screenHeight-120,borderRadius:25, width:50, height:50, backgroundColor:PRIMARY_COLOR, justifyContent:'center', alignItems:'center'}}
+      {isTeacher&& <TouchableOpacity style={{position:'absolute',marginLeft: screenWidth-80, marginTop:screenHeight-120,borderRadius:25, width:50, height:50, backgroundColor:PRIMARY_COLOR, justifyContent:'center', alignItems:'center'}}
       onPress={()=>navigation.push('CreateAgenda')}>
       <Icon name={'plus'} size={20} color={ 'white' }/>
-    </TouchableOpacity>
+    </TouchableOpacity>}
     </View>
   );
 };

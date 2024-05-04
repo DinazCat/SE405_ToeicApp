@@ -11,7 +11,7 @@ import {
   SafeAreaView,
   TextInput,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -26,6 +26,7 @@ import {createMeeting, token, startRecord, stopRecord} from '../api/apiVideoSDK'
 import auth from '@react-native-firebase/auth';
 import MeetingRoom from './MeetingRoom';
 import DateItem from '../ComponentTeam/DateItem';
+import {AuthContext} from '../navigation/AuthProvider';
 import {
   MeetingProvider,
   useMeeting,
@@ -40,6 +41,7 @@ import Api from '../api/Api';
 import moment from 'moment';
 const {width, height} = Dimensions.get('window');
 const TeamRoom = ({navigation}) => {
+  const {user, isTeacher} = useContext(AuthContext);
   const [meetingId, setMeetingId] = useState(null);
   const COLORS = [
     '#ff0000',
@@ -819,7 +821,7 @@ const TeamRoom = ({navigation}) => {
           Lớp luyện SW Toeic 150+
         </Text>
         <View style={{flex: 1}} />
-        <TouchableOpacity
+        {isTeacher&&<TouchableOpacity
           style={{marginRight: '5%'}}
           onPress={() => {
             setIsCreate(true);
@@ -828,7 +830,7 @@ const TeamRoom = ({navigation}) => {
           // onPress={()=>navigation.push('MeetingRoom')}
         >
           <Icon name={'video'} color="white" size={20} />
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
       <View       style={{height:40}}>
       <ScrollView
@@ -969,7 +971,7 @@ const TeamRoom = ({navigation}) => {
           />}
         />
       )}
-      <TouchableOpacity
+       {isTeacher&&selectedTab != 3&&<TouchableOpacity
         style={{
           position: 'absolute',
           marginLeft: screenWidth - 80,
@@ -984,10 +986,10 @@ const TeamRoom = ({navigation}) => {
         onPress={() => navigation.push('NewPost',{classId:'0VA2PZf3PVGlbWlF9EiV', userInfo:profileData})}>
         {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
         {selectedTab == 2 && <PopupMenu />}
-        {selectedTab == 3 && (
+        {/* {selectedTab == 3 && (
           <Ionicons name={'arrow-up-outline'} size={20} color={'white'} />
-        )}
-      </TouchableOpacity>
+        )} */}
+      </TouchableOpacity>}
       {Side()}
     </View>
   ) : (
@@ -1019,7 +1021,7 @@ const TeamRoom = ({navigation}) => {
               Lớp luyện SW Toeic 150+
             </Text>
             <View style={{flex: 1}} />
-            <TouchableOpacity
+            {isTeacher&&<TouchableOpacity
               style={{marginRight: '5%'}}
               onPress={() => {
                 getMeetingId();
@@ -1027,7 +1029,7 @@ const TeamRoom = ({navigation}) => {
               // onPress={()=>navigation.push('MeetingRoom')}
             >
               <Icon name={'video'} color="white" size={20} />
-            </TouchableOpacity>
+            </TouchableOpacity>}
           </View>
           <View
             style={{
@@ -1127,7 +1129,7 @@ const TeamRoom = ({navigation}) => {
               />}
             />
           )}
-          <TouchableOpacity
+           {isTeacher&&selectedTab != 3&&<TouchableOpacity
             style={{
               position: 'absolute',
               marginLeft: screenWidth - 80,
@@ -1142,10 +1144,10 @@ const TeamRoom = ({navigation}) => {
             onPress={() => navigation.push('NewPost', {classId:'0VA2PZf3PVGlbWlF9EiV'})}>
             {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
             {selectedTab == 2 && <PopupMenu />}
-            {selectedTab == 3 && (
+            {/* {selectedTab == 3 && (
               <Ionicons name={'arrow-up-outline'} size={20} color={'white'} />
-            )}
-          </TouchableOpacity>
+            )} */}
+          </TouchableOpacity>}
           {Side()}
         </View>
       )}

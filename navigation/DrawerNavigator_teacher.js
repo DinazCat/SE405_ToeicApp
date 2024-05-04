@@ -48,8 +48,8 @@ function DrawerNavigator_teacher({}) {
       }}
       drawerContent={props => {
         return (
-          <SafeAreaView>
-              <ImageBackground source={require('../assets/bg8.png')} style={{ resizeMode: 'cover' }}>
+              <ImageBackground source={require('../assets/bg8.png')} resizeMode='cover' style={{flex:1}}>
+                          {/* <View style={{flex:1}}> */}
             <View style={{justifyContent:'center', alignItems:'center', marginTop:10, marginBottom:10}}>
             <Image
           style={styles.userImg}
@@ -69,7 +69,7 @@ function DrawerNavigator_teacher({}) {
             : profileData.email
           : 'Your name'}
       </Text>
-      <TouchableOpacity  onPress={() => navigation.navigate('ProfileOfTeacher')}>
+      <TouchableOpacity  onPress={() => {navigation.navigate('ProfileOfTeacher')}}>
          <Text style={{color:'blue', fontStyle:'italic'}}>Go to profile!</Text>
       </TouchableOpacity>
        {/* <DrawerItem
@@ -79,13 +79,13 @@ function DrawerNavigator_teacher({}) {
       /> */}
             </View>
             <DrawerItemList {...props}/>
-            <View style={{flex:1, backgroundColor:'black', flexDirection:'column'}}/>
+            <View style={{flex:1}}/>
             <TouchableOpacity style={styles.btnContainer} onPress={() => logout()}>
           <Ionicons name='log-out-outline' size={27} color={'#222'}/>
           <Text style={[styles.btnText, {color: '#222'}]}>{'Log Out'}</Text>
         </TouchableOpacity>
+        {/* </View> */}
         </ImageBackground>
-          </SafeAreaView>
         );
       }}>
       <Drawer.Screen
@@ -147,7 +147,6 @@ const styles = StyleSheet.create({
         paddingVertical: 10,  
         paddingHorizontal: 12,
         alignItems: 'center',
-        marginTop:'100%'
       },
       btnText: {
         fontSize:18,
