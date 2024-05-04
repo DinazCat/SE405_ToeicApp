@@ -10,6 +10,7 @@ import {
   Modal,
   SafeAreaView,
   TextInput,
+  Alert
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -138,23 +139,41 @@ const TeamRoom = ({navigation}) => {
     setProfileData(data);
   };
   useEffect(() => {
-    // socketServices.initializeSocket()
-    // receiveMeetingId()
+    socketServices.initializeSocket()
+    receiveMeetingId()
     getProfile();
   }, []);
-  // const receiveMeetingId = async()=>{
-  //   socketServices.on('getMeetingId',(data) => {
-  //     setMeetingId(data.MeetingId)
-  //   });
-  // }
-  // const sendMeetingId = async(data)=>{
-  //   socketServices.emit('MeetingId', data);
-  // }
+  const receiveMeetingId = async()=>{
+    socketServices.on('getMeetingId',(data) => {
+      if(data.ClassId=='0VA2PZf3PVGlbWlF9EiV'){
+        setMeetingId(data.MeetingId)
+      }
+    });
+  }
+  const sendMeetingId = async(data)=>{
+    // console.log("send ")
+    // socketServices.emit('MeetingId', data);
+    const documentRef = firestore()
+    .collection('Class')
+    .doc('0VA2PZf3PVGlbWlF9EiV');
+  await documentRef
+    .update({
+      MeetingId:data
+    })
+  }
+  
   const getMeetingId = async id => {
     const meetingId = id == null ? await createMeeting({token}) : id;
     console.log(meetingId);
     //sau này thêm tên class
-    // sendMeetingId({MeetingId:meetingId})
+    sendMeetingId(meetingId)
+    //  const documentRef = firestore()
+    //     .collection('Class')
+    //     .doc('0VA2PZf3PVGlbWlF9EiV');
+    //   await documentRef
+    //     .update({
+    //       MeetingId:meetingId
+    //     })
     setMeetingId(meetingId);
   };
   const [screenWidth, setScreenWidth] = useState(
@@ -459,6 +478,7 @@ const TeamRoom = ({navigation}) => {
     console.log('onMeetingLeft');
     setIsJoin(false);
     setMeetingId(null);
+    sendMeetingId(null)
     const documentRef = firestore()
     .collection('Class')
     .doc('0VA2PZf3PVGlbWlF9EiV');
@@ -683,6 +703,7 @@ const TeamRoom = ({navigation}) => {
       setIsJoin(false);
       setRealJoin(false)
       setMeetingId(null);
+      sendMeetingId(null)
       const documentRef = firestore()
       .collection('Class')
       .doc('0VA2PZf3PVGlbWlF9EiV');
@@ -763,7 +784,7 @@ const TeamRoom = ({navigation}) => {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              end();
+              end();console.log("end")
             }}>
             <Text>End</Text>
           </TouchableOpacity>
