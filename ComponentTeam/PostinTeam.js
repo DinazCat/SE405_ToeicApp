@@ -20,7 +20,8 @@ const {width, height} = Dimensions.get('window');
 const PostinTeam = ({item}) => {
   const navigation = useNavigation();
   const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
-
+  const [count, setCount] = useState(item.likes);
+  const [count1, setCount1] = useState(item.replies.length);
 useEffect(() => {
   const updateScreenWidth = () => {
     setScreenWidth(Dimensions.get('window').width);
@@ -67,6 +68,23 @@ const PopupMenu = () =>{
     </View>
   )
 }
+const getLikes = async()=>{
+  const documentRef = firestore().collection('PostInTeam').doc(item.id);
+  documentRef.onSnapshot((documentSnapshot) => {
+    if (documentSnapshot.exists) {
+      const documentData = documentSnapshot.data();
+
+      setCount(documentData.likes)
+      setCount1(documentData.replies.length)
+    } else {
+      console.log('Document does not exist.');
+    }
+  });
+
+}
+useEffect(() => {
+ getLikes()
+}, []);
   return (  
      <View style={{borderRadius:15, backgroundColor:card_color, width:screenWidth*0.9, alignSelf:'center', elevation: 5, marginTop:10}}>
       {/* <FlatList
@@ -109,19 +127,25 @@ const PopupMenu = () =>{
     </View>
      </View>
       <View style={{height:0.5,backgroundColor:'gray', marginTop:5, marginBottom:5}}/>
-      <TouchableOpacity style={{flexDirection:'row', marginLeft:5, marginTop:5}}  onPress={() => navigation.push('ReplyScreen')}>
+      <TouchableOpacity style={{flexDirection:'row', marginLeft:5, marginTop:5}}  onPress={() => navigation.push('ReplyScreen',{postId:item.id, postName:item.userName})}>
       <Icon name={'reply'} color="gray" size={15} />
       <Text style={{marginLeft:5, fontSize:15, color:'gray'}}>Reply</Text>
-      <TouchableOpacity >
+      <TouchableOpacity onPress={async ()=>{
+        let i = count + 1
+        setCount(i)
+        await firestore().collection('PostInTeam').doc(item.id).update({
+          likes: i
+        });
+      }}>
         <View style={styles.Interaction}>
         <Ionicons name={'heart'} size={20} color={ 'gray' } />
           <Text style={styles.InteractionText}>
-            2
+            {count}
           </Text>
         </View>
       </TouchableOpacity>
       <View style={{flex:1}}/>
-      <Text style={{marginRight:5, fontSize:15, color:'gray'}}>6 answer</Text>
+      <Text style={{marginRight:5, fontSize:15, color:'gray'}}>{count1 +" Answer"}</Text>
       </TouchableOpacity>
      </View>
   );

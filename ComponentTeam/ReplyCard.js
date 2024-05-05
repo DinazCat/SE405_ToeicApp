@@ -16,9 +16,9 @@ import {PRIMARY_COLOR, card_color} from '../assets/colors/color'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import TextCard from './TextCard';
 const {width, height} = Dimensions.get('window');
-  const ReplyCard = ({postData}) => {
+  const ReplyCard = ({postData, key, Id, updateLike}) => {
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
-
+    // const [count, setCount] = useState(postData.likes)
   useEffect(() => {
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
@@ -30,6 +30,7 @@ const {width, height} = Dimensions.get('window');
     //   Dimensions.removeEventListener('change', updateScreenWidth);
     // };
   }, []);
+  
 
     return (  
         <View style={{borderRadius:15, backgroundColor:card_color, width:screenWidth*0.9, alignSelf:'center', elevation: 5, marginTop:10, flexDirection:'row'}}>
@@ -39,11 +40,11 @@ const {width, height} = Dimensions.get('window');
         <TouchableOpacity style={styles.MenuButton}>
             <Icon name={'ellipsis-h'}  color={'#555'}/>
         </TouchableOpacity>
-            <TouchableOpacity >
+            <TouchableOpacity onPress={updateLike}>
           <View style={styles.Interaction}>
           <Ionicons name={'heart'} size={20} color={ 'gray' } />
             <Text style={styles.InteractionText}>
-              2
+              {postData.likes}
             </Text>
           </View>
         </TouchableOpacity>
