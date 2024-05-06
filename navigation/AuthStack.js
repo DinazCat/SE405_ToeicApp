@@ -8,6 +8,9 @@ import SignupScreen from '../screens/SignupScreen';
 import ForgotPassword from '../screens/ForgotPassword';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import RegisterTeacher1 from '../msteam/RegisterTeacher1';
+import RegisterTeacher2 from '../msteam/RegisterTeacher2';
+import RegisterTeacher3 from '../msteam/RegisterTeacher3';
 
 
 const Stack = createNativeStackNavigator();
@@ -67,6 +70,18 @@ const AuthStack = () => {
             </View>
             ), 
         })} />  
+        <Stack.Screen name="RegisterTeacher1" component={RegisterTeacher1}
+        options={{ header: () => null }} />
+        <Stack.Screen
+        name="RegisterTeacher2"
+        component={RegisterTeacher2}
+        options={{header: () => null}}
+        />
+        <Stack.Screen
+        name="RegisterTeacher3"
+        component={RegisterTeacher3}
+        options={{header: () => null}}
+        />
     </Stack.Navigator>
   )
 }

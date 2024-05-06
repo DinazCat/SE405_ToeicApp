@@ -62,7 +62,7 @@ export const AuthProvider = ({children}) => {
               console.log('error: ', e);
             })
           },
-          googleLogin: async (type) => {
+          googleLogin: async () => {
             try{
               // Get the users ID token
               const { idToken } = await GoogleSignin.signIn();
@@ -78,7 +78,6 @@ export const AuthProvider = ({children}) => {
                   name: auth().currentUser.displayName,
                   email: auth().currentUser.email,
                   userImg: auth().currentUser.photoURL,
-                  type: type,
                 }
                 FirstLogin(userData);
                 
@@ -90,7 +89,7 @@ export const AuthProvider = ({children}) => {
                 alert('Something went wrong! ' + error);
             }
           },
-          register: async (email, password, name, type) => {
+          register: async (email, password, name) => {
             try {
               await auth().createUserWithEmailAndPassword(email, password)
               .then(() => {
@@ -101,7 +100,6 @@ export const AuthProvider = ({children}) => {
                   name: name,
                   email: auth().currentUser.email,
                   userImg: auth().currentUser.photoURL,
-                  type: type,
                 }
                 Api.setUserInfo(userData)
                 .catch(error => console.error(error));

@@ -5,7 +5,6 @@ import AppStyle from '../theme';
 import {card_color} from '../assets/colors/color';
 import FormButton from '../components/FormButton';
 import Api from '../api/Api';
-import {AuthContext} from '../navigation/AuthProvider';
 
 const paymentInfo = {
   bankName: 'bankName',
