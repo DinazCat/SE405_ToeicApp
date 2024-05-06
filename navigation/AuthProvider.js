@@ -8,6 +8,7 @@ export const AuthContext = createContext({});
 //
 export const AuthProvider = ({children}) => {
   const [user, setUser] = useState(null);
+  const [isTeacher, setIsTeacher] = useState(false);
 
   const getFcmToken = async () => {
     try {
@@ -36,6 +37,8 @@ export const AuthProvider = ({children}) => {
         value={{
           user,
           setUser,
+          isTeacher,
+          setIsTeacher,
           login: async (email, password) => {
             try {
               await auth().signInWithEmailAndPassword(email, password);

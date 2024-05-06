@@ -25,7 +25,7 @@ import {AuthContext} from '../navigation/AuthProvider';
 
 const Teams = ({navigation}) => {
   const [classes, setClasses] = useState([]);
-  const {user} = useContext(AuthContext);
+  const {user, isTeacher} = useContext(AuthContext);
 
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
@@ -74,14 +74,14 @@ const Teams = ({navigation}) => {
           <ClassCard key={index} item={item} navigation={navigation} />
         )}
       />
-      <TouchableOpacity
+      {isTeacher&&<TouchableOpacity
         style={[
           styles.addButton,
           {marginLeft: screenWidth - 80, marginTop: screenHeight - 120},
         ]}
         onPress={() => navigation.push('NewTeam')}>
         <Icon name={'plus'} color="white" size={20} />
-      </TouchableOpacity>
+      </TouchableOpacity>}
     </View>
   );
 };
