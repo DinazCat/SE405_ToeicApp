@@ -196,11 +196,6 @@ export default function HomeStack() {
         component={SavedQuestionScreen}
         options={{header: () => null}}
       />
-      <Stack.Screen
-        name="RegisterTeacherStack"
-        component={RegisterTeacherStack}
-        options={{header: () => null}}
-      />
     </Stack.Navigator>
   );
 }

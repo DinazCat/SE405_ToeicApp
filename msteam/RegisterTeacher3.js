@@ -18,7 +18,7 @@ const RegisterTeacher3 = ({navigation, route}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const {register} = useContext(AuthContext);
+  const {registerTeacher} = useContext(AuthContext);
 
   const onSave = async () => {
     if (email === '' || password === '' || confirmPassword === '') {
@@ -30,20 +30,9 @@ const RegisterTeacher3 = ({navigation, route}) => {
     } else if (password !== confirmPassword) {
       Alert.alert('Password confirmation does not match!');
     } else {
-      const teacherData = {
-        ...route.params,
-      };
-
-      console.log(teacherData);
-      register(email, password, route.params?.name);
+      const teacherData = {...route.params};
+      registerTeacher(email, password, teacherData);
     }
-
-    // console.log(profileData);
-    // await Api.updateUserPrivate(teacherData)
-    //   .then(() => {
-    //     navigation.navigate('Homeinstack');
-    //   })
-    //   .catch(error => console.error(error));
   };
 
   return (

@@ -23,7 +23,6 @@ const RegisterTeacher2 = ({navigation, route}) => {
   const [bank, setBank] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
-  const [branch, setBranch] = useState('');
 
   //handle modal upload image
   const openLibrary = async () => {
@@ -51,12 +50,7 @@ const RegisterTeacher2 = ({navigation, route}) => {
   };
 
   const onNext = async () => {
-    if (
-      bank === '' ||
-      accountNumber === '' ||
-      accountName === '' ||
-      branch === ''
-    ) {
+    if (bank === '' || accountNumber === '' || accountName === '') {
       Alert.alert(
         'Input cannot be blank!',
         'Please enter complete information',
@@ -75,7 +69,6 @@ const RegisterTeacher2 = ({navigation, route}) => {
         bankName: bank,
         accountNumber: accountNumber,
         accountName: accountName,
-        branchName: branch,
       },
     });
   };
@@ -175,21 +168,12 @@ const RegisterTeacher2 = ({navigation, route}) => {
           iconType="money-check"
           autoCapitalize="none"
           autoCorrect={false}
-          keyboardType="numeric"
         />
 
         <Text style={styles.title}>Enter Account Name</Text>
         <FormInput
           onChangeText={value => setAccountName(value)}
           iconType="user"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-
-        <Text style={styles.title}>Enter Bank Branch</Text>
-        <FormInput
-          onChangeText={value => setBranch(value)}
-          iconType="hotel"
           autoCapitalize="none"
           autoCorrect={false}
         />
