@@ -66,7 +66,7 @@ const getRandomColor = () => {
           </TouchableOpacity>
         </View> 
         <View style={{flexDirection:'row', justifyContent:'space-between', marginHorizontal:5, marginTop:20}}>
-        <Text style={{color:'white', fontSize:20}}>In the meeting: 24 people </Text>
+        <Text style={{color:'white', fontSize:20}}>In the meeting: {list.length} people </Text>
         <Text style={{color:'white', fontSize:18,textDecorationLine: 'underline' }}>Unmute all</Text>
         </View>
 

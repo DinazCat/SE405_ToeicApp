@@ -35,10 +35,17 @@ const {width, height} = Dimensions.get('window');
         }, (querySnapshot) => {
           let list = content
           list= list.filter(item => item.type !== "Post");
+          list= list.filter(item => item.type !== "Meeting");
           querySnapshot.forEach((doc) => {
             const newDocumentData = doc.data();
               if(moment(newDocumentData.Date,"DD/MM/YYYY").isSame(moment(item.Date,"DD/MM/YYYY"))){
-                list.push({...newDocumentData,type:'Post'})
+                if(newDocumentData.sign=='Meeting'){
+                  list.push({...newDocumentData,type:'Meeting'})
+                }
+                  else {
+                    list.push({...newDocumentData,type:'Post'})
+                }
+    
               }
             
             
@@ -113,7 +120,7 @@ const {width, height} = Dimensions.get('window');
                         />
                     )
                     }
-                    else if (item.type == 'Post') {
+                    else if (item.type == 'Post'||item.type == 'Meeting') {
                         return (
                             <PostinTeam item={item} 
                             />
