@@ -9,7 +9,6 @@ const SignupScreen = ({navigation, route}) => {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const type = route.params.type;
   const {register, googleLogin} = useContext(AuthContext);
 
   return (
@@ -56,7 +55,7 @@ const SignupScreen = ({navigation, route}) => {
         title="Sign up"
         onPress={() => {
           if (password == confirmPassword) {
-              register(email, password, name, type)
+              register(email, password, name)
           }
           else{
             alert('Password confirmation does not match!')
@@ -67,7 +66,7 @@ const SignupScreen = ({navigation, route}) => {
 
       {Platform.OS === 'android' ? (
         <TouchableOpacity style={styles.googleButton}
-        onPress={() => googleLogin(type)}>
+        onPress={() => googleLogin()}>
                 <Image style={styles.iconWrapper}
                 source={require('../assets/google.png')}/>
           <View style={styles.btnTxtWrapper}>

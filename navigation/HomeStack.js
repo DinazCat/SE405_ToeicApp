@@ -23,7 +23,6 @@ import TestQuestions from '../screens/TestQuestions';
 import CompleteTestCard from '../components/CompleteTestCard';
 import InTestCard from '../components/InTestCard';
 import SavedQuestionScreen from '../screens/SavedQuestionScreen';
-import RegisterTeacherStack from './RegisterTeacherStack';
 
 const Stack = createNativeStackNavigator();
 export default function HomeStack() {
@@ -50,9 +49,6 @@ export default function HomeStack() {
 
     if (userData && (userData.targetScore || userData.toeicCertificateImage)) {
       setInitialScreen('Homeinstack');
-      setLoading(false);
-    } else if (userData.type === 'Teacher') {
-      setInitialScreen('RegisterTeacherStack');
       setLoading(false);
     } else if (userData != 0) {
       setInitialScreen('GetUserGoal');
@@ -198,11 +194,6 @@ export default function HomeStack() {
       <Stack.Screen
         name="SavedQuestionScreen"
         component={SavedQuestionScreen}
-        options={{header: () => null}}
-      />
-      <Stack.Screen
-        name="RegisterTeacherStack"
-        component={RegisterTeacherStack}
         options={{header: () => null}}
       />
     </Stack.Navigator>
