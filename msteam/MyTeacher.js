@@ -7,26 +7,27 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import AppStyle from '../theme';
 import TeacherCard from '../ComponentTeam/TeacherCard';
 import FormButton from '../components/FormButton';
 import Api from '../api/Api';
+import {AuthContext} from '../navigation/AuthProvider';
 
 const MyTeacher = ({navigation}) => {
+  const {user} = useContext(AuthContext);
   const [teachers, setTeachers] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [review, setReview] = useState('');
-
   const writeReview = () => {
     setOpenModal(true);
   };
 
   useEffect(() => {
     const getAllTeachers = async () => {
-      const data = await Api.getAllTeachers();
+      const data = await Api.getTeachersOfClasses(user.uid);
       setTeachers(data);
     };
 

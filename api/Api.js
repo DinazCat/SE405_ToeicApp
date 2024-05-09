@@ -549,6 +549,19 @@ const getAllTeachers = async () => {
   }
 };
 
+const getTeachersOfClasses = async userId => {
+  try {
+    const response = await client.get('/Teachers/' + userId);
+    if (response.data.success) {
+      return response.data.teachers;
+    } else {
+      console.log('not get teachers');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+
 // router.get('/Agenda/getAgendaOfUser/:userId',getAgendaOfUser)
 const getAgendaOfUser = async userId => {
   const endpoint = '/Agenda/getAgendaOfUser/' + userId;
@@ -628,6 +641,7 @@ export default {
   getClassesByUser,
   registerCourse,
   getAllTeachers,
+  getTeachersOfClasses,
   getAgendaOfUser,
   getRangeDate,
 };

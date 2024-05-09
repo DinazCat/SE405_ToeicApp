@@ -280,7 +280,10 @@ const RegisterTeacher1 = ({navigation}) => {
             autoCorrect={false}
           />
         </View>
-        <Text style={styles.note}>*Each certificate is on a row</Text>
+        <Text style={styles.note}>
+          *Each certificate is on a row with the syntax: Certificate name -
+          score - expiration date
+        </Text>
 
         <View
           style={{
