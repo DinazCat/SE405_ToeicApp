@@ -592,6 +592,20 @@ const getRangeDate = async classId => {
     return [];
   }
 };
+const addReview = async data => {
+  try {
+    await client.put('/addReview/' + data.id, data);
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+const updateReview = async data => {
+  try {
+    await client.put('/updateReview/' + data.id, data);
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
 
 export default {
   getVocabLesson,
@@ -644,4 +658,6 @@ export default {
   getTeachersOfClasses,
   getAgendaOfUser,
   getRangeDate,
+  addReview,
+  updateReview,
 };

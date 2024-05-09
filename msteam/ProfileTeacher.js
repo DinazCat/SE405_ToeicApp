@@ -35,10 +35,11 @@ const ProfileTeacher = ({navigation, route}) => {
           />
           <Text style={styles.nameTeacher}>{profile.name}</Text>
           <View style={{flexDirection: 'row', alignSelf: 'center', gap: 2}}>
-            <Text>{profile.Stars ? item.Stars : '0'}</Text>
+            <Text>{profile.rating ? profile.rating : '0'}</Text>
             <FontAwesome name="star" color="orange" size={20} />
             <Text>
-              / {profile.Reviews?.lengths ? item.Reviews.lengths : '0'} Reviews
+              / {profile.reviews?.length ? profile.reviews.length : '0'}
+              {' Reviews'}
             </Text>
           </View>
         </View>
@@ -98,7 +99,7 @@ const ProfileTeacher = ({navigation, route}) => {
         {(profile?.otherCertificate?.length !== 0 ||
           profile?.otherCertificateImages?.length !== 0) && (
           <View style={[styles.infoContainer, {alignItems: 'center'}]}>
-            {profile?.otherCertificate.length !== 0 && (
+            {profile?.otherCertificate?.length !== 0 && (
               <View style={{marginBottom: 5, width: '100%', gap: 5}}>
                 <Text style={[styles.title, {textAlign: 'center'}]}>
                   Other Certificates
@@ -126,20 +127,51 @@ const ProfileTeacher = ({navigation, route}) => {
           </View>
         )}
 
-        <View style={[styles.infoContainer, {alignItems: 'center'}]}>
+        <View
+          style={[
+            styles.infoContainer,
+            {
+              alignItems: 'center',
+              paddingHorizontal: 0,
+            },
+          ]}>
           <Text style={styles.title}>Reviews:</Text>
-          {profile?.reviews ? (
-            <View>
-              {profile?.reviews?.map((item, index) => {
+          {profile?.reviews?.length !== 0 ? (
+            <View style={{width: '100%', gap: 10}}>
+              {profile?.reviews?.map(item => {
                 return (
-                  <Text key={index} style={{marginBottom: 5}}>
-                    - {item}
-                  </Text>
+                  <View
+                    key={item.id}
+                    style={{
+                      flexDirection: 'row',
+                      gap: 10,
+                      paddingVertical: 5,
+                      paddingHorizontal: 10,
+                      alignItems: 'center',
+                      backgroundColor: 'white',
+                    }}>
+                    <Image
+                      source={{
+                        uri: item.userImg
+                          ? item.userImg
+                            ? item.userImg
+                            : 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png'
+                          : 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png',
+                      }}
+                      style={{height: 32, width: 32, borderRadius: 30}}
+                    />
+                    <View>
+                      <Text style={{color: '#555'}}>{item.name}</Text>
+                      <Text style={{color: '#555', fontWeight: '600'}}>
+                        {item.review}
+                      </Text>
+                    </View>
+                  </View>
                 );
               })}
             </View>
           ) : (
-            <Text>You don't have any review.</Text>
+            <Text>The teacher doesn't have any review.</Text>
           )}
         </View>
         <View style={{height: 50}} />
