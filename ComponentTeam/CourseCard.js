@@ -31,7 +31,8 @@ const CourseCard = ({navigation, item}) => {
           <Text style={[styles.bold, styles.color]}>{item.Level}+</Text>
         </Text>
         <Text style={[styles.bold, styles.italic]}>
-          {item.Participants?.length}/{item.MaximumStudents} students
+          {item.Members?.length ? item.Members?.length : '0'}/
+          {item.MaximumStudents} students
         </Text>
       </View>
       <Text style={styles.text}>
