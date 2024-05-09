@@ -76,10 +76,12 @@ const DetailCourse = ({navigation, route}) => {
                   {teacherProfile?.score}
                 </Text>
               </View>
-              <View style={{flexDirection: 'row', width: '100%'}}>
-                <Text>{item.Stars ? item.Stars : '0'}</Text>
+              <View style={{flexDirection: 'row', width: '100%', gap: 2}}>
+                <Text style={styles.normalTeacher}>
+                  {item.Stars ? item.Stars : '0'}
+                </Text>
                 <FontAwesome name="star" color="orange" size={20} />
-                <Text>
+                <Text style={styles.normalTeacher}>
                   / {item.Reviews?.lengths ? item.Reviews.lengths : '0'} Reviews
                 </Text>
               </View>
@@ -100,17 +102,7 @@ const DetailCourse = ({navigation, route}) => {
             </View>
           )}
           <TouchableOpacity
-            style={{
-              backgroundColor: 'lightgray',
-              alignItems: 'center',
-              padding: 5,
-              borderRadius: 5,
-              width: '40%',
-              alignSelf: 'flex-end',
-              flexDirection: 'row',
-              gap: 5,
-              justifyContent: 'center',
-            }}
+            style={styles.viewButton}
             onPress={() =>
               navigation.push('ProfileTeacher', {profile: teacherProfile})
             }>
@@ -203,15 +195,13 @@ const styles = StyleSheet.create({
   },
   content: {
     fontWeight: '600',
-    paddingBottom: 2,
-    borderBottomWidth: 1,
     fontSize: 15,
     color: '#333',
   },
   userImg: {
     height: 60,
     width: 60,
-    borderRadius: 10,
+    borderRadius: 50,
   },
   inforContainer: {
     backgroundColor: card_color,
@@ -237,6 +227,17 @@ const styles = StyleSheet.create({
   normalTeacher: {
     fontSize: 15,
     color: '#333',
+  },
+  viewButton: {
+    backgroundColor: 'lightgray',
+    alignItems: 'center',
+    padding: 5,
+    borderRadius: 5,
+    width: '40%',
+    alignSelf: 'flex-end',
+    flexDirection: 'row',
+    gap: 5,
+    justifyContent: 'center',
   },
 });
 

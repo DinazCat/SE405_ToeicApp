@@ -5,13 +5,19 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
+import {AuthContext} from '../navigation/AuthProvider';
 
 const CourseCard = ({navigation, item}) => {
+  const {user} = useContext(AuthContext);
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
   );
+  const [isRegister, setIsRegister] = useState(() => {
+    if (item?.Members?.some(e => e.id === user.uid)) return true;
+    return false;
+  });
 
   useEffect(() => {
     const updateScreenWidth = () => {
@@ -58,9 +64,12 @@ const CourseCard = ({navigation, item}) => {
           <Text style={styles.buttonText}>View detail</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.button}
+          style={isRegister ? styles.disabledButton : styles.button}
+          disabled={isRegister}
           onPress={() => navigation.push('RegisterCourse', {course: item})}>
-          <Text style={styles.buttonText}>Register course</Text>
+          <Text style={isRegister ? styles.disabledText : styles.buttonText}>
+            Register course
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -126,6 +135,18 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     color: card_color,
+    fontWeight: '600',
+  },
+  disabledButton: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: 'lightgray',
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  disabledText: {
+    fontSize: 16,
+    color: 'gray',
     fontWeight: '600',
   },
 });

@@ -1,5 +1,5 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import React, {useState, useContext, useEffect} from 'react'
+import React, {useState, useContext, useEffect} from 'react';
 import TeamStack from './TeamStack';
 import ChatStack from './ChatStack';
 import AgendaStack from './AgendaStack';
@@ -11,10 +11,11 @@ import {Image, StyleSheet, Text, View} from 'react-native';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {AuthContext} from './AuthProvider';
+import {CommonActions, StackActions} from '@react-navigation/native';
 const Tab = createBottomTabNavigator();
 
 const BottomTab = () => {
-  const { isTeacher } = useContext(AuthContext);
+  const {isTeacher} = useContext(AuthContext);
   const getIconColor = focused => ({
     color: focused ? PRIMARY_COLOR : 'black',
   });
@@ -81,30 +82,53 @@ const BottomTab = () => {
           tabBarVisible: false,
         }}
       />
-      {!isTeacher&&<Tab.Screen
-        name="Teacher"
-        component={TeacherStack}
-        options={{
-          tabBarIcon: ({focused}) => (
-            <View style={styles.tabIconContainer}>
-              <Icon name={'users'} size={20} style={[getIconColor(focused)]} />
-              <Text style={[getIconColor(focused)]}>Teacher</Text>
-            </View>
-          ),
-        }}
-      />}
-            {isTeacher&&<Tab.Screen
-        name="Teacher"
-        component={TeacherStack_tc}
-        options={{
-          tabBarIcon: ({focused}) => (
-            <View style={styles.tabIconContainer}>
-              <Icon name={'users'} size={20} style={[getIconColor(focused)]} />
-              <Text style={[getIconColor(focused)]}>Teacher</Text>
-            </View>
-          ),
-        }}
-      />}
+      {!isTeacher && (
+        <Tab.Screen
+          name="Teacher"
+          component={TeacherStack}
+          options={{
+            tabBarIcon: ({focused}) => (
+              <View style={styles.tabIconContainer}>
+                <Icon
+                  name={'users'}
+                  size={20}
+                  style={[getIconColor(focused)]}
+                />
+                <Text style={[getIconColor(focused)]}>Teacher</Text>
+              </View>
+            ),
+          }}
+          listeners={({navigation}) => ({
+            blur: () => {
+              const state = navigation.getState();
+
+              state.routes.forEach((route, tabIndex) => {
+                if (state?.index !== tabIndex && route.state?.index > 0) {
+                  navigation.dispatch(StackActions.popToTop());
+                }
+              });
+            },
+          })}
+        />
+      )}
+      {isTeacher && (
+        <Tab.Screen
+          name="Teacher"
+          component={TeacherStack_tc}
+          options={{
+            tabBarIcon: ({focused}) => (
+              <View style={styles.tabIconContainer}>
+                <Icon
+                  name={'users'}
+                  size={20}
+                  style={[getIconColor(focused)]}
+                />
+                <Text style={[getIconColor(focused)]}>Teacher</Text>
+              </View>
+            ),
+          }}
+        />
+      )}
     </Tab.Navigator>
   );
 };

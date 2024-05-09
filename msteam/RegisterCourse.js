@@ -1,10 +1,11 @@
 import {View, Text, StyleSheet, TouchableOpacity, Alert} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AppStyle from '../theme';
 import {card_color} from '../assets/colors/color';
 import FormButton from '../components/FormButton';
 import Api from '../api/Api';
+import {AuthContext} from '../navigation/AuthProvider';
 
 const paymentInfo = {
   bankName: 'bankName',
@@ -13,17 +14,8 @@ const paymentInfo = {
 };
 
 const RegisterCourse = ({navigation, route}) => {
-  const [profileData, setProfileData] = useState(null);
   const item = route.params.course;
-
-  const getProfile = async () => {
-    const data = await Api.getUserData(item.userId);
-    setProfileData(data);
-  };
-
-  useEffect(() => {
-    getProfile();
-  }, []);
+  const {user} = useContext(AuthContext);
 
   const onSave = async () => {
     Alert.alert('Registered successfully');
@@ -31,9 +23,8 @@ const RegisterCourse = ({navigation, route}) => {
     await Api.registerCourse({
       classId: item.classId,
       user: {
-        id: item.userId,
-        name: item.userName,
-        image: profileData.userImg,
+        id: user.uid,
+        name: user.displayName,
       },
     })
       .then(() => {
