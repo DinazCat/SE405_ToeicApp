@@ -6,18 +6,22 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AppStyle from '../theme';
 import FormButton from '../components/FormButton';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import Api from '../api/Api';
-
-const skills = ['Listening', 'Reading', 'Communication', 'Teaching'];
+import {AuthContext} from '../navigation/AuthProvider';
 
 const DetailCourse = ({navigation, route}) => {
-  const [teacherProfile, setTeacherProfile] = useState(null);
   const item = route.params.course;
+  const {user} = useContext(AuthContext);
+  const [teacherProfile, setTeacherProfile] = useState(null);
+  const [isRegister, setIsRegister] = useState(() => {
+    if (item?.Members?.some(e => e.id === user.uid)) return true;
+    return false;
+  });
 
   useEffect(() => {
     const getProfile = async () => {
@@ -156,12 +160,14 @@ const DetailCourse = ({navigation, route}) => {
             </View>
           )}
         </View>
-        <View style={{width: '40%', alignSelf: 'center'}}>
-          <FormButton
-            title={'Register'}
-            onPress={() => navigation.push('RegisterCourse', {course: item})}
-          />
-        </View>
+        {!isRegister && (
+          <View style={{width: '40%', alignSelf: 'center'}}>
+            <FormButton
+              title={'Register'}
+              onPress={() => navigation.push('RegisterCourse', {course: item})}
+            />
+          </View>
+        )}
       </ScrollView>
     </View>
   );
