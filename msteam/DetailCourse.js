@@ -153,10 +153,12 @@ const DetailCourse = ({navigation, route}) => {
             </Text>
           </View>
 
-          {item.description && (
-            <View style={styles.textContainer}>
+          {item.Description && (
+            <View>
               <Text style={styles.normal}>{'Description: '}</Text>
-              <Text style={styles.content}>{item.Description}</Text>
+              <Text style={{fontSize: 15, color: '#333'}}>
+                {item.Description}
+              </Text>
             </View>
           )}
         </View>
@@ -168,6 +170,7 @@ const DetailCourse = ({navigation, route}) => {
             />
           </View>
         )}
+        <View style={{height: 30}} />
       </ScrollView>
     </View>
   );
@@ -197,10 +200,10 @@ const styles = StyleSheet.create({
   normal: {
     fontSize: 15,
     color: '#333',
+    fontWeight: '600',
     minWidth: '25%',
   },
   content: {
-    fontWeight: '600',
     fontSize: 15,
     color: '#333',
   },
