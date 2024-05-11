@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 import auth from '@react-native-firebase/auth';
-const SOCKET_URL = 'http://192.168.0.66:3000';
+const SOCKET_URL = 'http://192.168.1.7:3000';
 
 class WSService {
   initializeSocket = async () => {

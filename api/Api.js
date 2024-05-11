@@ -549,42 +549,63 @@ const getAllTeachers = async () => {
   }
 };
 
+const getTeachersOfClasses = async userId => {
+  try {
+    const response = await client.get('/Teachers/' + userId);
+    if (response.data.success) {
+      return response.data.teachers;
+    } else {
+      console.log('not get teachers');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+
 // router.get('/Agenda/getAgendaOfUser/:userId',getAgendaOfUser)
-const getAgendaOfUser = async(userId)=>{
-  const endpoint = "/Agenda/getAgendaOfUser/" + userId
-  try{
-      const response = await client.get(endpoint)
-      if(response.data.success){
-          return response.data.list
-      }
-      else{
-          console.log("not get")
-      }
-      
+const getAgendaOfUser = async userId => {
+  const endpoint = '/Agenda/getAgendaOfUser/' + userId;
+  try {
+    const response = await client.get(endpoint);
+    if (response.data.success) {
+      return response.data.list;
+    } else {
+      console.log('not get');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+    return [];
   }
-  catch(error){
-      console.log('error: ', error.message)
-      return [];
-  }
-}
+};
 // router.get('/Meeting/getRangeDate/:classId',getRangeDate)
-const getRangeDate = async(classId)=>{
-  const endpoint = "/Meeting/getRangeDate/" + classId
-  try{
-      const response = await client.get(endpoint)
-      if(response.data.success){
-          return response.data.RangeDate
-      }
-      else{
-          console.log("not get")
-      }
-      
+const getRangeDate = async classId => {
+  const endpoint = '/Meeting/getRangeDate/' + classId;
+  try {
+    const response = await client.get(endpoint);
+    if (response.data.success) {
+      return response.data.RangeDate;
+    } else {
+      console.log('not get');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+    return [];
   }
-  catch(error){
-      console.log('error: ', error.message)
-      return [];
+};
+const addReview = async data => {
+  try {
+    await client.put('/addReview/' + data.id, data);
+  } catch (error) {
+    console.log('error: ', error.message);
   }
-}
+};
+const updateReview = async data => {
+  try {
+    await client.put('/updateReview/' + data.id, data);
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
 
 export default {
   getVocabLesson,
@@ -634,6 +655,9 @@ export default {
   getClassesByUser,
   registerCourse,
   getAllTeachers,
-    getAgendaOfUser,
-    getRangeDate
+  getTeachersOfClasses,
+  getAgendaOfUser,
+  getRangeDate,
+  addReview,
+  updateReview,
 };

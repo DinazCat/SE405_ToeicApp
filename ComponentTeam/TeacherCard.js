@@ -6,12 +6,18 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
+import {AuthContext} from '../navigation/AuthProvider';
 
 const TeacherCard = ({item, navigation, writeReview, viewCourse}) => {
+  const {user} = useContext(AuthContext);
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
+  );
+  const [writedReview, setWritedReview] = useState(() =>
+    item?.reviews?.some(e => (e.id = user.uid)),
   );
 
   useEffect(() => {
@@ -21,6 +27,9 @@ const TeacherCard = ({item, navigation, writeReview, viewCourse}) => {
 
     Dimensions.addEventListener('change', updateScreenWidth);
   }, []);
+  useEffect(() => {
+    setWritedReview(item?.reviews?.some(e => (e.id = user.uid)));
+  }, [item?.reviews?.length]);
 
   return (
     <View style={[styles.container, {width: screenWidth * 0.9}]}>
@@ -31,27 +40,26 @@ const TeacherCard = ({item, navigation, writeReview, viewCourse}) => {
         }}
       />
       <Text style={styles.mainText}>{item.name}</Text>
-      <View style={{flexDirection: 'row', alignSelf: 'center', marginTop: 5}}>
-        <Text>{item.stars}</Text>
-        <FontAwesome
-          name="star"
-          color="orange"
-          size={20}
-          style={{marginHorizontal: 4}}
-        />
-        <Text>/ 0 Review</Text>
+      <View style={{flexDirection: 'row', alignSelf: 'center', gap: 2}}>
+        <Text>{item.rating}</Text>
+        <FontAwesome name="star" color="orange" size={20} />
+        <Text>
+          / {item.reviews?.length ? item.reviews.length : '0'} Reviews
+        </Text>
       </View>
+
       <View style={styles.buttonWrapper}>
         <TouchableOpacity
-          style={styles.buttonContainer}
+          style={styles.button}
           onPress={() =>
             navigation.navigate('ProfileTeacher', {profile: item})
           }>
-          <Text style={styles.buttonText}>View Profile</Text>
+          <Text style={styles.buttonText}>View profile</Text>
         </TouchableOpacity>
+
         {viewCourse ? (
           <TouchableOpacity
-            style={styles.buttonContainer}
+            style={styles.button}
             onPress={() =>
               navigation.navigate('CourseList', {teacherId: item.id})
             }>
@@ -59,13 +67,11 @@ const TeacherCard = ({item, navigation, writeReview, viewCourse}) => {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={[
-              styles.buttonContainer,
-              {backgroundColor: item.writedReview ? '#f0f0f0' : '#D0E895'},
-            ]}
-            disabled={item.writedReview}
-            onPress={writeReview}>
-            <Text style={styles.buttonText}>Write review</Text>
+            style={styles.button}
+            onPress={() => writeReview(item)}>
+            <Text style={styles.buttonText}>
+              {writedReview ? 'Edit review' : 'Write review'}
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -77,10 +83,13 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'flex-start',
     alignSelf: 'center',
-    borderRadius: 20,
+    borderRadius: 10,
     flexDirection: 'column',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
+    backgroundColor: card_color,
+    padding: 20,
+    gap: 5,
   },
   image: {
     borderRadius: 50,
@@ -92,27 +101,27 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 22,
     fontWeight: 'bold',
-    marginTop: 10,
+    marginTop: 5,
   },
   buttonWrapper: {
     display: 'flex',
     flexDirection: 'row',
-    gap: 20,
+    justifyContent: 'space-between',
     width: '100%',
-    marginTop: 20,
+    gap: 10,
+    marginTop: 5,
   },
-  buttonContainer: {
+  button: {
     flex: 1,
-    padding: 8,
-    backgroundColor: '#D0E895',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 25,
+    backgroundColor: PRIMARY_COLOR,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#222',
+    fontSize: 16,
+    color: card_color,
+    fontWeight: '600',
   },
 });
 
