@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  ScrollView,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import moment from 'moment';
@@ -37,6 +38,7 @@ const tuitionList = [
 
 const NewTeam = ({navigation, route}) => {
   const [className, setClassName] = useState('');
+  const [description, setDescription] = useState('');
   const [maximumStudents, setMaximumStudents] = useState('');
   const [level, setLevel] = useState('');
   const [tuition, setTuition] = useState('');
@@ -60,7 +62,8 @@ const NewTeam = ({navigation, route}) => {
       className === '' ||
       maximumStudents === '' ||
       level === '' ||
-      tuition === ''
+      tuition === '' ||
+      description === ''
     ) {
       Alert.alert(
         'Input cannot be blank!',
@@ -105,6 +108,7 @@ const NewTeam = ({navigation, route}) => {
       MaximumStudents: maximumStudents,
       Level: level,
       Tuition: tuition,
+      Description: description,
     })
       .then(() => {
         navigation.navigate('Teams');
@@ -123,18 +127,24 @@ const NewTeam = ({navigation, route}) => {
         <Text style={styles.header}>Create a new class</Text>
       </View>
 
-      <View style={{paddingHorizontal: 5}}>
+      <ScrollView style={{paddingHorizontal: 5}}>
         <Text style={styles.title}>Class name: </Text>
         <TextInput
-          value={className}
           style={styles.input}
           placeholderTextColor={'#555'}
           onChangeText={value => setClassName(value)}
         />
 
+        <Text style={styles.title}>Description: </Text>
+        <TextInput
+          style={styles.input}
+          placeholderTextColor={'#555'}
+          onChangeText={value => setDescription(value)}
+          multiline
+        />
+
         <Text style={styles.title}>Maximum students: </Text>
         <TextInput
-          value={maximumStudents}
           style={styles.input}
           onChangeText={value => setMaximumStudents(value)}
           keyboardType="numeric"
@@ -142,7 +152,6 @@ const NewTeam = ({navigation, route}) => {
 
         <Text style={styles.title}>Level: </Text>
         <TextInput
-          value={level}
           style={styles.input}
           onChangeText={value => setLevel(value)}
           keyboardType="numeric"
@@ -213,11 +222,11 @@ const NewTeam = ({navigation, route}) => {
             />
           </View>
         </View>
-      </View>
 
-      <View style={{width: '40%', alignSelf: 'center'}}>
-        <FormButton title={'Create'} onPress={onSave} />
-      </View>
+        <View style={{width: '40%', alignSelf: 'center', marginBottom: 20}}>
+          <FormButton title={'Create'} onPress={onSave} />
+        </View>
+      </ScrollView>
     </View>
   );
 };

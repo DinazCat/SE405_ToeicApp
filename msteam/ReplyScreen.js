@@ -9,7 +9,7 @@ import firestore from '@react-native-firebase/firestore';
 
 
 const ReplyScreen = ({navigation, route}) => {
-  const {postId,postName} = route.params
+  const {postId,postName, sign} = route.params
   const closeKeyBoard=()=>{
     Keyboard.dismiss();
   }
@@ -35,7 +35,8 @@ useEffect(() => {
   getProfile();
 }, []);
 const getAnswers = async()=>{
-  const documentRef = firestore().collection('PostInTeam').doc(postId);
+ 
+  const documentRef = firestore().collection(sign=='Post'?'PostInTeam':'Class').doc(postId);
   documentRef.onSnapshot((documentSnapshot) => {
     if (documentSnapshot.exists) {
       const documentData = documentSnapshot.data();
@@ -46,6 +47,8 @@ const getAnswers = async()=>{
     }
   });
 
+
+
 }
 useEffect(() => {
  getAnswers()
@@ -53,7 +56,7 @@ useEffect(() => {
 const updateLikes = async(index)=>{
   let list = replies;
   list[index].likes = list[index].likes+1
-  await firestore().collection('PostInTeam').doc(postId).update({
+  await firestore().collection(sign=='Post'?'PostInTeam':'Class').doc(postId).update({
     replies: list,
   });
 
@@ -75,6 +78,7 @@ const handlePostComment =async() => {
     const currentHours = currentDate.getHours(); 
     const currentMinutes = currentDate.getMinutes();
     const time = currentDay+'/'+currentMonth+'/'+currentYear+' at '+currentHours+':'+currentMinutes
+    if(sign=='Post'){
     const data = {
       userName:profileData?.name,
       userImg:profileData?.userImg,
@@ -94,6 +98,27 @@ const handlePostComment =async() => {
       console.error('Error pushing document:', error);
     }
   }
+  else{
+    const data = {
+      userName:profileData?.name,
+      userImg:profileData?.userImg,
+      text:reply,
+      time:time,
+      likes:0,
+    }
+    try {
+
+  await firestore().collection('Class').doc(postId).update({
+    replies: firestore.FieldValue.arrayUnion(data),
+  });
+      console.log('Document pushed successfully.');
+      setReply('')
+      closeKeyBoard()
+    } catch (error) {
+      console.error('Error pushing document:', error);
+    }
+  }
+}
 }
 
   return (
@@ -108,7 +133,8 @@ const handlePostComment =async() => {
                   color={'#111'}                          
                   />
           </TouchableOpacity>
-          <Text style={[styles.headerText, {color: '#111'}]}>Reply to {postName} post</Text>       
+          {sign=='Post'&&<Text style={[styles.headerText, {color: '#111'}]}>Reply to {postName} post</Text>}   
+          {sign=='TeamRoom'&&<Text style={[styles.headerText, {color: '#111'}]}>Chat in {postName}</Text>}   
         </View>
       {replies!=null&&replies.map((comment, index) => (
           <ReplyCard key={index} postData={comment}  Id={postId} updateLike={()=>{updateLikes(index)}}

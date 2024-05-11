@@ -9,7 +9,7 @@ import {
   Modal,
   Image,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import moment from 'moment';
 
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -18,12 +18,9 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
-import Api from '../api/Api';
-import auth from '@react-native-firebase/auth';
 import FormInput from '../components/FormInput';
 
-const RegisterTeacher = ({navigation}) => {
-  const [profileData, setProfileData] = useState(null);
+const RegisterTeacher1 = ({navigation}) => {
   const [name, setName] = useState('');
   const [initBirthdate, setInitBirthdate] = useState(() => {
     const date = new Date();
@@ -39,20 +36,12 @@ const RegisterTeacher = ({navigation}) => {
   const [otherCertificates, setOtherCertificates] = useState([]);
   const [skills, setSkills] = useState([]);
   const [typeImage, setTypeImage] = useState();
-  const [frontImage, setFrontImage] = useState('');
-  const [backImage, setBackImage] = useState('');
+  const [toeicImage, setToeicImage] = useState();
+  const [otherImages, setOtherImages] = useState([]);
   const [openPicker, setOpenPicker] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
-  const getProfile = async () => {
-    const data = await Api.getUserData(auth().currentUser.uid);
-    setProfileData(data);
-  };
-
-  useEffect(() => {
-    getProfile();
-  }, []);
-
+  //handle datetime picker
   const showDatePicker = () => {
     setOpenPicker(true);
   };
@@ -66,6 +55,7 @@ const RegisterTeacher = ({navigation}) => {
     setBirthdate(date);
   };
 
+  //handle modal upload image
   const openLibrary = async () => {
     setOpenModal(false);
     ImagePicker.openPicker({
@@ -73,8 +63,10 @@ const RegisterTeacher = ({navigation}) => {
       height: 150,
       cropping: true,
     }).then(img => {
-      if (typeImage === 'front') setFrontImage(img.path);
-      else if (typeImage === 'back') setBackImage(img.path);
+      if (typeImage === 'toeicImage') setToeicImage(img.path);
+      else if (typeImage === 'otherImages') {
+        setOtherImages([...otherImages, img.path]);
+      }
     });
   };
 
@@ -85,8 +77,9 @@ const RegisterTeacher = ({navigation}) => {
       height: 150,
       cropping: true,
     }).then(img => {
-      if (typeImage === 'front') setFrontImage(img.path);
-      else if (typeImage === 'back') setBackImage(img.path);
+      if (typeImage === 'toeicImage') setToeicImage(img.path);
+      else if (typeImage === 'otherImages')
+        setOtherImages([...otherImages, img.path]);
     });
   };
 
@@ -104,8 +97,23 @@ const RegisterTeacher = ({navigation}) => {
         'Please enter complete information',
       );
       return;
-    } else if (frontImage === '' || backImage === '') {
-      Alert.alert('Input cannot be blank!', 'Please upload your ID card ');
+    } else if (toeicImage === '') {
+      Alert.alert(
+        'Input cannot be blank!',
+        'Please upload your TOEIC Certificate',
+      );
+      return;
+    } else if (otherCertificates.length !== 0 && otherImages.length === 0) {
+      Alert.alert(
+        'Input cannot be blank!',
+        'If you have other certificates, please upload images of them',
+      );
+      return;
+    } else if (otherCertificates.length === 0 && otherImages.length !== 0) {
+      Alert.alert(
+        'Input cannot be blank!',
+        'If you have other certificates, please enter them',
+      );
       return;
     } else if (score < 880 || score > 990) {
       Alert.alert(
@@ -115,19 +123,18 @@ const RegisterTeacher = ({navigation}) => {
       return;
     }
 
-    navigation.push('GetCertificateImage', {
-      id: profileData.id,
+    navigation.push('RegisterTeacher2', {
       name: name,
       birthdate: `${birthdate.getDate()}/${
         birthdate.getMonth() + 1
       }/${birthdate.getFullYear()}`,
-      university: university,
       phone: phone,
+      university: university,
       score: score,
-      otherCertificate: otherCertificates,
       skills: skills,
-      frontIDImage: frontImage,
-      backIDImage: backImage,
+      otherCertificate: otherCertificates,
+      toeicCertificateImage: toeicImage,
+      otherCertificateImages: otherImages,
     });
   };
 
@@ -166,9 +173,14 @@ const RegisterTeacher = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerTitle}>Register Teacher</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Register Teacher</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.cancelButton}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
 
-      <ScrollView style={{width: '100%'}}>
+      <ScrollView style={{width: '100%', padding: 20, paddingTop: 0}}>
         <View style={styles.stepContainer}>
           <View style={[styles.step, {backgroundColor: PRIMARY_COLOR}]} />
           <View style={[styles.step]} />
@@ -190,7 +202,8 @@ const RegisterTeacher = ({navigation}) => {
           <View style={styles.iconStyle}>
             <FontAwesome5 name="calendar" size={22} color="#666" light />
           </View>
-          <Text style={{fontSize: 16, color: '#333', padding: 2}}>
+          <Text
+            style={{fontSize: 16, color: '#333', padding: 2, paddingLeft: 8}}>
             {moment(birthdate).format('DD/MM/YYYY')}
           </Text>
         </TouchableOpacity>
@@ -233,24 +246,6 @@ const RegisterTeacher = ({navigation}) => {
         />
         <Text style={styles.note}>*Required Toeic score is 880+</Text>
 
-        <Text style={styles.title}>Enter Your Other Certificates</Text>
-        <View style={styles.multilineContainer}>
-          <View style={styles.iconStyle}>
-            <FontAwesome5 name="certificate" size={22} color="#666" light />
-          </View>
-          <TextInput
-            style={styles.input}
-            multiline
-            onChangeText={value => {
-              temp = value.trim().split('\n');
-              setOtherCertificates(temp);
-            }}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-        <Text style={styles.note}>*Each certificate is on a row</Text>
-
         <Text style={styles.title}>Enter Your Skills</Text>
         <View style={styles.multilineContainer}>
           <View style={styles.iconStyle}>
@@ -261,13 +256,34 @@ const RegisterTeacher = ({navigation}) => {
             multiline
             onChangeText={value => {
               temp = value.trim().split('\n');
-              setSkills(temp);
+              setSkills(temp.filter(item => item !== ''));
             }}
             autoCapitalize="none"
             autoCorrect={false}
           />
         </View>
-        <Text style={styles.note}>*Each skill is on a row</Text>
+        <Text style={styles.note}>*(Required) Each skill is on a row</Text>
+
+        <Text style={styles.title}>Enter Your Other Certificates</Text>
+        <View style={styles.multilineContainer}>
+          <View style={styles.iconStyle}>
+            <FontAwesome5 name="certificate" size={22} color="#666" light />
+          </View>
+          <TextInput
+            style={styles.input}
+            multiline
+            onChangeText={value => {
+              temp = value.trim().split('\n');
+              setOtherCertificates(temp.filter(item => item !== ''));
+            }}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </View>
+        <Text style={styles.note}>
+          *Each certificate is on a row with the syntax: {'\n'}  Certificate name
+          - score - expiration date
+        </Text>
 
         <View
           style={{
@@ -280,7 +296,7 @@ const RegisterTeacher = ({navigation}) => {
             style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
           />
           <Text style={[styles.title, {fontWeight: '600'}]}>
-            Upload Your ID Card
+            Upload Your Certificates
           </Text>
           <View
             style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
@@ -291,75 +307,95 @@ const RegisterTeacher = ({navigation}) => {
             style={styles.buttonContainer}
             onPress={() => {
               setOpenModal(true);
-              setTypeImage('front');
+              setTypeImage('toeicImage');
             }}>
             <FontAwesome5 name="camera" size={35} color={card_color} />
-            <Text style={styles.buttonText}>Front</Text>
+            <Text style={styles.buttonText}>
+              Upload Your{'\n'}
+              <Text style={{fontWeight: 600}}>Toeic Certificate</Text>
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.buttonContainer}
             onPress={() => {
               setOpenModal(true);
-              setTypeImage('back');
+              setTypeImage('otherImages');
             }}>
             <FontAwesome5 name="camera" size={35} color={card_color} />
-            <Text style={styles.buttonText}>Back</Text>
+            <Text style={styles.buttonText}>
+              Upload Your{'\n'}
+              <Text style={{fontWeight: 600}}>Other Certificates</Text>
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {frontImage && (
-          <View style={{marginTop: 15, display: 'flex', alignItems: 'center'}}>
+        {/*Display toeic certificate image*/}
+        {toeicImage && (
+          <View
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: 20,
+            }}>
             <Text
               style={[
                 styles.title,
                 {fontStyle: 'italic', width: '100%', marginBottom: 5},
               ]}>
-              The front of the ID card
-            </Text>
-            <View
-              style={{
-                position: 'relative',
-                width: 300,
-                height: 150,
-              }}>
-              <TouchableOpacity
-                style={styles.removeImage}
-                onPress={() => setFrontImage('')}>
-                <Ionicons name="close" style={{color: 'white'}} size={20} />
-              </TouchableOpacity>
-              <Image source={{uri: frontImage}} style={styles.image} />
-            </View>
-          </View>
-        )}
-
-        {backImage && (
-          <View style={{marginTop: 15, display: 'flex', alignItems: 'center'}}>
-            <Text
-              style={[
-                styles.title,
-                {fontStyle: 'italic', width: '100%', marginBottom: 5},
-              ]}>
-              The back of the ID card
+              Your Toeic Certificate
             </Text>
             <View style={{position: 'relative', width: 300, height: 150}}>
               <TouchableOpacity
                 style={styles.removeImage}
-                onPress={() => setBackImage('')}>
+                onPress={() => setToeicImage('')}>
                 <Ionicons name="close" style={{color: 'white'}} size={20} />
               </TouchableOpacity>
-              <Image source={{uri: backImage}} style={styles.image} />
+              <Image source={{uri: toeicImage}} style={styles.image} />
             </View>
           </View>
         )}
 
-        <View style={{flexDirection: 'row', justifyContent: 'space-around'}}>
-          <TouchableOpacity onPress={() => navigation.navigate('Homeinstack')}>
-            <Text style={styles.button}>Later</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onNext}>
-            <Text style={styles.button}>Next</Text>
-          </TouchableOpacity>
-        </View>
+        {/*Display other certificates image*/}
+        {otherImages.length !== 0 && (
+          <View
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}>
+            <Text
+              style={[
+                styles.title,
+                {fontStyle: 'italic', width: '100%', marginBottom: 5},
+              ]}>
+              Your Other Certificates
+            </Text>
+            {otherImages.map((item, index) => (
+              <View
+                key={index}
+                style={{
+                  position: 'relative',
+                  width: 300,
+                  height: 150,
+                  marginBottom: 10,
+                }}>
+                <TouchableOpacity
+                  style={styles.removeImage}
+                  onPress={() =>
+                    setOtherImages(otherImages.filter(i => i !== item))
+                  }>
+                  <Ionicons name="close" style={{color: 'white'}} size={20} />
+                </TouchableOpacity>
+                <Image source={{uri: item}} style={styles.image} />
+              </View>
+            ))}
+          </View>
+        )}
+
+        <TouchableOpacity onPress={onNext}>
+          <Text style={styles.button}>Next</Text>
+        </TouchableOpacity>
+        <View style={{height: 20}} />
       </ScrollView>
       {RenderModal()}
     </View>
@@ -372,12 +408,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  headerContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    width: '100%',
+    position: 'relative',
     padding: 20,
+  },
+  cancelButton: {
+    position: 'absolute',
+    right: 0,
+    zIndex: 2,
+    bottom: 0,
+    marginBottom: 4,
   },
   headerTitle: {
     fontSize: 24,
     color: 'green',
-    marginBottom: 20,
+    width: '100%',
+    textAlign: 'center',
   },
   stepContainer: {
     display: 'flex',
@@ -447,7 +497,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     gap: 32,
-    marginTop: 10,
+    marginVertical: 20,
   },
   buttonContainer: {
     display: 'flex',
@@ -465,7 +515,6 @@ const styles = StyleSheet.create({
   },
   button: {
     textAlign: 'center',
-    marginTop: 20,
     fontSize: 17,
     color: 'green',
     fontStyle: 'italic',
@@ -522,4 +571,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterTeacher;
+export default RegisterTeacher1;

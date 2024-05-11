@@ -49,7 +49,7 @@ const LoginScreen = ({navigation}) => {
 
         <TouchableOpacity
           style={{width: '100%', alignItems: 'center'}}
-          onPress={() => navigation.navigate('Signup', {type: 'Teacher'})}>
+          onPress={() => navigation.navigate('RegisterTeacher1')}>
           <Text
             style={{
               fontSize: 16,

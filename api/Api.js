@@ -551,6 +551,19 @@ const getAllTeachers = async () => {
   }
 };
 
+const getTeachersOfClasses = async userId => {
+  try {
+    const response = await client.get('/Teachers/' + userId);
+    if (response.data.success) {
+      return response.data.teachers;
+    } else {
+      console.log('not get teachers');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+
 // router.get('/Agenda/getAgendaOfUser/:userId',getAgendaOfUser)
 const getAgendaOfUser = async userId => {
   const endpoint = '/Agenda/getAgendaOfUser/' + userId;
@@ -579,6 +592,20 @@ const getRangeDate = async classId => {
   } catch (error) {
     console.log('error: ', error.message);
     return [];
+  }
+};
+const addReview = async data => {
+  try {
+    await client.put('/addReview/' + data.id, data);
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
+const updateReview = async data => {
+  try {
+    await client.put('/updateReview/' + data.id, data);
+  } catch (error) {
+    console.log('error: ', error.message);
   }
 };
 
@@ -630,6 +657,14 @@ export default {
   getClassesByUser,
   registerCourse,
   getAllTeachers,
+<<<<<<< HEAD
   getAgendaOfUser,
   getRangeDate,
+=======
+  getTeachersOfClasses,
+  getAgendaOfUser,
+  getRangeDate,
+  addReview,
+  updateReview,
+>>>>>>> a4424c0b92b373c8c234754b24167664176fd1a2
 };

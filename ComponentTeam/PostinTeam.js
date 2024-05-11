@@ -111,11 +111,11 @@ useEffect(() => {
             <Text style={[styles.UsernameText,{width:screenWidth*0.7}]}>The meeting was started by {item?.userName}</Text>
           </TouchableOpacity>
           <Text style={styles.PostTime}>{item?.postTime}</Text>
-          <TouchableOpacity>
+          {/* <TouchableOpacity>
           <Text style={{fontSize:15, color:'blue', width:screenWidth*0.7}}>
               Show meeting
           </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
          
         </View>
       </View>
@@ -127,7 +127,9 @@ useEffect(() => {
     </View>
      </View>
       <View style={{height:0.5,backgroundColor:'gray', marginTop:5, marginBottom:5}}/>
-      <TouchableOpacity style={{flexDirection:'row', marginLeft:5, marginTop:5}}  onPress={() => navigation.push('ReplyScreen',{postId:item.id, postName:item.userName})}>
+      <TouchableOpacity style={{flexDirection:'row', marginLeft:5, marginTop:5}}  onPress={() => {
+          navigation.push('ReplyScreen',{postId:item.id, postName:item.userName, sign:'Post'})
+       }}>
       <Icon name={'reply'} color="gray" size={15} />
       <Text style={{marginLeft:5, fontSize:15, color:'gray'}}>Reply</Text>
       <TouchableOpacity onPress={async ()=>{

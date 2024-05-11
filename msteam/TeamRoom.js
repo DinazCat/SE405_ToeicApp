@@ -53,6 +53,7 @@ const TeamRoom = ({navigation}) => {
     '#00ffff',
   ];
   const [classInfo, setClassInfo] = useState(null)
+  const [teacherInfo, setTeacherInfo] = useState(null)
   const [rangeDate, setRangeDate] = useState(null)
  
   const getInFoClass = async()=>{
@@ -61,6 +62,7 @@ const TeamRoom = ({navigation}) => {
     .doc('0VA2PZf3PVGlbWlF9EiV')
     .get();
     setClassInfo(classtemp.data())
+    getTeacher(classtemp.data().userId);
     const content = await Api.getRangeDate('0VA2PZf3PVGlbWlF9EiV')
     setRangeDate(content)
     // RealTimePost(content)
@@ -138,6 +140,10 @@ const TeamRoom = ({navigation}) => {
     const data = await Api.getUserData(auth().currentUser.uid);
     setProfileData(data);
   };
+  const getTeacher = async (id)=>{
+    const data = await Api.getUserData(id)
+    setTeacherInfo(data)
+  }
   useEffect(() => {
     socketServices.initializeSocket()
     receiveMeetingId()
@@ -482,12 +488,46 @@ const TeamRoom = ({navigation}) => {
     const documentRef = firestore()
     .collection('Class')
     .doc('0VA2PZf3PVGlbWlF9EiV');
-  await documentRef
-    .update({
-      Participants: []
-    })
-    .then(() => {
-    });
+    // MeetingHistory:firestore.FieldValue.arrayUnion({
+    //   userName: teacherInfo?.name,
+    //   postTime: '1PM at 2/24/2024',
+    //   sign:'Meeting'
+    // })
+    const currentDate = new Date()
+    const currentDay = currentDate.getDate(); 
+    const currentMonth = currentDate.getMonth() + 1; 
+    const currentYear = currentDate.getFullYear(); 
+    const currentHours = currentDate.getHours(); 
+    const currentMinutes = currentDate.getMinutes();
+    const time = currentDay+'/'+currentMonth+'/'+currentYear+' at '+currentHours+':'+currentMinutes
+    const date = 5+'/'+currentMonth+'/'+currentYear
+    const classData = (await documentRef.get()).data()
+    const data = {
+      userName: teacherInfo?.name,
+      className:classInfo?.ClassName,
+      postTime: time,
+      sign:'Meeting',
+      Date:date,
+      replies:classData.replies,
+      likes:0,
+    }
+      const postRef = await firestore().collection('PostInTeam').add(data);
+      const postId = postRef.id;
+
+  await firestore().collection('PostInTeam').doc(postId).update({
+    id: postId,
+  });
+
+      await firestore().collection('Class').doc(classId).update({
+        Posts: firestore.FieldValue.arrayUnion({id:postId,Date:date}),
+      });
+      await documentRef
+      .update({
+        Participants: [],
+        replies:[]
+      })
+      .then(() => {
+      });
   }
     async function onParticipantLeft(participant) {
       console.log(' onParticipantLeft', participant.id);
@@ -519,6 +559,26 @@ const TeamRoom = ({navigation}) => {
       toggleWebcam();
       setIsCamMuted(!isCamMuted);
     };
+    const [seconds, setSeconds] = useState(0);
+  const [formattedTime, setFormattedTime] = useState('00:00');
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSeconds(seconds => seconds + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+
+    setFormattedTime(`${formattedMinutes}:${formattedSeconds}`);
+  }, [seconds]);
 
 
     return (
@@ -539,7 +599,7 @@ const TeamRoom = ({navigation}) => {
                 fontSize: 20,
                 marginLeft: 15,
               }}>
-              Buổi học ngày 29/2/2024
+              Buổi học ngày {moment().format('DD/MM/YYYY')}
             </Text>
             <Text
               style={{
@@ -548,7 +608,7 @@ const TeamRoom = ({navigation}) => {
                 fontSize: 18,
                 marginLeft: 15,
               }}>
-              01:44 24 attendees
+              {formattedTime+' '+participantsArrId.length} attendees
             </Text>
           </View>
           <View style={{flex: 1}} />
@@ -663,7 +723,7 @@ const TeamRoom = ({navigation}) => {
           <TouchableOpacity onPress={() => navigation.push('AttendeeScreen',{list:participantsArrId})}>
             <Icon name="users" color="black" size={20} />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.push('ReplyScreen',{postId:classInfo.classId, postName:classInfo.ClassName, sign:'TeamRoom'})}>
             <Icon name="rocketchat" color="black" size={20} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {toggleScreenShare()}}>

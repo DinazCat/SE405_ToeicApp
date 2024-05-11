@@ -26,6 +26,7 @@ import {AuthContext} from '../navigation/AuthProvider';
 const Teams = ({navigation}) => {
   const [classes, setClasses] = useState([]);
   const {user, isTeacher} = useContext(AuthContext);
+  const {isLoading, setIsLoading} = useState(true);
 
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
@@ -50,7 +51,7 @@ const Teams = ({navigation}) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      getClassesByUserTeacher();
+      getClassesByUserTeacher().then(() => setIsLoading(false));
     }, []),
   );
 
@@ -68,20 +69,31 @@ const Teams = ({navigation}) => {
         </Text>
       </View>
       <Text style={AppStyle.textstyle.parttext}>Your class</Text>
-      <FlatList
-        data={classes}
-        renderItem={({item, index}) => (
-          <ClassCard key={index} item={item} navigation={navigation} />
-        )}
-      />
-      {isTeacher&&<TouchableOpacity
-        style={[
-          styles.addButton,
-          {marginLeft: screenWidth - 80, marginTop: screenHeight - 120},
-        ]}
-        onPress={() => navigation.push('NewTeam')}>
-        <Icon name={'plus'} color="white" size={20} />
-      </TouchableOpacity>}
+
+      {isLoading && classes.length === 0 && (
+        <Text style={{paddingHorizontal: 10, fontSize: 15}}>
+          You haven't registered any class.
+        </Text>
+      )}
+
+      {classes.length !== 0 && (
+        <FlatList
+          data={classes}
+          renderItem={({item, index}) => (
+            <ClassCard key={index} item={item} navigation={navigation} />
+          )}
+        />
+      )}
+      {isTeacher && (
+        <TouchableOpacity
+          style={[
+            styles.addButton,
+            {marginLeft: screenWidth - 80, marginTop: screenHeight - 120},
+          ]}
+          onPress={() => navigation.push('NewTeam')}>
+          <Icon name={'plus'} color="white" size={20} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

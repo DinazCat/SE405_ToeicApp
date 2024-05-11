@@ -6,20 +6,25 @@ import {
   Image,
   ScrollView,
   Modal,
+  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
+import FormInput from '../components/FormInput';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 
-const GetCertificateImage = ({navigation, route}) => {
+const RegisterTeacher2 = ({navigation, route}) => {
   const [openModal, setOpenModal] = useState(false);
   const [typeImage, setTypeImage] = useState('');
-  const [toeicCert, setToeicCert] = useState();
-  const [otherCert, setOtherCert] = useState([]);
-  const {...profileData} = route.params;
+  const [frontImage, setFrontImage] = useState('');
+  const [backImage, setBackImage] = useState('');
+  const [bank, setBank] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [accountName, setAccountName] = useState('');
 
+  //handle modal upload image
   const openLibrary = async () => {
     setOpenModal(false);
     ImagePicker.openPicker({
@@ -27,9 +32,8 @@ const GetCertificateImage = ({navigation, route}) => {
       height: 150,
       cropping: true,
     }).then(img => {
-      if (typeImage === 'toeicCert') setToeicCert(img.path);
-      else if (typeImage === 'otherCert')
-        setOtherCert([...otherCert, img.path]);
+      if (typeImage === 'front') setFrontImage(img.path);
+      else if (typeImage === 'back') setBackImage(img.path);
     });
   };
 
@@ -40,17 +44,32 @@ const GetCertificateImage = ({navigation, route}) => {
       height: 150,
       cropping: true,
     }).then(img => {
-      if (typeImage === 'toeicCert') setToeicCert(img.path);
-      else if (typeImage === 'otherCert')
-        setOtherCert([...otherCert, img.path]);
+      if (typeImage === 'front') setFrontImage(img.path);
+      else if (typeImage === 'back') setBackImage(img.path);
     });
   };
 
   const onNext = async () => {
-    navigation.push('GetBankAccount', {
-      ...profileData,
-      toeicCertificateImage: toeicCert,
-      otherCertificateImages: otherCert,
+    if (bank === '' || accountNumber === '' || accountName === '') {
+      Alert.alert(
+        'Input cannot be blank!',
+        'Please enter complete information',
+      );
+      return;
+    } else if (frontImage === '' || backImage === '') {
+      Alert.alert('Input cannot be blank!', 'Please upload your ID card fully');
+      return;
+    }
+
+    navigation.push('RegisterTeacher3', {
+      ...route.params,
+      frontIDImage: frontImage,
+      backIDImage: backImage,
+      bankInformation: {
+        bankName: bank,
+        accountNumber: accountNumber,
+        accountName: accountName,
+      },
     });
   };
 
@@ -102,9 +121,12 @@ const GetCertificateImage = ({navigation, route}) => {
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Register Teacher</Text>
+        <TouchableOpacity onPress={() => navigation.pop(2)}>
+          <Text style={styles.cancelButton}>Cancel</Text>
+        </TouchableOpacity>
       </View>
 
-      <ScrollView style={{width: '100%'}}>
+      <ScrollView style={{width: '100%', padding: 20, paddingTop: 0}}>
         <View style={styles.stepContainer}>
           <TouchableOpacity
             style={[styles.step]}
@@ -114,91 +136,135 @@ const GetCertificateImage = ({navigation, route}) => {
           <View style={[styles.step]} />
         </View>
 
-        {/*Display toeic certificate image*/}
-        {toeicCert && (
+        <View
+          style={{
+            display: 'flex',
+            width: '100%',
+            flexDirection: 'row',
+            gap: 10,
+          }}>
           <View
-            style={{display: 'flex', alignItems: 'center', marginBottom: 20}}>
-            <Text style={styles.title}>Your Toeic Certificate:</Text>
-            <View style={{position: 'relative', width: 300, height: 150}}>
-              <TouchableOpacity
-                style={styles.removeImage}
-                onPress={() => setToeicCert('')}>
-                <Ionicons name="close" style={{color: 'white'}} size={20} />
-              </TouchableOpacity>
-              <Image source={{uri: toeicCert}} style={styles.image} />
-            </View>
-          </View>
-        )}
+            style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
+          />
+          <Text style={[styles.title, {fontWeight: '600'}]}>
+            Upload Your Bank Information
+          </Text>
+          <View
+            style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
+          />
+        </View>
 
-        {/*Display other certificates image*/}
-        {otherCert.length !== 0 && (
+        <Text style={[styles.title, {marginTop: 10}]}>Enter Bank Name</Text>
+        <FormInput
+          onChangeText={value => setBank(value)}
+          iconType="hotel"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <Text style={styles.title}>Enter Account Number</Text>
+        <FormInput
+          onChangeText={value => setAccountNumber(value)}
+          iconType="money-check"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <Text style={styles.title}>Enter Account Name</Text>
+        <FormInput
+          onChangeText={value => setAccountName(value)}
+          iconType="user"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <View
+          style={{
+            display: 'flex',
+            width: '100%',
+            flexDirection: 'row',
+            gap: 10,
+          }}>
           <View
-            style={{display: 'flex', alignItems: 'center', marginBottom: 10}}>
-            <Text style={[styles.title, {}]}>Your Other Certificates: </Text>
-            {otherCert.map((item, index) => (
-              <View
-                key={index}
-                style={{
-                  position: 'relative',
-                  width: 300,
-                  height: 150,
-                  marginBottom: 10,
-                }}>
-                <TouchableOpacity
-                  style={styles.removeImage}
-                  onPress={() =>
-                    setOtherCert(otherCert.filter(i => i !== item))
-                  }>
-                  <Ionicons name="close" style={{color: 'white'}} size={20} />
-                </TouchableOpacity>
-                <Image source={{uri: item}} style={styles.image} />
-              </View>
-            ))}
-          </View>
-        )}
+            style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
+          />
+          <Text style={[styles.title, {fontWeight: '600'}]}>
+            Upload Your Certificates
+          </Text>
+          <View
+            style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
+          />
+        </View>
 
         <View style={styles.buttonRow}>
           <TouchableOpacity
             style={styles.buttonContainer}
             onPress={() => {
               setOpenModal(true);
-              setTypeImage('toeicCert');
+              setTypeImage('front');
             }}>
-            <Text style={styles.buttonText}>
-              Upload Your{'\n'}
-              <Text style={{fontWeight: 600}}>Toeic Certificate</Text>
-            </Text>
+            <FontAwesome5 name="camera" size={35} color={card_color} />
+            <Text style={styles.buttonText}>Front ID</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.buttonContainer}
             onPress={() => {
               setOpenModal(true);
-              setTypeImage('otherCert');
+              setTypeImage('back');
             }}>
-            <Text style={styles.buttonText}>
-              Upload Your{'\n'}
-              <Text style={{fontWeight: 600}}>Other Certificates</Text>
-            </Text>
+            <FontAwesome5 name="camera" size={35} color={card_color} />
+            <Text style={styles.buttonText}>Back ID</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={onNext} disabled={!toeicCert ? true : false}>
-          <Text
-            style={[
-              styles.button,
-              {color: !toeicCert ? 'lightgray' : 'green'},
-            ]}>
-            Next
-          </Text>
+        {frontImage && (
+          <View
+            style={{display: 'flex', alignItems: 'center', marginBottom: 20}}>
+            <Text style={styles.titleImage}>The front of the ID card</Text>
+            <View style={{position: 'relative', width: 300, height: 150}}>
+              <TouchableOpacity
+                style={styles.removeImage}
+                onPress={() => setFrontImage('')}>
+                <Ionicons name="close" style={{color: 'white'}} size={20} />
+              </TouchableOpacity>
+              <Image source={{uri: frontImage}} style={styles.image} />
+            </View>
+          </View>
+        )}
+
+        {backImage && (
+          <View
+            style={{display: 'flex', alignItems: 'center', marginBottom: 20}}>
+            <Text style={styles.titleImage}>The back of the ID card</Text>
+            <View
+              style={{
+                position: 'relative',
+                width: 300,
+                height: 150,
+              }}>
+              <TouchableOpacity
+                style={styles.removeImage}
+                onPress={() => setBackImage('')}>
+                <Ionicons name="close" style={{color: 'white'}} size={20} />
+              </TouchableOpacity>
+              <Image source={{uri: backImage}} style={styles.image} />
+            </View>
+          </View>
+        )}
+
+        <TouchableOpacity
+          onPress={onNext}
+          //  disabled={!frontImage ? true : false}
+        >
+          <Text style={[styles.button]}>Next</Text>
         </TouchableOpacity>
+        <View style={{height: 20}} />
       </ScrollView>
       {RenderModal()}
     </View>
   );
 };
-
-export default GetCertificateImage;
 
 const styles = StyleSheet.create({
   container: {
@@ -206,19 +272,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
   headerContainer: {
     display: 'flex',
     flexDirection: 'row',
     width: '100%',
     position: 'relative',
-    marginBottom: 20,
+    padding: 20,
   },
   backButton: {
     position: 'absolute',
     left: 0,
+    zIndex: 1,
+    padding: 20,
+  },
+  cancelButton: {
+    position: 'absolute',
+    right: 0,
     zIndex: 2,
+    bottom: 0,
+    marginBottom: 4,
   },
   headerTitle: {
     fontSize: 24,
@@ -243,6 +316,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     gap: 32,
+    marginVertical: 20,
   },
   buttonContainer: {
     display: 'flex',
@@ -257,6 +331,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     textAlign: 'center',
+    fontWeight: '600',
   },
   modal: {
     height: 160,
@@ -294,7 +369,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: 'white',
   },
-  title: {
+  titleImage: {
     fontSize: 17,
     color: '#555',
     fontStyle: 'italic',
@@ -308,7 +383,6 @@ const styles = StyleSheet.create({
   },
   button: {
     textAlign: 'center',
-    marginTop: 20,
     fontSize: 17,
     color: 'green',
     fontStyle: 'italic',
@@ -318,8 +392,15 @@ const styles = StyleSheet.create({
   removeImage: {
     position: 'absolute',
     padding: 2,
-    zIndex: 1,
+    zIndex: 3,
     right: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.28)',
   },
+  title: {
+    fontSize: 17,
+    color: '#555',
+    marginTop: 5,
+  },
 });
+
+export default RegisterTeacher2;
