@@ -26,7 +26,7 @@ import {AuthContext} from '../navigation/AuthProvider';
 const Teams = ({navigation}) => {
   const [classes, setClasses] = useState([]);
   const {user, isTeacher} = useContext(AuthContext);
-  const {isLoading, setIsLoading} = useState(true);
+  const {isLoading, setIsLoading} = useState(false);
 
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
@@ -51,7 +51,7 @@ const Teams = ({navigation}) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      getClassesByUserTeacher().then(() => setIsLoading(false));
+      getClassesByUserTeacher().then(() => setIsLoading(true));
     }, []),
   );
 

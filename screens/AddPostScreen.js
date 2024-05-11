@@ -159,6 +159,7 @@ const AddPostScreen = ({navigation, route}) => {
       return false;
     }
   };
+
   const uploadImage = async () => {
     const list = [];
     try {
@@ -170,10 +171,13 @@ const AddPostScreen = ({navigation, route}) => {
             name: 'image.jpg',
             type: 'image/jpg',
           });
+          console.log('hah')
           const response = await axios.post(
-            'http://192.168.1.107:3000/upload',
+            'http://192.168.1.4:3000/upload',
             formData,
-          );
+          ).catch((e)=>{console.log(e)})
+          console.log('hah1')
+
           list.push({uri: response.data.photo, type: 'img'});
         } else if (image[i].type == 'video') {
           const formData = new FormData();

@@ -13,13 +13,32 @@ import FormButton from '../components/FormButton';
 import {PRIMARY_COLOR} from '../assets/colors/color';
 import {AuthContext} from '../navigation/AuthProvider';
 import Api from '../api/Api';
+import uploadfile from '../api/uploadfile';
+import axios from 'axios';
 
 const RegisterTeacher3 = ({navigation, route}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const {registerTeacher} = useContext(AuthContext);
+  // const [teacherData,setTeacherData] = useState({...route.params})
 
+  const uploadImg = async(img)=>{
+    console.log(img)
+    const formData = new FormData();
+          formData.append('image', {
+            uri: img,
+            name: 'image.jpg',
+            type: 'image/jpg',
+          });
+          console.log('haha')
+          const response = await axios.post(
+            'http://192.168.1.4:3000/upload',
+            formData,
+          );
+          console.log(response.data.photo)
+          return response.data.photo
+  }
   const onSave = async () => {
     if (email === '' || password === '' || confirmPassword === '') {
       Alert.alert(
@@ -30,8 +49,18 @@ const RegisterTeacher3 = ({navigation, route}) => {
     } else if (password !== confirmPassword) {
       Alert.alert('Password confirmation does not match!');
     } else {
-      const teacherData = {...route.params};
-      registerTeacher(email, password, teacherData);
+      // const teacherData = {...route.params};
+      console.log('hihi')
+      let temp = {...route.params}
+      if(temp.otherCertificateImages.length>0){
+        for(let i = 0; i < temp.otherCertificateImages.length; i++){
+          temp.otherCertificateImages[i] = uploadImg(temp.otherCertificateImages[i])
+        }
+      }
+      temp.backIDImage = uploadImg(temp.backIDImage)
+      temp.frontIDImage = uploadImg(temp.frontIDImage)
+      temp.toeicCertificateImage = uploadImg(temp.toeicCertificateImage)
+      // registerTeacher(email, password, temp);
     }
   };
 

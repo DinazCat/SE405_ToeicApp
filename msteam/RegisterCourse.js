@@ -2,20 +2,21 @@ import {View, Text, StyleSheet, TouchableOpacity, Alert} from 'react-native';
 import React, {useContext, useEffect, useState} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AppStyle from '../theme';
-import {card_color} from '../assets/colors/color';
 import FormButton from '../components/FormButton';
 import Api from '../api/Api';
 import {AuthContext} from '../navigation/AuthProvider';
+import FormInput from '../components/FormInput';
+import {PRIMARY_COLOR, card_color} from '../assets/colors/color'
 
 const paymentInfo = {
-  bankName: 'bankName',
-  accountNumber: 'accountNumber',
-  accountName: 'accountName',
+  accountNumber: 'Admin Number',
+  accountName: 'Admin accountName',
 };
 
 const RegisterCourse = ({navigation, route}) => {
   const item = route.params.course;
   const {user} = useContext(AuthContext);
+  const [verify, setVerify] = useState(false)
 
   const onSave = async () => {
     Alert.alert('Registered successfully');
@@ -45,15 +46,15 @@ const RegisterCourse = ({navigation, route}) => {
 
       <View style={{flex: 1, padding: 10}}>
         <View style={styles.paymentContainer}>
-          <Text style={styles.title}>Payment Information</Text>
+          <Text style={styles.title}>Payment Information:</Text>
 
-          <View style={styles.textContainer}>
+          {/* <View style={styles.textContainer}>
             <Text style={styles.text}>Bank name: </Text>
             <Text style={styles.content}>{paymentInfo.bankName}</Text>
-          </View>
-
+          </View> */}
+          <Text style={styles.text}>Pay via MoMo!</Text>
           <View style={styles.textContainer}>
-            <Text style={styles.text}>Account Number: </Text>
+            <Text style={styles.text}>Phone Number: </Text>
             <Text style={styles.content}>{paymentInfo.accountNumber}</Text>
           </View>
 
@@ -66,6 +67,42 @@ const RegisterCourse = ({navigation, route}) => {
         <View style={{width: '60%', alignSelf: 'center'}}>
           <FormButton title={'I have already paid'} onPress={onSave} />
         </View>
+       {/* {verify&&<View style={{width:"96%", justifyContent:'space-evenly', alignItems:'center', alignSelf:'center'}}>
+          <Text style={styles.title}>Please fill in your account information for us to verify!</Text>
+          <View style={styles.textContainer}>
+            <Text style={styles.text}>Phone Number: </Text>
+            <FormInput
+          // onChangeText={value => setPhone(value)}
+          // iconType="phone-alt"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="numeric"
+        />
+          </View>
+
+          <View style={styles.textContainer}>
+            <Text style={styles.text}>Account Name: </Text>
+            <FormInput
+          // onChangeText={value => setPhone(value)}
+          // iconType="phone-alt"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="numeric"
+        />
+          </View>
+          <TouchableOpacity
+          style={{
+            backgroundColor: PRIMARY_COLOR,
+            padding:5,
+            borderRadius: 15,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={onSave}>
+          <Text>Send</Text>
+        </TouchableOpacity>
+        </View>} */}
       </View>
     </View>
   );

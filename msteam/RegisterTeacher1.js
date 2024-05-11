@@ -36,7 +36,7 @@ const RegisterTeacher1 = ({navigation}) => {
   const [otherCertificates, setOtherCertificates] = useState([]);
   const [skills, setSkills] = useState([]);
   const [typeImage, setTypeImage] = useState();
-  const [toeicImage, setToeicImage] = useState();
+  const [toeicImage, setToeicImage] = useState('');
   const [otherImages, setOtherImages] = useState([]);
   const [openPicker, setOpenPicker] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -63,7 +63,9 @@ const RegisterTeacher1 = ({navigation}) => {
       height: 150,
       cropping: true,
     }).then(img => {
-      if (typeImage === 'toeicImage') setToeicImage(img.path);
+      if (typeImage === 'toeicImage'){
+        setToeicImage(img.path)       
+      }
       else if (typeImage === 'otherImages') {
         setOtherImages([...otherImages, img.path]);
       }

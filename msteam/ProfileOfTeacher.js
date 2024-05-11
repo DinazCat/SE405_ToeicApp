@@ -42,6 +42,9 @@ import { ScrollView } from 'react-native-gesture-handler';
       const renderImageItem = ({ item }) => (
         <Image source={{ uri: item }} style={styles.image} />
       );
+      const generateSkillListString = (list) => {
+  return list.join(', ');
+}
     return (
       <View style={styles.container}>
         <ScrollView>
@@ -98,40 +101,43 @@ import { ScrollView } from 'react-native-gesture-handler';
                   </Text>
                   <Text style={[styles.InputStyle]}>
                   <Text style={{fontWeight:'500'}}>Graduated from:</Text>
-                    trường đại học CNTT
+                  {profileData?.university}
                   </Text>
                   <Text style={[styles.InputStyle]}>
                   <Text style={{fontWeight:'500'}}>Skill proficiency:</Text>
-                   nghe, nói
+                  {generateSkillListString(profileData?.skills)}
                   </Text>
                 </View>
             </View>
 
             <View style={{width:'95%', alignSelf:'center', marginTop:15}}>
               <Text style={{fontSize:15, fontWeight:'600'}}>Bank account</Text>
-              <Text style={{color:'black'}}>VietComBank: 0000000000</Text>
+              <Text style={{color:'black'}}>{profileData?.bankInformation.bankName}</Text>
+              <Text style={{color:'black'}}>{profileData?.bankInformation.accountNumber}</Text>
+              <Text style={{color:'black'}}>{profileData?.bankInformation.accountName}</Text>
             </View>
             <View style={{width:'95%', alignSelf:'center', marginTop:15}}>
                 <Text style={{fontSize:15, fontWeight:'600'}}>TOEIC certificate</Text>
         
-     <FlatList
+     {/* <FlatList
      style={{marginVertical:10}}
-        data={toeicCertificate}
+        data={profileData?.toeicCertificateImage}
         renderItem={renderImageItem}
         keyExtractor={(item, index) => index.toString()}
         horizontal={false}
-      />
+      /> */}
+       <Image source={{ uri: profileData?.toeicCertificateImage}} style={styles.image} />
        <Text style={{fontSize:15, fontWeight:'600'}}>Other certificates</Text>
            <ScrollView horizontal={false} style={{marginVertical:10}}>
-      {otherCertificate?.map((item, index) => {return(
-        <Text>{item.name}</Text>
+      {profileData?.otherCertificate?.map((item, index) => {return(
+        <Text>{item}</Text>
       )
   })}
     </ScrollView>
     <Text style={{fontSize:15, fontWeight:'600'}}>Reviews about you:</Text>
     <ScrollView horizontal={false} style={{marginVertical:10}}>
-      {reviews?.map((item, index) => {return(
-        <Text style={{marginBottom:5}}>{item}</Text>
+      {profileData?.reviews?.map((item, index) => {return(
+        <Text style={{marginBottom:5}}>{item.review}</Text>
       )
   })}
     </ScrollView>
