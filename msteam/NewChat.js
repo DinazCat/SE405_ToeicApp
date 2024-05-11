@@ -67,6 +67,7 @@ const NewChat = ({route, navigation}) => {
           isNewChat: true,
           imageUri: item.userImg,
           name: item.name,
+          toUid: item.id,
         },
       });
     }

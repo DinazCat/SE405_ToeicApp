@@ -30,6 +30,7 @@ const Chat = ({navigation}) => {
     const getUserChats = async () => {
       const result = await Api.getUserChatRooms();
       setUserChats(result);
+      console.log(result)
     };
 
     getCurrentUser();

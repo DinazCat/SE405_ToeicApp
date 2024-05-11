@@ -30,7 +30,7 @@ import socketServices from '../api/socketService';
 const ChatRoom = ({route, navigation}) => {
   const {chatRoomData} = route.params;
   const [currentUser, setCurrentUser] = useState();
-  const [messages, setMessages] = useState(chatRoomData.messages);
+  const [messages, setMessages] = useState(chatRoomData.messages || []);
   const [haveMesssage, setHaveMessage] = useState(!chatRoomData.isNewChat);
   const [inputMessage, setInputMessage] = useState('');
   const [callee, setCallee] = useState('DxL5c5T2XYZZE0ONGGPLpj0tOsK2');
@@ -49,8 +49,9 @@ const ChatRoom = ({route, navigation}) => {
 
   useEffect(() => {
     socketServices.initializeSocket();
-    socketServices.on('chat message', ({message}) => {
-      setMessages(prevMessages => [...prevMessages, {message}]);
+    socketServices.on('new message', message => {
+      setMessages([...messages, message]);
+      console.log([...messages, message]);
     });
     // return () => {
     //   socketServices.disconnect();
@@ -58,17 +59,20 @@ const ChatRoom = ({route, navigation}) => {
   }, []);
 
   const sendMessage = async () => {
-    if (!socketServices || !messageInput.trim()) return;
+    if (!socketServices || !inputMessage.trim()) return;
+
     if (haveMesssage) {
-      socket.emit('chat message', {
-        roomId,
-        message: {
-          from: currentUser,
-          content: messageInput,
-          time: newDate().getTime(),
-          type: 'text',
+      const message = {
+        from: {
+          userId: currentUser.id,
+          name: currentUser.name,
+          avatar: currentUser.userImg,
         },
-      });
+        content: inputMessage,
+        timestamp: new Date().getTime(),
+        type: 'text',
+      };
+      socketServices.emit('chat message', {roomId: result, message});
       setInputMessage('');
     } else {
       const newChatRoom = {
@@ -79,36 +83,43 @@ const ChatRoom = ({route, navigation}) => {
             avatar: currentUser.userImg,
           },
           {
-            userId: item.id,
-            name: item.name,
-            avatar: item.userImg,
+            userId: chatRoomData.toUid,
+            name: chatRoomData.name,
+            avatar: chatRoomData.imageUri,
           },
         ],
-        messages: [
-          {
-            from: {
-              userId: currentUser.useId,
-              name: currentUser.name,
-              avatar: currentUser.userImg,
-            },
-            content: messageInput,
-            timestamp: newDate().getTime(),
-            type: 'text',
-          },
-        ],
+        messages: [],
       };
-      const result = await Api.addNewChat(chatRoomData);
+      const result = await Api.addNewChat(newChatRoom);
+      console.log(result);
       if (result) {
-        socket.emit('chat message', {
-          roomId,
-          message: {
-            from: currentUser,
-            content: messageInput,
-            time: newDate().getTime(),
-            type: 'text',
-          },
+        console.log(0.1);
+        socketServices.emit('join room', {
+          roomId: result,
+          userId: currentUser.id,
         });
+        console.log(0.2);
+        socketServices.emit('join room', {
+          roomId: result,
+          userId: chatRoomData.Uid,
+        });
+        console.log(0.3);
+
+        const message = {
+          from: {
+            userId: currentUser.id,
+            name: currentUser.name,
+            avatar: currentUser.userImg,
+          },
+          content: inputMessage,
+          timestamp: new Date().getTime(),
+          type: 'text',
+        };
+
+        socketServices.emit('chat message', {roomId: result, message});
+        console.log(0.4);
         setInputMessage('');
+        setHaveMessage(true);
       }
     }
   };
@@ -255,7 +266,7 @@ const ChatRoom = ({route, navigation}) => {
           />
         </TouchableOpacity>
       </View>
-      {haveMesssage ? (
+      {!haveMesssage ? (
         <View
           style={{
             backgroundColor: '#f0f0f0',
@@ -307,6 +318,7 @@ const ChatRoom = ({route, navigation}) => {
           style={[styles.chatInput, {color: '#666'}]}
         />
         <Text
+          onPress={sendMessage}
           style={[
             styles.sendButton,
             {color: !inputMessage.trim() ? '#555' : PRIMARY_COLOR},
@@ -341,8 +353,8 @@ const styles = StyleSheet.create({
   chatFlow: {
     padding: 10,
     height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
+    //display: 'flex',
+    //flexDirection: 'column',
   },
   myChatContainer: {
     flex: 1,

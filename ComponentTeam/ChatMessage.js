@@ -1,5 +1,6 @@
 import {View, Text, StyleSheet, Image} from 'react-native';
 import React from 'react';
+import moment from 'moment';
 
 const ChatMessage = ({item, isMine}) => {
   return (
@@ -16,7 +17,9 @@ const ChatMessage = ({item, isMine}) => {
         {item.type == 'text' && (
           <View style={!isMine && styles.othersMessageContent}>
             <Text style={styles.messageText}>{item.content}</Text>
-            <Text style={styles.timeText}>{item.timestamp}</Text>
+            <Text style={styles.timeText}>
+              {moment(item.timestamp).format('HH:mm')}
+            </Text>
           </View>
         )}
         {item.type == 'image' && (
