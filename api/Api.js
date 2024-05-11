@@ -657,14 +657,9 @@ export default {
   getClassesByUser,
   registerCourse,
   getAllTeachers,
-<<<<<<< HEAD
-  getAgendaOfUser,
-  getRangeDate,
-=======
   getTeachersOfClasses,
   getAgendaOfUser,
   getRangeDate,
   addReview,
   updateReview,
->>>>>>> a4424c0b92b373c8c234754b24167664176fd1a2
 };
