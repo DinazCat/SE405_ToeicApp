@@ -172,10 +172,21 @@ const AddPostScreen = ({navigation, route}) => {
             type: 'image/jpg',
           });
           console.log('hah')
-          const response = await axios.post(
-            'http://192.168.1.4:3000/upload',
-            formData,
-          ).catch((e)=>{console.log(e)})
+          // const response = await axios.post(
+          //   'http://192.168.1.7:3000/upload',
+          //   formData,
+          // ).catch((e)=>{console.log(e)})
+          const config = {
+            method: 'post',
+            url: 'http://192.168.1.7:3000/upload',
+            headers: { 
+              'Content-Type': 'multipart/form-data'
+            },
+            data : formData
+          };
+          
+          
+          const response = await  axios(config)
           console.log('hah1')
 
           list.push({uri: response.data.photo, type: 'img'});

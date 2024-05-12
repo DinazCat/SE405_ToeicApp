@@ -108,6 +108,7 @@ return [ngayTruoc, ngaySau]
 }
 const getAgendaOfUser = async()=>{
 const data = await Api.getAgendaOfUser(auth().currentUser.uid)
+console.log(data)
 setSchedule_(data)
 setIsLoad(true)
 }

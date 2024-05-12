@@ -137,7 +137,7 @@ export const AuthProvider = ({children}) => {
                   type:"Teacher",
                   ...data,
                 };
-                Api.setUserInfo(userData).catch(error => console.error(error));
+                Api.setTeacherInfo(userData).catch(error => console.error(error));
 
                 auth()
                   .currentUser.updateProfile({

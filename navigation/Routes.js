@@ -45,6 +45,7 @@ const Routes = () => {
     return (
       <NavigationContainer>
         {user ?(isTeacher1?<DrawerNavigator_teacher/>:<DrawerNavigator/>) : <AuthStack/>}
+       
       </NavigationContainer>
     );
 }

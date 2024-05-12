@@ -83,6 +83,17 @@ const setUserInfo = async userData => {
     console.log('error: ', error.message);
   }
 };
+const setTeacherInfo = async userData => {
+  console.log("setteacherinfoId"+ userData.id)
+  const endpoint = '/setTeacherInfo/' + userData.id;
+  console.log(endpoint);
+  try {
+    const response = await client.put(endpoint, userData);
+    console.log(response.data);
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
 const updateUser = async userData => {
   const endpoint = '/updateUser/' + userData.id;
   console.log(endpoint);
@@ -660,4 +671,5 @@ export default {
   getRangeDate,
   addReview,
   updateReview,
+  setTeacherInfo
 };

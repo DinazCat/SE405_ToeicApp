@@ -32,10 +32,17 @@ const RegisterTeacher3 = ({navigation, route}) => {
             type: 'image/jpg',
           });
           console.log('haha')
-          const response = await axios.post(
-            'http://192.168.1.4:3000/upload',
-            formData,
-          );
+          const config = {
+            method: 'post',
+            url: uploadfile.upImage,
+            headers: { 
+              'Content-Type': 'multipart/form-data'
+            },
+            data : formData
+          };
+          
+          
+          const response = await  axios(config)
           console.log(response.data.photo)
           return response.data.photo
   }
@@ -54,13 +61,14 @@ const RegisterTeacher3 = ({navigation, route}) => {
       let temp = {...route.params}
       if(temp.otherCertificateImages.length>0){
         for(let i = 0; i < temp.otherCertificateImages.length; i++){
-          temp.otherCertificateImages[i] = uploadImg(temp.otherCertificateImages[i])
+          temp.otherCertificateImages[i] = await uploadImg(temp.otherCertificateImages[i])
         }
       }
-      temp.backIDImage = uploadImg(temp.backIDImage)
-      temp.frontIDImage = uploadImg(temp.frontIDImage)
-      temp.toeicCertificateImage = uploadImg(temp.toeicCertificateImage)
-      // registerTeacher(email, password, temp);
+      temp.backIDImage = await uploadImg(temp.backIDImage)
+      temp.frontIDImage = await uploadImg(temp.frontIDImage)
+      temp.toeicCertificateImage = await uploadImg(temp.toeicCertificateImage)
+      console.log(temp)
+      registerTeacher(email, password, temp);
     }
   };
 

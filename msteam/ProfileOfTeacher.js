@@ -42,9 +42,9 @@ import { ScrollView } from 'react-native-gesture-handler';
       const renderImageItem = ({ item }) => (
         <Image source={{ uri: item }} style={styles.image} />
       );
-      const generateSkillListString = (list) => {
-  return list.join(', ');
-}
+//       const generateSkillListString = (list) => {
+//   return list.join(', ');
+// }
     return (
       <View style={styles.container}>
         <ScrollView>
@@ -105,7 +105,7 @@ import { ScrollView } from 'react-native-gesture-handler';
                   </Text>
                   <Text style={[styles.InputStyle]}>
                   <Text style={{fontWeight:'500'}}>Skill proficiency:</Text>
-                  {generateSkillListString(profileData?.skills)}
+                  {profileData?.skills.toString()}
                   </Text>
                 </View>
             </View>
