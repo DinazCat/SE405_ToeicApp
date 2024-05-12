@@ -134,9 +134,10 @@ export const AuthProvider = ({children}) => {
                   id: auth().currentUser.uid,
                   email: auth().currentUser.email,
                   userImg: auth().currentUser.photoURL,
+                  type:"Teacher",
                   ...data,
                 };
-                Api.setUserInfo(userData).catch(error => console.error(error));
+                Api.setTeacherInfo(userData).catch(error => console.error(error));
 
                 auth()
                   .currentUser.updateProfile({

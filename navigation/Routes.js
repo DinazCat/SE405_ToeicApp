@@ -16,7 +16,7 @@ const Routes = () => {
         const documentRef = firestore().collection('Users').doc(user1.uid);
         const doc = await documentRef.get();
         if (doc.exists) {
-          if(doc.data().Type=='Teacher'){
+          if(doc.data().type=='Teacher'){
             setIsTeacher1(true);
             setIsTeacher(true)
           } else{
@@ -45,6 +45,7 @@ const Routes = () => {
     return (
       <NavigationContainer>
         {user ?(isTeacher1?<DrawerNavigator_teacher/>:<DrawerNavigator/>) : <AuthStack/>}
+       
       </NavigationContainer>
     );
 }

@@ -123,7 +123,7 @@ const BottomTab = () => {
                   size={20}
                   style={[getIconColor(focused)]}
                 />
-                <Text style={[getIconColor(focused)]}>Teacher</Text>
+                <Text style={[getIconColor(focused)]}>You</Text>
               </View>
             ),
           }}

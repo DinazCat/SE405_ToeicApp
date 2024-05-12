@@ -108,6 +108,7 @@ return [ngayTruoc, ngaySau]
 }
 const getAgendaOfUser = async()=>{
 const data = await Api.getAgendaOfUser(auth().currentUser.uid)
+console.log(data)
 setSchedule_(data)
 setIsLoad(true)
 }
@@ -137,7 +138,7 @@ const  loadItems = (day) => {
             
         }
         const numItems = Math.floor(Math.random() * 3 + 1);
-        for (let j = 0; j < schedule_[i].length; j++) {
+        for (let j = 0; j < schedule_[i]?.length; j++) {
           items[strTime].push({
             name: schedule_[i][j].Name ,
             height: Math.max(50, Math.floor(Math.random() * 150)),

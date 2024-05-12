@@ -34,6 +34,7 @@ const CreateAgenda = ({navigation}) => {
   const [selectedTimeFrom, setSelectedTimeFrom] = useState('selectedTime');
   const [selectedTimeTo, setSelectedTimeTo] = useState('selectedTime');
   const [schedule_, setSchedule_] = useState([[], [], [], [], [], [], []]);
+  const [isTo, setIsTo] = useState(false)
   const getClassOfTeacher = async () => {
     try {
       const docId = auth().currentUser.uid;
@@ -284,36 +285,36 @@ const CreateAgenda = ({navigation}) => {
           <View style={{flexDirection: 'row'}}>
             <Text style={styles.text}>From</Text>
             <TouchableOpacity
-              onPress={showTimePicker}
+              onPress={()=>{setIsTo(false);showTimePicker()}}
               style={{justifyContent: 'center', alignItems: 'center'}}>
               <Text style={{color: 'black', marginLeft: 7}}>
                 {selectedTimeFrom}
               </Text>
             </TouchableOpacity>
 
-            <DateTimePickerModal
+            {!isTo&&<DateTimePickerModal
               isVisible={isTimePickerVisible}
               mode="time"
               onConfirm={handleConfirmFrom}
               onCancel={hideTimePicker}
-            />
+            />}
           </View>
           <View style={{flexDirection: 'row'}}>
             <Text style={styles.text}>To</Text>
             <TouchableOpacity
-              onPress={showTimePicker}
+             onPress={()=>{setIsTo(true);showTimePicker()}}
               style={{justifyContent: 'center', alignItems: 'center'}}>
               <Text style={{color: 'black', marginLeft: 7}}>
                 {selectedTimeTo}
               </Text>
             </TouchableOpacity>
 
-            <DateTimePickerModal
+            {isTo&&<DateTimePickerModal
               isVisible={isTimePickerVisible}
               mode="time"
               onConfirm={handleConfirmTo}
               onCancel={hideTimePicker}
-            />
+            />}
           </View>
         </View>
         <View

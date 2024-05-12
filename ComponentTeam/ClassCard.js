@@ -33,7 +33,7 @@ const ClassCard = ({item, navigation}) => {
   return (
     <TouchableOpacity
       style={{marginTop: 10}}
-      onPress={() => navigation.push('TeamRoom')}>
+      onPress={() => navigation.push('TeamRoom',{classId:item.classId})}>
       <View
         style={{
           width: screenWidth * 0.9,
@@ -55,7 +55,7 @@ const ClassCard = ({item, navigation}) => {
         />
         <View style={{marginLeft: 10}}>
           <Text style={{color: 'black', fontSize: 20}}>{item.ClassName}</Text>
-          <Text style={{color: 'gray', fontSize: 18}}>{item.userName}</Text>
+          <Text style={{color: 'gray', fontSize: 18}}>{item.TeacherName}</Text>
         </View>
       </View>
     </TouchableOpacity>

@@ -71,16 +71,20 @@ const PopupMenu = () =>{
 // };
   return (  
       <View style={{borderRadius:5, backgroundColor:card_color, width:'90%', height:40, alignSelf:'center', elevation: 5,alignItems:'center',marginVertical:5, flexDirection:'row'}}>
-        <View style={[styles.UserImage,{backgroundColor:color, alignItems:'center', justifyContent:'center'}]} >
-          {/* <Image
+        {/* <View style={[styles.UserImage,{backgroundColor:color, alignItems:'center', justifyContent:'center'}]} > */}
+          <Image
             style={styles.UserImage}
             source={{
-              uri: 'https://static.vecteezy.com/system/resources/previews/000/420/681/original/picture-icon-vector-illustration.jpg',
+              uri: person
+              ? person.image
+                ? person.image
+                : 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png'
+              : 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png',
             }}
-          /> */}
-                  <Text style={{textAlign:'center'}}>NL</Text>
-        </View>
-        <Text style={styles.UsernameText}>{person}</Text>
+          />
+                  {/* <Text style={{textAlign:'center'}}>NL</Text> */}
+        {/* </View> */}
+        <Text style={styles.UsernameText}>{person.name}</Text>
         {/* <View style={{flex:1}}/>
         <TouchableOpacity>
         <Icon name="video" color="black" size={20} />

@@ -13,13 +13,39 @@ import FormButton from '../components/FormButton';
 import {PRIMARY_COLOR} from '../assets/colors/color';
 import {AuthContext} from '../navigation/AuthProvider';
 import Api from '../api/Api';
+import uploadfile from '../api/uploadfile';
+import axios from 'axios';
 
 const RegisterTeacher3 = ({navigation, route}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const {registerTeacher} = useContext(AuthContext);
+  // const [teacherData,setTeacherData] = useState({...route.params})
 
+  const uploadImg = async(img)=>{
+    console.log(img)
+    const formData = new FormData();
+          formData.append('image', {
+            uri: img,
+            name: 'image.jpg',
+            type: 'image/jpg',
+          });
+          console.log('haha')
+          const config = {
+            method: 'post',
+            url: uploadfile.upImage,
+            headers: { 
+              'Content-Type': 'multipart/form-data'
+            },
+            data : formData
+          };
+          
+          
+          const response = await  axios(config)
+          console.log(response.data.photo)
+          return response.data.photo
+  }
   const onSave = async () => {
     if (email === '' || password === '' || confirmPassword === '') {
       Alert.alert(
@@ -30,8 +56,19 @@ const RegisterTeacher3 = ({navigation, route}) => {
     } else if (password !== confirmPassword) {
       Alert.alert('Password confirmation does not match!');
     } else {
-      const teacherData = {...route.params};
-      registerTeacher(email, password, teacherData);
+      // const teacherData = {...route.params};
+      console.log('hihi')
+      let temp = {...route.params}
+      if(temp.otherCertificateImages.length>0){
+        for(let i = 0; i < temp.otherCertificateImages.length; i++){
+          temp.otherCertificateImages[i] = await uploadImg(temp.otherCertificateImages[i])
+        }
+      }
+      temp.backIDImage = await uploadImg(temp.backIDImage)
+      temp.frontIDImage = await uploadImg(temp.frontIDImage)
+      temp.toeicCertificateImage = await uploadImg(temp.toeicCertificateImage)
+      console.log(temp)
+      registerTeacher(email, password, temp);
     }
   };
 

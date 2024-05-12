@@ -20,6 +20,7 @@ import {PRIMARY_COLOR} from '../assets/colors/color';
 import FormButton from '../components/FormButton';
 import Api from '../api/Api';
 import {AuthContext} from '../navigation/AuthProvider';
+import auth from '@react-native-firebase/auth';
 
 const tuitionList = [
   {
@@ -109,6 +110,7 @@ const NewTeam = ({navigation, route}) => {
       Level: level,
       Tuition: tuition,
       Description: description,
+      TeacherName:auth().currentUser.displayName
     })
       .then(() => {
         navigation.navigate('Teams');

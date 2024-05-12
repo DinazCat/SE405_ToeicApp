@@ -41,8 +41,9 @@ import firestore from '@react-native-firebase/firestore';
 import Api from '../api/Api';
 import moment from 'moment';
 const {width, height} = Dimensions.get('window');
-const TeamRoom = ({navigation}) => {
+const TeamRoom = ({navigation, route}) => {
   const {user, isTeacher} = useContext(AuthContext);
+  const {classId} = route.params
   const [meetingId, setMeetingId] = useState(null);
   const COLORS = [
     '#ff0000',
@@ -59,12 +60,14 @@ const TeamRoom = ({navigation}) => {
   const getInFoClass = async()=>{
     const classtemp = await firestore()
     .collection('Class')
-    .doc('0VA2PZf3PVGlbWlF9EiV')
+    .doc(classId)
     .get();
     setClassInfo(classtemp.data())
     getTeacher(classtemp.data().userId);
-    const content = await Api.getRangeDate('0VA2PZf3PVGlbWlF9EiV')
-    setRangeDate(content)
+    if(classtemp.data().Schedule?.length>0){
+      const content = await Api.getRangeDate(classId)
+      setRangeDate(content)
+    }  
     // RealTimePost(content)
   }
 
@@ -150,8 +153,9 @@ const TeamRoom = ({navigation}) => {
     getProfile();
   }, []);
   const receiveMeetingId = async()=>{
+    console.log('receiveMeetingId')
     socketServices.on('getMeetingId',(data) => {
-      if(data.ClassId=='0VA2PZf3PVGlbWlF9EiV'){
+      if(data.ClassId==classId){
         setMeetingId(data.MeetingId)
       }
     });
@@ -161,7 +165,7 @@ const TeamRoom = ({navigation}) => {
     // socketServices.emit('MeetingId', data);
     const documentRef = firestore()
     .collection('Class')
-    .doc('0VA2PZf3PVGlbWlF9EiV');
+    .doc(classId);
   await documentRef
     .update({
       MeetingId:data
@@ -169,6 +173,7 @@ const TeamRoom = ({navigation}) => {
   }
   
   const getMeetingId = async id => {
+    console.log('idatgetMeetingId'+id)
     const meetingId = id == null ? await createMeeting({token}) : id;
     console.log(meetingId);
     //sau này thêm tên class
@@ -190,6 +195,35 @@ const TeamRoom = ({navigation}) => {
   );
   const [isJoin, setIsJoin] = useState(false);
   const [realJoin, setRealJoin] = useState(false);
+  // const checkAgain=async()=>{
+  //   const docRef = await firestore().collection('Class').doc('0VA2PZf3PVGlbWlF9EiV');
+
+  //   docRef.onSnapshot((documentSnapshot) => {
+  //     if (documentSnapshot.exists) {
+  //       // Dữ liệu tài liệu đã được cập nhật
+  //       // setMeetingId(documentSnapshot.data().MeetingId)
+  //       let c = false;
+  //       for(let i = 0; i < documentSnapshot.data().Participants.length; i++){
+  //         if(documentSnapshot.data().Participants[i].System_userId==auth().currentUser.uid){
+  //           c = true;break;
+  //         }
+  //       }
+  //       if(c==true){
+  //         console.log("hhh")
+  //         setRealJoin(true);
+  //       }
+  //       else {
+  //         setRealJoin(false);
+  //       }
+  //     } else {
+  //       // Tài liệu không tồn tại
+  //       console.log('Document does not exist!');
+  //     }
+  //   });
+  // }
+  // useEffect(() => {
+  //  checkAgain()
+  // }, []);
   useEffect(() => {
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
@@ -352,11 +386,77 @@ const TeamRoom = ({navigation}) => {
       </View>
     );
   }
+  async function onParticipantLeft() {
+    console.log(' onParticipantLeft', myIdMeeting);
+    const documentRef = firestore()
+      .collection('Class')
+      .doc(classId);
+    await documentRef
+      .update({
+        Participants: firestore.FieldValue.arrayRemove({
+          id: myIdMeeting,
+          name: profileData?.name,
+          image:profileData?.userImg,
+          System_userId:profileData?.id
+        }),
+      })
+      .then(() => {
+        // navigation.push('MeetingRoom',{Cam:isCamMuted,Mic:isMicMuted,meetingId:meetingId,userId:participantId, toggleMic:()=>toggleMic(),toggleWebcam:()=>handleCamToggle(),
+        //   leave:()=>leave()})
+        // setIsJoin(false);
+      });
+  }
+  async function onMeetingLeft() {
+    console.log('onMeetingLeft');
+    setIsJoin(false);
+    setRealJoin(false);
+    setMeetingId(null);
+    sendMeetingId(null)
+    const documentRef = firestore()
+    .collection('Class')
+    .doc(classId);
+    // MeetingHistory:firestore.FieldValue.arrayUnion({
+    //   userName: teacherInfo?.name,
+    //   postTime: '1PM at 2/24/2024',
+    //   sign:'Meeting'
+    // })
+    const currentDate = new Date()
+    const currentDay = currentDate.getDate(); 
+    const currentMonth = currentDate.getMonth() + 1; 
+    const currentYear = currentDate.getFullYear(); 
+    const currentHours = currentDate.getHours(); 
+    const currentMinutes = currentDate.getMinutes();
+    const time = currentDay+'/'+currentMonth+'/'+currentYear+' at '+currentHours+':'+currentMinutes
+    const date = 5+'/'+currentMonth+'/'+currentYear
+    const classData = (await documentRef.get()).data()
+    const data = {
+      userName: teacherInfo?.name,
+      className:classInfo?.ClassName,
+      postTime: time,
+      sign:'Meeting',
+      Date:date,
+      replies:classData.replies,
+      likes:0,
+    }
+      const postRef = await firestore().collection('PostInTeam').add(data);
+      const postId = postRef.id;
+
+  await firestore().collection('PostInTeam').doc(postId).update({
+    id: postId,
+  });
+
+      await firestore().collection('Class').doc(classId).update({
+        Posts: firestore.FieldValue.arrayUnion({id:postId,Date:date}),
+        Participants: [],
+        replies:[]
+      });
+      
+  }
+  const [myIdMeeting, setMyIdMeeting] = useState(null)
+
   function MeetingRoomtemp() {
-    const {leave, toggleWebcam, toggleMic,toggleScreenShare,presenterId, participants,end,startRecording, stopRecording } = useMeeting({
-      onParticipantLeft,
+    const {leave, toggleWebcam, toggleMic,toggleScreenShare,presenterId, participants,startRecording, stopRecording } = useMeeting({
       onPresenterChanged,
-      onMeetingLeft,
       onRecordingStateChanged
     });
     const [idPersonRecord, setIsIdPersonRecord] = useState(null)
@@ -396,7 +496,7 @@ const TeamRoom = ({navigation}) => {
         const currentDate = moment().format('D/M/YYYY_h:mm A');
         const documentRef = firestore()
         .collection('Class')
-        .doc('0VA2PZf3PVGlbWlF9EiV');
+        .doc(classId);
       await documentRef
         .update({
           Recordings: firestore.FieldValue.arrayUnion({
@@ -416,48 +516,90 @@ const TeamRoom = ({navigation}) => {
       setIsRecording1(false);
     };
     const { screenShareStream, screenShareOn } = useParticipant(presenterId);
-    const [myIdMeeting, setMyIdMeeting] = useState(null)
     const [isRedording, setIsRecording] = useState(false)
     const [isRedording1, setIsRecording1] = useState(false)
+
     useEffect(() => {
-      const participantsArrId = [...participants.keys()];
-      setMyIdMeeting(participantsArrId[participantsArrId.length - 1])
-      JoinMeeting();
+      // const participantsArrId = [...participants.keys()];
+      console.log('oncam')
+
+       if(realJoin==false){console.log('huhu');JoinMeeting();setMyIdMeeting(participantsArrId[participantsArrId.length - 1])}
+      //  else {
+      //   joinAgain()
+      //  }
     }, []);
+    // const joinAgain = async()=>{
+    //   try {
+    //     const documentRef = firestore().collection('Class').doc('0VA2PZf3PVGlbWlF9EiV');
+    //     const doc = await documentRef.get();
+    //     if (doc.exists) {
+    //       let Participants = doc.data().Participants;
+    //       for(let i = 0; i < Participants.length; i++){
+    //       if (Participants[i].System_userId==profileData?.id) {
+    //         console.log('joinagain')
+    //         Participants[i].id= participantsArrId[participantsArrId.length - 1]
+    //       } 
+    //       }
+    //       await documentRef.update({ Participants: Participants });
+    //     } else {
+    //       console.error('Document does not exist.');
+    //     }
+    //   } catch (error) {
+    //     console.error('Error updating Participants:', error);
+    //   }
+    // }
     const JoinMeeting = async () => {
       const participantsArrId = [...participants.keys()];
       const e = [...participants]
       console.log(e)
+      console.log(realJoin)
       const documentRef = firestore()
         .collection('Class')
-        .doc('0VA2PZf3PVGlbWlF9EiV');
+        .doc(classId);
       await documentRef
         .update({
           Participants: firestore.FieldValue.arrayUnion({
             id: participantsArrId[participantsArrId.length - 1],
             name: profileData?.name,
             image:profileData?.userImg,
+            System_userId:profileData?.id
           }),
         })
         .then(() => {
-          console.log('haha');
+          console.log(profileData?.id);
+          setRealJoin(true)
         });
     };
+    // useEffect(() => {
+    //   const interval = setInterval(() => {
+    //     setSeconds(seconds => seconds + 1);
+    //   }, 1000);
+  
+    //   return () => clearInterval(interval);
+    // }, []);
+  
+    // useEffect(() => {
+    //   const minutes = Math.floor(seconds / 60);
+    //   const remainingSeconds = seconds % 60;
+  
+    //   const formattedMinutes = String(minutes).padStart(2, '0');
+    //   const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+  
+    //   setFormattedTime(`${formattedMinutes}:${formattedSeconds}`);
+    // }, [seconds]);
     const [listAttendee, setListAttendee] = useState(null)
     useEffect(() => {
-      const docRef = firestore().collection('Class').doc('0VA2PZf3PVGlbWlF9EiV');
+      console.log('hihihohohi')
+      const docRef = firestore().collection('Class').doc(classId);
 
       const unsubscribe = docRef.onSnapshot((documentSnapshot) => {
         if (documentSnapshot.exists) {
-          // Dữ liệu tài liệu đã được cập nhật
           setListAttendee(documentSnapshot.data().Participants);
+          console.log('s2'+meetingId)
         } else {
-          // Tài liệu không tồn tại
           console.log('Document does not exist!');
         }
       });
-  
-      // Hủy đăng ký lắng nghe khi component unmount
       return () => unsubscribe();
     }, []);
     //Event to determine some other participant has joined
@@ -480,74 +622,8 @@ const TeamRoom = ({navigation}) => {
       console.log("someone stopped screen share");
     }
   }
-  async function onMeetingLeft() {
-    console.log('onMeetingLeft');
-    setIsJoin(false);
-    setMeetingId(null);
-    sendMeetingId(null)
-    const documentRef = firestore()
-    .collection('Class')
-    .doc('0VA2PZf3PVGlbWlF9EiV');
-    // MeetingHistory:firestore.FieldValue.arrayUnion({
-    //   userName: teacherInfo?.name,
-    //   postTime: '1PM at 2/24/2024',
-    //   sign:'Meeting'
-    // })
-    const currentDate = new Date()
-    const currentDay = currentDate.getDate(); 
-    const currentMonth = currentDate.getMonth() + 1; 
-    const currentYear = currentDate.getFullYear(); 
-    const currentHours = currentDate.getHours(); 
-    const currentMinutes = currentDate.getMinutes();
-    const time = currentDay+'/'+currentMonth+'/'+currentYear+' at '+currentHours+':'+currentMinutes
-    const date = 5+'/'+currentMonth+'/'+currentYear
-    const classData = (await documentRef.get()).data()
-    const data = {
-      userName: teacherInfo?.name,
-      className:classInfo?.ClassName,
-      postTime: time,
-      sign:'Meeting',
-      Date:date,
-      replies:classData.replies,
-      likes:0,
-    }
-      const postRef = await firestore().collection('PostInTeam').add(data);
-      const postId = postRef.id;
-
-  await firestore().collection('PostInTeam').doc(postId).update({
-    id: postId,
-  });
-
-      await firestore().collection('Class').doc(classId).update({
-        Posts: firestore.FieldValue.arrayUnion({id:postId,Date:date}),
-      });
-      await documentRef
-      .update({
-        Participants: [],
-        replies:[]
-      })
-      .then(() => {
-      });
-  }
-    async function onParticipantLeft(participant) {
-      console.log(' onParticipantLeft', participant.id);
-      const documentRef = firestore()
-        .collection('Class')
-        .doc('0VA2PZf3PVGlbWlF9EiV');
-      await documentRef
-        .update({
-          Participants: firestore.FieldValue.arrayRemove({
-            id: participant.id,
-            name: profileData?.name,
-            image:profileData?.userImg,
-          }),
-        })
-        .then(() => {
-          // navigation.push('MeetingRoom',{Cam:isCamMuted,Mic:isMicMuted,meetingId:meetingId,userId:participantId, toggleMic:()=>toggleMic(),toggleWebcam:()=>handleCamToggle(),
-          //   leave:()=>leave()})
-          setIsJoin(false);
-        });
-    }
+  
+   
     const participantsArrId = [...participants.keys()];
     const [Share, SetShare] = useState(false);
     const handleMicToggle = () => {
@@ -559,26 +635,6 @@ const TeamRoom = ({navigation}) => {
       toggleWebcam();
       setIsCamMuted(!isCamMuted);
     };
-    const [seconds, setSeconds] = useState(0);
-  const [formattedTime, setFormattedTime] = useState('00:00');
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSeconds(seconds => seconds + 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-
-    const formattedMinutes = String(minutes).padStart(2, '0');
-    const formattedSeconds = String(remainingSeconds).padStart(2, '0');
-
-    setFormattedTime(`${formattedMinutes}:${formattedSeconds}`);
-  }, [seconds]);
 
 
     return (
@@ -591,7 +647,7 @@ const TeamRoom = ({navigation}) => {
           <TouchableOpacity style={{marginLeft: '2%'}} onPress={()=>{setIsJoin(false)}}>
             <FontAwesome name="chevron-left" color="white" size={20} />
           </TouchableOpacity>
-          <View>
+          <View style={{width:width}}>
             <Text
               style={{
                 textAlign: 'left',
@@ -601,18 +657,18 @@ const TeamRoom = ({navigation}) => {
               }}>
               Buổi học ngày {moment().format('DD/MM/YYYY')}
             </Text>
-            <Text
+            <View style={{flexDirection:'row', alignItems:'center'}}>
+          <Text
               style={{
                 textAlign: 'left',
                 color: 'white',
                 fontSize: 18,
                 marginLeft: 15,
               }}>
-              {formattedTime+' '+participantsArrId.length} attendees
+              {"00:00"+' '+listAttendee?.length} attendees
             </Text>
-          </View>
-          <View style={{flex: 1}} />
-          <TouchableOpacity style={{marginLeft:6}}
+            <View style={{flex: 1}} />
+          <TouchableOpacity style={{}}
             onPress={() => {
               if(isRedording1){
                 handleStopRecording();
@@ -628,7 +684,7 @@ const TeamRoom = ({navigation}) => {
               <Icon name="record-vinyl" color="#8B0016" size={20} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft:6}}
+          <TouchableOpacity style={{marginLeft:10}}
             onPress={() => {
               handleMicToggle();
             }}>
@@ -638,7 +694,7 @@ const TeamRoom = ({navigation}) => {
               <FontAwesome name="microphone" color="black" size={20} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft:6}}
+          <TouchableOpacity style={{marginLeft:10}}
             onPress={() => {
               handleCamToggle();
             }}>
@@ -648,8 +704,15 @@ const TeamRoom = ({navigation}) => {
               <Icon name="video" color="gray" size={20} />
             )}
           </TouchableOpacity>
+          <View style={{width:35}}/>
+          </View>
+            
+          </View>
+
+         
+          
         </View>
-        {!screenShareOn && participantsArrId.length > 0 && (
+        {!screenShareOn && listAttendee?.length > 0 && (
           <FlatList
             style={{alignSelf: 'center', marginTop: 10}}
             data={listAttendee}
@@ -720,7 +783,7 @@ const TeamRoom = ({navigation}) => {
             justifyContent: 'space-evenly',
             alignItems: 'center',
           }}>
-          <TouchableOpacity onPress={() => navigation.push('AttendeeScreen',{list:participantsArrId})}>
+          <TouchableOpacity onPress={() => navigation.push('AttendeeScreen',{list:listAttendee})}>
             <Icon name="users" color="black" size={20} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.push('ReplyScreen',{postId:classInfo.classId, postName:classInfo.ClassName, sign:'TeamRoom'})}>
@@ -733,7 +796,8 @@ const TeamRoom = ({navigation}) => {
           <TouchableOpacity
             onPress={() => {
               leave();
-              setMeetingId(null);
+              onParticipantLeft();
+              // setMeetingId(null);
               setIsJoin(false);
               setRealJoin(false)
             }}>
@@ -746,6 +810,8 @@ const TeamRoom = ({navigation}) => {
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isCamMuted, setIsCamMuted] = useState(false);
   const [isCreate, setIsCreate] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [formattedTime, setFormattedTime] = useState('00:00');
   function MeetingView() {
     // Get `participants` from useMeeting Hook
     const {
@@ -756,30 +822,48 @@ const TeamRoom = ({navigation}) => {
       toggleMic,
       participants,
     } = useMeeting({});
+
+  
+    // useEffect(() => {
+    //   const interval = setInterval(() => {
+    //     setSeconds(seconds => seconds + 1);
+    //   }, 1000);
+  
+    //   return () => clearInterval(interval);
+    // }, []);
+  
+    // useEffect(() => {
+    //   const minutes = Math.floor(seconds / 60);
+    //   const remainingSeconds = seconds % 60;
+  
+    //   const formattedMinutes = String(minutes).padStart(2, '0');
+    //   const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+  
+    //   setFormattedTime(`${formattedMinutes}:${formattedSeconds}`);
+    // }, [seconds]);
     const {localWebcamOn} = useMeeting();
     //Event to determine if the meeting has been left
-    async function onMeetingLeft() {
-      console.log('onMeetingLeft');
-      setIsJoin(false);
-      setRealJoin(false)
-      setMeetingId(null);
-      sendMeetingId(null)
-      const documentRef = firestore()
-      .collection('Class')
-      .doc('0VA2PZf3PVGlbWlF9EiV');
-    await documentRef
-      .update({
-        Participants: []
-      })
-      .then(() => {
-      });
-    }
+    // async function onMeetingLeft() {
+    //   console.log('onMeetingLeft');
+    //   setIsJoin(false);
+    //   setRealJoin(false)
+    //   setMeetingId(null);
+    //   sendMeetingId(null)
+    //   const documentRef = firestore()
+    //   .collection('Class')
+    //   .doc('0VA2PZf3PVGlbWlF9EiV');
+    // await documentRef
+    //   .update({
+    //     Participants: []
+    //   })
+    //   .then(() => {
+    //   });
+    // }
 
     const {join} = useMeeting({});
 
     //Getting the leave and end method from hook and assigning event callbacks
     const {end} = useMeeting({
-      onMeetingLeft,
     });
 
     //  const participantsArrId = [...participants.keys()];
@@ -842,12 +926,12 @@ const TeamRoom = ({navigation}) => {
               <Icon name="video" color="gray" size={20} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
+          {isTeacher&&<TouchableOpacity
             onPress={() => {
-              end();console.log("end")
+              end();console.log("end");onMeetingLeft()
             }}>
             <Text>End</Text>
-          </TouchableOpacity>
+          </TouchableOpacity>}
         </View>
 
         {!realJoin&&<TouchableOpacity
@@ -862,7 +946,6 @@ const TeamRoom = ({navigation}) => {
           onPress={() => {
             join();
             setIsJoin(true);
-            setRealJoin(true)
           }}>
           <Text>Join</Text>
         </TouchableOpacity>}
@@ -883,6 +966,28 @@ const TeamRoom = ({navigation}) => {
       </View>
     );
   }
+  const showAlert = () => {
+    const {leave} = useMeeting({});
+    if(realJoin)
+      Alert.alert(
+        'Hey!',
+        'If you leave, you will exit the meeting.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              leave();
+              onParticipantLeft();
+              setIsJoin(false);
+              setRealJoin(false)
+              navigation.goBack();
+            },
+          },
+          {text: 'Cancel', onPress: () => console.log('Cancel pressed')},
+        ],
+        {cancelable: false},
+      );
+  };
 
   return meetingId == null ? (
     <View style={styles.container}>
@@ -1022,13 +1127,32 @@ const TeamRoom = ({navigation}) => {
       </View>
       {selectedTab == 1 && (
         <View>
-          {
-            <FlatList
+             {
+            rangeDate!=null&&<FlatList
               data={rangeDate}
               renderItem={({item, index}) => (
                 <DateItem item={item} key={index}/>
               )}
             />
+          }
+          {
+            rangeDate==null&&isTeacher&&
+            <View style={{width:width*0.9, height:100, justifyContent:'space-evenly', alignItems:'center', alignSelf:'center'}}>
+               <Text>To begin, let set Schedule for your class</Text>
+               <TouchableOpacity
+          style={{
+            backgroundColor: PRIMARY_COLOR,
+            padding:5,
+            borderRadius: 15,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={() => {
+          }}>
+          <Text>Set schedule!</Text>
+        </TouchableOpacity>
+            </View>
           }
         </View>
       )}
@@ -1064,7 +1188,7 @@ const TeamRoom = ({navigation}) => {
           justifyContent: 'center',
           alignItems: 'center',
         }}
-        onPress={() => navigation.push('NewPost',{classId:'0VA2PZf3PVGlbWlF9EiV', userInfo:profileData})}>
+        onPress={() => navigation.push('NewPost',{classId:classId, userInfo:profileData})}>
         {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
         {selectedTab == 2 && <PopupMenu />}
         {/* {selectedTab == 3 && (
@@ -1089,7 +1213,30 @@ const TeamRoom = ({navigation}) => {
           <View style={AppStyle.viewstyle.component_upzone}>
             <TouchableOpacity
               style={{marginLeft: '2%'}}
-              onPress={() => navigation.goBack()}>
+              onPress={() => {
+                // showAlert();
+                // setMeetingId(null);
+                // const {leave} = useMeeting({});
+    if(realJoin)
+      Alert.alert(
+        'Hey!',
+        'If you leave, you will exit the meeting.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // leave();
+              onParticipantLeft();
+              setIsJoin(false);
+              setRealJoin(false)
+              navigation.goBack();
+            },
+          },
+          {text: 'Cancel', onPress: () => console.log('Cancel pressed')},
+        ],
+        {cancelable: false},
+      );
+                }}>
               <FontAwesome name="chevron-left" color="white" size={20} />
             </TouchableOpacity>
             <Text
@@ -1180,14 +1327,33 @@ const TeamRoom = ({navigation}) => {
           {selectedTab == 1 && (
             <View>
              <MeetingView />
-              {
-               <FlatList
-               data={rangeDate}
-               renderItem={({item, index}) => (
-                 <DateItem item={item} key={index}/>
-               )}
-             />
-              }
+             {
+            rangeDate!=null&&<FlatList
+              data={rangeDate}
+              renderItem={({item, index}) => (
+                <DateItem item={item} key={index}/>
+              )}
+            />
+          }
+          {
+            rangeDate==null&&isTeacher&&
+            <View style={{width:width*0.9, height:100, justifyContent:'space-evenly', alignItems:'center', alignSelf:'center'}}>
+               <Text>To begin, let set Schedule for your class</Text>
+               <TouchableOpacity
+          style={{
+            backgroundColor: PRIMARY_COLOR,
+            padding:5,
+            borderRadius: 15,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={() => {
+          }}>
+          <Text>Set schedule!</Text>
+        </TouchableOpacity>
+            </View>
+          }
             </View>
           )}
           {selectedTab == 2 && (
@@ -1222,7 +1388,7 @@ const TeamRoom = ({navigation}) => {
               justifyContent: 'center',
               alignItems: 'center',
             }}
-            onPress={() => navigation.push('NewPost', {classId:'0VA2PZf3PVGlbWlF9EiV'})}>
+            onPress={() => navigation.push('NewPost', {classId:classId})}>
             {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
             {selectedTab == 2 && <PopupMenu />}
             {/* {selectedTab == 3 && (
