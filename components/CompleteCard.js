@@ -256,21 +256,23 @@ const CompleteCard = ({navigation, route}) => {
             justifyContent: 'space-evenly',
             marginTop: '10%',
           }}>
-          {reviewList != null && (
+          {
             <TouchableOpacity
               style={[AppStyle.button.button2]}
-              onPress={() =>
-                navigation.push('ResultTable', {
-                  History: answer,
-                  questionList: reviewList,
-                  part: part,
-                  score: score,
-                  quantity: quantity1,
-                })
-              }>
+              onPress={() => {
+                if (reviewList != null) {
+                  navigation.push('ResultTable', {
+                    History: answer,
+                    questionList: reviewList,
+                    part: part,
+                    score: score,
+                    quantity: quantity1,
+                  });
+                }
+              }}>
               <Text style={AppStyle.button.button2_Text}>Show answer</Text>
             </TouchableOpacity>
-          )}
+          }
           {sign == 'Home' ? (
             <TouchableOpacity
               style={[AppStyle.button.button2]}

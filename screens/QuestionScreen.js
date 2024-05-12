@@ -33,7 +33,7 @@ import LottieView from 'lottie-react-native';
 import RNFS from 'react-native-fs';
 import Api from '../api/Api';
 import {AuthContext} from '../navigation/AuthProvider';
-import { BackHandler } from 'react-native';
+import {BackHandler} from 'react-native';
 
 Sound.setCategory('Playback');
 const {width} = Dimensions.get('window');
@@ -47,7 +47,6 @@ const QuestionScreen = ({navigation, route}) => {
     partName,
     sign,
     numberofQuestion,
-    isFromPL,
     isExplain,
     RemoveQinSavedQ,
   } = route.params;
@@ -61,9 +60,9 @@ const QuestionScreen = ({navigation, route}) => {
   const [SavedQ, setSavedQ] = useState([]);
   const [recordingsList, setRecordingsList] = useState([]);
   const [history, setHistory] = useState([]);
+  const [timeRemaining, setTimeRemaining] = useState(180);
   const recordsRef = useRef([]);
   const answersRef = useRef([]);
-
 
   const saveQuestion = async id => {
     const data = await Api.getSavedQuestion();
@@ -404,6 +403,7 @@ const QuestionScreen = ({navigation, route}) => {
         sign: 'QuestionScreen',
         part: part,
         isFromPL: route.params.isFromPL,
+        isAssessment: route.params.isAssessment,
         questionL: history,
       });
     } else if (part == 'R1') {
@@ -431,6 +431,7 @@ const QuestionScreen = ({navigation, route}) => {
         sign: 'QuestionScreen',
         part: part,
         isFromPL: route.params.isFromPL,
+        isAssessment: route.params.isAssessment,
         questionL: history,
       });
     } else if (part == 'R2' || part == 'R3') {
@@ -462,10 +463,12 @@ const QuestionScreen = ({navigation, route}) => {
         sign: 'QuestionScreen',
         part: part,
         isFromPL: route.params.isFromPL,
+        isAssessment: route.params.isAssessment,
         questionL: history,
         DetailQty: qty,
       });
     }
+
     //Update Practice Plan
     const result = await Api.getPracticePlan(user.uid);
     if (result != null) {
@@ -476,12 +479,56 @@ const QuestionScreen = ({navigation, route}) => {
         const index = days.findIndex(
           item => item.Day == result.CurrentPhase.CurrentDay,
         );
-        if (
-          numberofQuestion + days[index].CompletedQuestion <
-          days[index].NumberofQuestions
-        ) {
-          days[index].CompletedQuestion =
-            numberofQuestion + days[index].CompletedQuestion;
+
+        if (route.params?.isAssessment) {
+          let data;
+          let score = 0;
+          for (let i = 0; i < history.length; i++) {
+            if (history[i].Default == history[i].Select) {
+              score = score + 1;
+            }
+          }
+          practicephases[result.CurrentPhase.PhaseIndex].AssessmentScore =
+            score;
+          console.log(score);
+          console.log(currentphase.Target);
+          if (score >= currentphase.Target) {
+            if (index !== days.length - 1) {
+              data = {
+                PracticePhases: practicephases,
+                CurrentPhase: {
+                  CurrentDay: days[index].Day + 1,
+                  PhaseIndex: result.CurrentPhase.PhaseIndex,
+                },
+              };
+            } else {
+              data = {
+                PracticePhases: practicephases,
+                CurrentPhase: {
+                  CurrentDay: days[index].Day + 1,
+                  PhaseIndex: result.CurrentPhase.PhaseIndex + 1,
+                },
+              };
+            }
+          } else {
+            data = {
+              PracticePhases: practicephases,
+            };
+          }
+          console.log(data);
+          await Api.updatePracticePlan(data).catch(error =>
+            console.error(error),
+          );
+        } else {
+          if (
+            numberofQuestion + days[index].CompletedQuestion <
+            days[index].NumberofQuestions
+          ) {
+            days[index].CompletedQuestion =
+              numberofQuestion + days[index].CompletedQuestion;
+          } else {
+            days[index].CompletedQuestion = days[index].NumberofQuestions;
+          }
           practicephases[result.CurrentPhase.PhaseIndex].Days = days;
           const data = {
             PracticePhases: practicephases,
@@ -491,35 +538,40 @@ const QuestionScreen = ({navigation, route}) => {
             console.error(error),
           );
         }
-        // If completed all questions of the day
-        else {
-          days[index].CompletedQuestion = days[index].NumberofQuestions;
-          practicephases[result.CurrentPhase.PhaseIndex].Days = days;
-          let data;
-          if (index !== days.length - 1) {
-            data = {
-              PracticePhases: practicephases,
-              CurrentPhase: {
-                CurrentDay: days[index].Day + 1,
-                PhaseIndex: result.CurrentPhase.PhaseIndex,
-              },
-            };
-          } else {
-            data = {
-              PracticePhases: practicephases,
-              CurrentPhase: {
-                CurrentDay: days[index].Day + 1,
-                PhaseIndex: result.CurrentPhase.PhaseIndex + 1,
-              },
-            };
-          }
-          await Api.updatePracticePlan(data).catch(error =>
-            console.error(error),
-          );
-        }
       }
     }
   };
+
+  const timeFormat = totalSeconds => {
+    let minutes = Math.floor((totalSeconds % 3600) / 60);
+    let seconds = totalSeconds % 60;
+    let time = `${minutes.toLocaleString('en-US', {
+      minimumIntegerDigits: 2,
+    })}:${seconds.toLocaleString('en-US', {minimumIntegerDigits: 2})}`;
+    return time;
+  };
+
+  useEffect(() => {
+    let intervalId;
+
+    if (loading) {
+      intervalId = setInterval(() => {
+        setTimeRemaining(prevTime => {
+          if (prevTime === 0) {
+            clearInterval(intervalId);
+            onSubmit();
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1500);
+    } else {
+      clearInterval(intervalId);
+    }
+
+    return () => clearInterval(intervalId);
+  }, [loading]);
+
   useEffect(() => {
     if (buttonTitle == 'Explain') {
       setIsSaved(true);
@@ -584,16 +636,12 @@ const QuestionScreen = ({navigation, route}) => {
     setHistory(list);
   }, []);
   // useEffect(() => {
-    const backAction = () => {
+  const backAction = () => {
+    showAlert();
+    return true;
+  };
 
-      showAlert();
-      return true;
-    };
-
-  BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
-    );
+  BackHandler.addEventListener('hardwareBackPress', backAction);
 
   //   return () => backHandler.remove(); // Remove listener khi component unmount
   // }, []);
@@ -606,8 +654,8 @@ const QuestionScreen = ({navigation, route}) => {
           {
             text: 'OK',
             onPress: () => {
-              if (soundL != -1){
-                console.log(soundL?.length)
+              if (soundL != -1) {
+                console.log(soundL?.length);
                 for (let i = 0; i < soundL?.length; i++) {
                   if (soundL[i].isPlaying()) {
                     soundL[i].stop();
@@ -795,6 +843,11 @@ const QuestionScreen = ({navigation, route}) => {
           />
         </TouchableOpacity>
         <View style={{flex: 1}} />
+        {route.params?.isAssessment && (
+          <Text style={{color: 'white', fontSize: 20, marginRight: '5%'}}>
+            {timeFormat(timeRemaining)}
+          </Text>
+        )}
         {buttonTitle == 'Explain' ? (
           <TouchableOpacity onPress={() => setOpenModal(true)}>
             <Text
