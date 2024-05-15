@@ -86,8 +86,8 @@ const RegisterTeacher3 = ({navigation, route}) => {
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Register Teacher</Text>
-        <TouchableOpacity onPress={() => navigation.pop(3)}>
-          <Text style={styles.cancelButton}>Cancel</Text>
+        <TouchableOpacity style={styles.cancelButton} onPress={() => {navigation.navigate("Login")}}>
+          <Text >Cancel</Text>
         </TouchableOpacity>
       </View>
 
@@ -160,10 +160,10 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     position: 'absolute',
-    right: 0,
+    right: 10,
     zIndex: 2,
     bottom: 0,
-    marginBottom: 4,
+    marginBottom: 26,
   },
   stepContainer: {
     display: 'flex',

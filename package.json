@@ -20,6 +20,7 @@
     "@react-native-firebase/firestore": "^18.5.0",
     "@react-native-firebase/messaging": "^18.5.0",
     "@react-native-google-signin/google-signin": "^10.0.1",
+    "@react-native-ml-kit/text-recognition": "^1.5.1",
     "@react-native-picker/picker": "^2.7.2",
     "@react-navigation/bottom-tabs": "^6.5.18",
     "@react-navigation/drawer": "^6.6.4",

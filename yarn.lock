@@ -1751,6 +1751,11 @@
   resolved "https://registry.npmjs.org/@react-native-google-signin/google-signin/-/google-signin-10.0.1.tgz"
   integrity sha512-oZoU2lfKyn0s0GqqdFsi4v2FSENrxQYQU9DD/RSkxDdkIQ49Wwo6p5LKlgXY04GwZEVdYMuvZN3G89gQW0ig2g==
 
+"@react-native-ml-kit/text-recognition@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.npmjs.org/@react-native-ml-kit/text-recognition/-/text-recognition-1.5.1.tgz"
+  integrity sha512-UO13SPfTPG44UrE4k9jXZBLXYAizXg9spDiAzUnMQMKOHUCuY6sTnm7YNI7pUrR1HXQ72L5dpCeXU+d0QK8/rQ==
+
 "@react-native-picker/picker@^2.7.2":
   version "2.7.2"
   resolved "https://registry.npmjs.org/@react-native-picker/picker/-/picker-2.7.2.tgz"
@@ -6334,7 +6339,7 @@ react-native-voip-push-notification@^3.3.2:
   resolved "https://registry.npmjs.org/react-native-voip-push-notification/-/react-native-voip-push-notification-3.3.2.tgz"
   integrity sha512-O5oNRmlL4iEAYr9os1PJZPetIxZ5j4qy9xLzF/A3/6x94gRmXihIT9o26jtGnuJfijUm5aM8GvNqcLnOAwtjXA==
 
-react-native@*, "react-native@^0.0.0-0 || 0.60 - 0.72 || 1000.0.0", "react-native@>= 0.30.0", "react-native@>= 0.50.0", "react-native@>= 0.62", react-native@>=0.40.0, react-native@>=0.46, react-native@>=0.60.0, react-native@>=0.65.0, react-native@>=0.71.0, react-native@>=0.8.0, react-native@0.72.5:
+react-native@*, "react-native@^0.0.0-0 || 0.60 - 0.72 || 1000.0.0", "react-native@>= 0.30.0", "react-native@>= 0.50.0", "react-native@>= 0.62", react-native@>=0.40.0, react-native@>=0.46, react-native@>=0.60.0, "react-native@>=0.60.0-rc.0 <1.0.x", react-native@>=0.65.0, react-native@>=0.71.0, react-native@>=0.8.0, react-native@0.72.5:
   version "0.72.5"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.72.5.tgz"
   integrity sha512-oIewslu5DBwOmo7x5rdzZlZXCqDIna0R4dUwVpfmVteORYLr4yaZo5wQnMeR+H7x54GaMhmgeqp0ZpULtulJFg==
@@ -6398,7 +6403,7 @@ react-test-renderer@18.2.0:
     react-shallow-renderer "^16.15.0"
     scheduler "^0.23.0"
 
-react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.13.1 || ^17 || ^18", "react@^16.8.0 || ^17.0.0 || ^18.0.0", react@^18.2.0, "react@> 16.7.0", "react@>= 15.2.1", react@>=16.8, react@>=17.0.0, react@18.2.0:
+react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.13.1 || ^17 || ^18", "react@^16.8.0 || ^17.0.0 || ^18.0.0", react@^18.2.0, "react@> 16.7.0", "react@>= 15.2.1", react@>=16.8, react@>=16.8.1, react@>=17.0.0, react@18.2.0:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react/-/react-18.2.0.tgz"
   integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==

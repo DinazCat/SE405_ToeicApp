@@ -14,40 +14,52 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
 import FormInput from '../components/FormInput';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
-
+import DropDownPicker from 'react-native-dropdown-picker';
+const bankList = [
+  {
+    label: `BIDV`,
+    value: `BIDV`,
+  },
+  {
+    label: 'Vietcombank',
+    value: 'Vietcombank',
+  },
+  {
+    label: 'VietinBank',
+    value: 'VietinBank',
+  },
+  {
+    label: 'ACB',
+    value: 'ACB',
+  },
+  {
+    label: 'Techcombank',
+    value: 'Techcombank',
+  },
+  {
+    label: 'Agribank',
+    value: 'Agribank',
+  },
+  {
+    label: 'Sacombank',
+    value: 'Sacombank',
+  },
+  {
+    label: 'DongA Bank',
+    value: 'DongA Bank',
+  },
+  {
+    label: 'Vietbank',
+    value: 'Vietbank',
+  },
+];
 const RegisterTeacher2 = ({navigation, route}) => {
-  const [openModal, setOpenModal] = useState(false);
-  const [typeImage, setTypeImage] = useState('');
-  const [frontImage, setFrontImage] = useState('');
-  const [backImage, setBackImage] = useState('');
   const [bank, setBank] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
+  const [openDropdown, setOpenDropdown] = useState(false);
 
-  //handle modal upload image
-  const openLibrary = async () => {
-    setOpenModal(false);
-    ImagePicker.openPicker({
-      width: 300,
-      height: 150,
-      cropping: true,
-    }).then(img => {
-      if (typeImage === 'front') setFrontImage(img.path);
-      else if (typeImage === 'back') setBackImage(img.path);
-    });
-  };
 
-  const openCamera = () => {
-    setOpenModal(false);
-    ImagePicker.openCamera({
-      width: 300,
-      height: 150,
-      cropping: true,
-    }).then(img => {
-      if (typeImage === 'front') setFrontImage(img.path);
-      else if (typeImage === 'back') setBackImage(img.path);
-    });
-  };
 
   const onNext = async () => {
     if (bank === '' || accountNumber === '' || accountName === '') {
@@ -56,15 +68,10 @@ const RegisterTeacher2 = ({navigation, route}) => {
         'Please enter complete information',
       );
       return;
-    } else if (frontImage === '' || backImage === '') {
-      Alert.alert('Input cannot be blank!', 'Please upload your ID card fully');
-      return;
-    }
+    } 
 
     navigation.push('RegisterTeacher3', {
       ...route.params,
-      frontIDImage: frontImage,
-      backIDImage: backImage,
       bankInformation: {
         bankName: bank,
         accountNumber: accountNumber,
@@ -73,40 +80,7 @@ const RegisterTeacher2 = ({navigation, route}) => {
     });
   };
 
-  //Render Modal to choose upload image by take photo now or upload from library
-  function RenderModal() {
-    return (
-      <Modal visible={openModal} animationType="slide" transparent={true}>
-        <View style={styles.modal}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setOpenModal(false)}>
-            <FontAwesome5
-              name={'times-circle'}
-              style={{color: 'white', fontSize: 20}}
-            />
-          </TouchableOpacity>
-
-          <View style={styles.popover}>
-            <TouchableOpacity onPress={openCamera}>
-              <View style={styles.popoverItem}>
-                <FontAwesome5 name="camera" size={35} color={card_color} />
-                <Text style={styles.popoverText}>Take photo</Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={openLibrary}>
-              <View style={styles.popoverItem}>
-                <FontAwesome5 name="photo-video" size={35} color={card_color} />
-                <Text style={styles.popoverText}>Libraries</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    );
-  }
-
+  
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -121,8 +95,8 @@ const RegisterTeacher2 = ({navigation, route}) => {
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Register Teacher</Text>
-        <TouchableOpacity onPress={() => navigation.pop(2)}>
-          <Text style={styles.cancelButton}>Cancel</Text>
+        <TouchableOpacity style={styles.cancelButton} onPress={() => {navigation.navigate("Login")}}>
+          <Text>Cancel</Text>
         </TouchableOpacity>
       </View>
 
@@ -155,11 +129,27 @@ const RegisterTeacher2 = ({navigation, route}) => {
         </View>
 
         <Text style={[styles.title, {marginTop: 10}]}>Enter Bank Name</Text>
-        <FormInput
+        {/* <FormInput
           onChangeText={value => setBank(value)}
           iconType="hotel"
           autoCapitalize="none"
           autoCorrect={false}
+        /> */}
+        <DropDownPicker
+          placeholder="Select Bank"
+          items={bankList}
+          open={openDropdown}
+          setOpen={() => setOpenDropdown(!openDropdown)}
+          value={bank}
+          setValue={item => setBank(item)}
+          maxHeight={160}
+          dropDownMaxHeight={160}
+          style={[styles.inputContainer, {zIndex: 1}]}
+          placeholderStyle={{fontSize: 16, color: '#555'}}
+          labelStyle={{fontSize: 16, color: '#333'}}
+          listItemContainer={{height: 40}}
+          listItemLabelStyle={{fontSize: 16, color: '#333'}}
+          dropDownContainerStyle={{backgroundColor: '#fafafa', borderColor:'#ccc'}}
         />
 
         <Text style={styles.title}>Enter Account Number</Text>
@@ -178,80 +168,7 @@ const RegisterTeacher2 = ({navigation, route}) => {
           autoCorrect={false}
         />
 
-        <View
-          style={{
-            display: 'flex',
-            width: '100%',
-            flexDirection: 'row',
-            gap: 10,
-          }}>
-          <View
-            style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
-          />
-          <Text style={[styles.title, {fontWeight: '600'}]}>
-            Upload Your Certificates
-          </Text>
-          <View
-            style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
-          />
-        </View>
 
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={styles.buttonContainer}
-            onPress={() => {
-              setOpenModal(true);
-              setTypeImage('front');
-            }}>
-            <FontAwesome5 name="camera" size={35} color={card_color} />
-            <Text style={styles.buttonText}>Front ID</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.buttonContainer}
-            onPress={() => {
-              setOpenModal(true);
-              setTypeImage('back');
-            }}>
-            <FontAwesome5 name="camera" size={35} color={card_color} />
-            <Text style={styles.buttonText}>Back ID</Text>
-          </TouchableOpacity>
-        </View>
-
-        {frontImage && (
-          <View
-            style={{display: 'flex', alignItems: 'center', marginBottom: 20}}>
-            <Text style={styles.titleImage}>The front of the ID card</Text>
-            <View style={{position: 'relative', width: 300, height: 150}}>
-              <TouchableOpacity
-                style={styles.removeImage}
-                onPress={() => setFrontImage('')}>
-                <Ionicons name="close" style={{color: 'white'}} size={20} />
-              </TouchableOpacity>
-              <Image source={{uri: frontImage}} style={styles.image} />
-            </View>
-          </View>
-        )}
-
-        {backImage && (
-          <View
-            style={{display: 'flex', alignItems: 'center', marginBottom: 20}}>
-            <Text style={styles.titleImage}>The back of the ID card</Text>
-            <View
-              style={{
-                position: 'relative',
-                width: 300,
-                height: 150,
-              }}>
-              <TouchableOpacity
-                style={styles.removeImage}
-                onPress={() => setBackImage('')}>
-                <Ionicons name="close" style={{color: 'white'}} size={20} />
-              </TouchableOpacity>
-              <Image source={{uri: backImage}} style={styles.image} />
-            </View>
-          </View>
-        )}
 
         <TouchableOpacity
           onPress={onNext}
@@ -261,7 +178,6 @@ const RegisterTeacher2 = ({navigation, route}) => {
         </TouchableOpacity>
         <View style={{height: 20}} />
       </ScrollView>
-      {RenderModal()}
     </View>
   );
 };
@@ -288,10 +204,10 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     position: 'absolute',
-    right: 0,
+    right: 10,
     zIndex: 2,
     bottom: 0,
-    marginBottom: 4,
+    marginBottom: 26,
   },
   headerTitle: {
     fontSize: 24,
@@ -359,6 +275,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
+  },
+  inputContainer: {
+    marginTop: 5,
+    marginBottom: 10,
+    width: '100%',
+    height: 50,
+    borderColor: '#ccc',
+    borderRadius: 30,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
   popoverItem: {
     alignItems: 'center',
