@@ -490,8 +490,6 @@ const QuestionScreen = ({navigation, route}) => {
           }
           practicephases[result.CurrentPhase.PhaseIndex].AssessmentScore =
             score;
-          console.log(score);
-          console.log(currentphase.Target);
           if (score >= currentphase.Target) {
             if (index !== days.length - 1) {
               data = {

@@ -43,8 +43,8 @@ const AuthStack = () => {
   return (
     // <Stack.Navigator initialRouteName={routeName}>
     <Stack.Navigator>
-        <Stack.Screen name="Onboarding" component={OnboardingScreen}
-        options={{ header: () => null }} />
+        {/* <Stack.Screen name="Onboarding" component={OnboardingScreen}
+        options={{ header: () => null }} /> */}
         <Stack.Screen name="Login" component={LoginScreen}
         options={{ header: () => null }} />
         <Stack.Screen name="Signup" component={SignupScreen}

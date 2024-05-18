@@ -11,6 +11,7 @@ import React, {useState, useEffect} from 'react';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 const {width, height} = Dimensions.get('window');
 import auth from '@react-native-firebase/auth';
+import moment from 'moment';
 
 const ChatCard = ({item, navigation}) => {
   const [screenWidth, setScreenWidth] = useState(
@@ -30,13 +31,33 @@ const ChatCard = ({item, navigation}) => {
     return words[0];
   };
 
+  const getImageUri = () => {
+    const toUser = item.users?.find(
+      user => user.userId !== auth().currentUser.uid,
+    );
+    item.imageUri = toUser?.avatar;
+    return toUser?.avatar;
+  };
+
+  const getChatName = () => {
+    const toUser = item.users?.find(
+      user => user.userId !== auth().currentUser.uid,
+    );
+    item.name = toUser?.name;
+    item.calleeId = toUser?.userId;
+    return toUser?.name;
+  };
+
   return (
     <TouchableOpacity
       style={{marginTop: 10}}
       onPress={() => navigation.push('ChatRoom', {chatRoomData: item})}>
       <View style={[styles.container, {width: screenWidth * 0.9}]}>
         <View style={{position: 'relative'}}>
-          <Image style={styles.image} source={{uri: item.imageUri}} />
+          <Image
+            style={styles.image}
+            source={{uri: item.imageUri || getImageUri()}}
+          />
           <View
             style={[
               styles.status,
@@ -63,7 +84,7 @@ const ChatCard = ({item, navigation}) => {
                 fontSize: 18,
                 fontWeight: 600,
               }}>
-              {item.name}
+              {item.name || getChatName()}
             </Text>
             <Text
               style={{
@@ -71,14 +92,17 @@ const ChatCard = ({item, navigation}) => {
                 fontSize: 14,
                 marginStart: 'auto',
               }}>
-              {item.messages[item.messages.length - 1].timestamp}
+              {moment(item.messages[item.messages.length - 1].timestamp).format(
+                'HH:mm',
+              )}
             </Text>
           </View>
           <Text numberOfLines={1} style={{color: 'gray', fontSize: 16}}>
             {item.messages[item.messages.length - 1].from.userId ===
             auth().currentUser.uid
               ? 'You: '
-              : item.messages[item.messages.length - 1].from.name === item.name
+              : item.messages[item.messages.length - 1].from.name ===
+                getChatName()
               ? ''
               : getFirstName(
                   item.messages[item.messages.length - 1].from.name,

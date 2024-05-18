@@ -10,7 +10,7 @@ import {
   Modal,
   SafeAreaView,
   TextInput,
-  Alert
+  Alert,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -23,7 +23,12 @@ import PostinTeam from '../ComponentTeam/PostinTeam';
 import RecordingCard from '../ComponentTeam/RecordingCard';
 import FileCard from '../ComponentTeam/FileCard';
 import FolderCard from '../ComponentTeam/FolderCard';
-import {createMeeting, token, startRecord, stopRecord} from '../api/apiVideoSDK';
+import {
+  createMeeting,
+  token,
+  startRecord,
+  stopRecord,
+} from '../api/apiVideoSDK';
 import auth from '@react-native-firebase/auth';
 import MeetingRoom from './MeetingRoom';
 import DateItem from '../ComponentTeam/DateItem';
@@ -43,7 +48,7 @@ import moment from 'moment';
 const {width, height} = Dimensions.get('window');
 const TeamRoom = ({navigation, route}) => {
   const {user, isTeacher} = useContext(AuthContext);
-  const {classId} = route.params
+  const {classId} = route.params;
   const [meetingId, setMeetingId] = useState(null);
   const COLORS = [
     '#ff0000',
@@ -53,24 +58,20 @@ const TeamRoom = ({navigation, route}) => {
     '#ff00ff',
     '#00ffff',
   ];
-  const [classInfo, setClassInfo] = useState(null)
-  const [teacherInfo, setTeacherInfo] = useState(null)
-  const [rangeDate, setRangeDate] = useState(null)
- 
-  const getInFoClass = async()=>{
-    const classtemp = await firestore()
-    .collection('Class')
-    .doc(classId)
-    .get();
-    setClassInfo(classtemp.data())
-    getTeacher(classtemp.data().userId);
-    if(classtemp.data().Schedule?.length>0){
-      const content = await Api.getRangeDate(classId)
-      setRangeDate(content)
-    }  
-    // RealTimePost(content)
-  }
+  const [classInfo, setClassInfo] = useState(null);
+  const [teacherInfo, setTeacherInfo] = useState(null);
+  const [rangeDate, setRangeDate] = useState(null);
 
+  const getInFoClass = async () => {
+    const classtemp = await firestore().collection('Class').doc(classId).get();
+    setClassInfo(classtemp.data());
+    getTeacher(classtemp.data().userId);
+    if (classtemp.data().Schedule?.length > 0) {
+      const content = await Api.getRangeDate(classId);
+      setRangeDate(content);
+    }
+    // RealTimePost(content)
+  };
 
   useEffect(() => {
     getInFoClass();
@@ -80,26 +81,24 @@ const TeamRoom = ({navigation, route}) => {
     setModalVisible(!isModalVisible);
   };
   const Side = () => {
-  
     return (
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={isModalVisible}
-          onRequestClose={toggleModal}>
-            <View 
-             style={{
-              height: 300,
-              width: '100%',
-              borderRadius: 15,
-              backgroundColor: PRIMARY_COLOR,
-              position: 'absolute',
-              marginTop: 480,
-              borderColor: 'black',
-              //borderWidth: 1,
-            }}
-            >
-              <TouchableOpacity
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={toggleModal}>
+        <View
+          style={{
+            height: 300,
+            width: '100%',
+            borderRadius: 15,
+            backgroundColor: PRIMARY_COLOR,
+            position: 'absolute',
+            marginTop: 480,
+            borderColor: 'black',
+            //borderWidth: 1,
+          }}>
+          <TouchableOpacity
             style={{marginLeft: 350, padding: 5}}
             onPress={() => toggleModal()}>
             <Icon
@@ -107,33 +106,38 @@ const TeamRoom = ({navigation, route}) => {
               style={{color: 'black', fontSize: 20, marginRight: 10}}
             />
           </TouchableOpacity>
-          <View style={{flexDirection:'row', justifyContent:'space-evenly', width:390, alignSelf:'center'}}>
-          <View style={styles.buttonzone}>
-              <TouchableOpacity
-                style={styles.buttonmain}
-                onPress={() => {}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-evenly',
+              width: 390,
+              alignSelf: 'center',
+            }}>
+            <View style={styles.buttonzone}>
+              <TouchableOpacity style={styles.buttonmain} onPress={() => {}}>
                 <Image
                   source={require('../assets/contract.png')}
                   resizeMode="contain"></Image>
               </TouchableOpacity>
-              <Text style={[AppStyle.textstyle.normaltext,{width:'auto'}]}>Assignments</Text>
+              <Text style={[AppStyle.textstyle.normaltext, {width: 'auto'}]}>
+                Assignments
+              </Text>
             </View>
-          <View style={styles.buttonzone}>
-              <TouchableOpacity
-                style={styles.buttonmain}
-                onPress={() => {}}>
+            <View style={styles.buttonzone}>
+              <TouchableOpacity style={styles.buttonmain} onPress={() => {}}>
                 <Image
                   source={require('../assets/timetable.png')}
                   resizeMode="contain"></Image>
               </TouchableOpacity>
-              <Text style={[AppStyle.textstyle.normaltext,{width:'auto'}]}>Schedule</Text>
+              <Text style={[AppStyle.textstyle.normaltext, {width: 'auto'}]}>
+                Schedule
+              </Text>
             </View>
-            </View>
-          
-              </View>
-        </Modal>
-    )
-  }
+          </View>
+        </View>
+      </Modal>
+    );
+  };
   const getRandomColor = () => {
     const randomIndex = Math.floor(Math.random() * COLORS.length);
     return COLORS[randomIndex];
@@ -143,41 +147,38 @@ const TeamRoom = ({navigation, route}) => {
     const data = await Api.getUserData(auth().currentUser.uid);
     setProfileData(data);
   };
-  const getTeacher = async (id)=>{
-    const data = await Api.getUserData(id)
-    setTeacherInfo(data)
-  }
+  const getTeacher = async id => {
+    const data = await Api.getUserData(id);
+    setTeacherInfo(data);
+  };
   useEffect(() => {
-    socketServices.initializeSocket()
-    receiveMeetingId()
+    socketServices.initializeSocket();
+    receiveMeetingId();
     getProfile();
   }, []);
-  const receiveMeetingId = async()=>{
-    console.log('receiveMeetingId')
-    socketServices.on('getMeetingId',(data) => {
-      if(data.ClassId==classId){
-        setMeetingId(data.MeetingId)
+  const receiveMeetingId = async () => {
+    console.log('receiveMeetingId');
+    socketServices.on('getMeetingId', data => {
+      if (data.ClassId == classId) {
+        setMeetingId(data.MeetingId);
       }
     });
-  }
-  const sendMeetingId = async(data)=>{
+  };
+  const sendMeetingId = async data => {
     // console.log("send ")
     // socketServices.emit('MeetingId', data);
-    const documentRef = firestore()
-    .collection('Class')
-    .doc(classId);
-  await documentRef
-    .update({
-      MeetingId:data
-    })
-  }
-  
+    const documentRef = firestore().collection('Class').doc(classId);
+    await documentRef.update({
+      MeetingId: data,
+    });
+  };
+
   const getMeetingId = async id => {
-    console.log('idatgetMeetingId'+id)
+    console.log('idatgetMeetingId' + id);
     const meetingId = id == null ? await createMeeting({token}) : id;
     console.log(meetingId);
     //sau này thêm tên class
-    sendMeetingId(meetingId)
+    sendMeetingId(meetingId);
     //  const documentRef = firestore()
     //     .collection('Class')
     //     .doc('0VA2PZf3PVGlbWlF9EiV');
@@ -259,12 +260,12 @@ const TeamRoom = ({navigation, route}) => {
   //   },
   // ];
   const [records, setRecords] = useState(null);
-  const getRecords = async ()=>{
-    const data = await Api.getRecordings("0VA2PZf3PVGlbWlF9EiV");
+  const getRecords = async () => {
+    const data = await Api.getRecordings(classId);
     setRecords(data);
-  }
+  };
   useEffect(() => {
-    getRecords()
+    getRecords();
   }, []);
   const fileandfolder = [
     {
@@ -326,7 +327,9 @@ const TeamRoom = ({navigation, route}) => {
   };
 
   function AttendeeCard({person, color}) {
-    const {webcamStream, webcamOn, micOn, micStream} = useParticipant(person.id);
+    const {webcamStream, webcamOn, micOn, micStream} = useParticipant(
+      person.id,
+    );
     return webcamOn && webcamStream ? (
       <RTCView
         streamURL={new MediaStream([webcamStream.track]).toURL()}
@@ -369,7 +372,7 @@ const TeamRoom = ({navigation, route}) => {
           ]}>
           <Text style={{textAlign: 'center'}}>NL</Text>
         </View> */}
-             <Image
+        <Image
           style={styles.UserImage}
           source={{
             uri: person
@@ -388,16 +391,14 @@ const TeamRoom = ({navigation, route}) => {
   }
   async function onParticipantLeft() {
     console.log(' onParticipantLeft', myIdMeeting);
-    const documentRef = firestore()
-      .collection('Class')
-      .doc(classId);
+    const documentRef = firestore().collection('Class').doc(classId);
     await documentRef
       .update({
         Participants: firestore.FieldValue.arrayRemove({
           id: myIdMeeting,
           name: profileData?.name,
-          image:profileData?.userImg,
-          System_userId:profileData?.id
+          image: profileData?.userImg,
+          System_userId: profileData?.id,
         }),
       })
       .then(() => {
@@ -411,67 +412,85 @@ const TeamRoom = ({navigation, route}) => {
     setIsJoin(false);
     setRealJoin(false);
     setMeetingId(null);
-    sendMeetingId(null)
-    const documentRef = firestore()
-    .collection('Class')
-    .doc(classId);
+    sendMeetingId(null);
+    const documentRef = firestore().collection('Class').doc(classId);
     // MeetingHistory:firestore.FieldValue.arrayUnion({
     //   userName: teacherInfo?.name,
     //   postTime: '1PM at 2/24/2024',
     //   sign:'Meeting'
     // })
-    const currentDate = new Date()
-    const currentDay = currentDate.getDate(); 
-    const currentMonth = currentDate.getMonth() + 1; 
-    const currentYear = currentDate.getFullYear(); 
-    const currentHours = currentDate.getHours(); 
+    const currentDate = new Date();
+    const currentDay = currentDate.getDate();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear();
+    const currentHours = currentDate.getHours();
     const currentMinutes = currentDate.getMinutes();
-    const time = currentDay+'/'+currentMonth+'/'+currentYear+' at '+currentHours+':'+currentMinutes
-    const date = 5+'/'+currentMonth+'/'+currentYear
-    const classData = (await documentRef.get()).data()
+    const time =
+      currentDay +
+      '/' +
+      currentMonth +
+      '/' +
+      currentYear +
+      ' at ' +
+      currentHours +
+      ':' +
+      currentMinutes;
+    const date = 5 + '/' + currentMonth + '/' + currentYear;
+    const classData = (await documentRef.get()).data();
     const data = {
       userName: teacherInfo?.name,
-      className:classInfo?.ClassName,
+      className: classInfo?.ClassName,
       postTime: time,
-      sign:'Meeting',
-      Date:date,
-      replies:classData.replies,
-      likes:0,
-    }
-      const postRef = await firestore().collection('PostInTeam').add(data);
-      const postId = postRef.id;
+      sign: 'Meeting',
+      Date: date,
+      replies: classData.replies,
+      likes: 0,
+    };
+    const postRef = await firestore().collection('PostInTeam').add(data);
+    const postId = postRef.id;
 
-  await firestore().collection('PostInTeam').doc(postId).update({
-    id: postId,
-  });
+    await firestore().collection('PostInTeam').doc(postId).update({
+      id: postId,
+    });
 
-      await firestore().collection('Class').doc(classId).update({
-        Posts: firestore.FieldValue.arrayUnion({id:postId,Date:date}),
+    await firestore()
+      .collection('Class')
+      .doc(classId)
+      .update({
+        Posts: firestore.FieldValue.arrayUnion({id: postId, Date: date}),
         Participants: [],
-        replies:[]
+        replies: [],
       });
-      
   }
-  const [myIdMeeting, setMyIdMeeting] = useState(null)
+  const [myIdMeeting, setMyIdMeeting] = useState(null);
 
   function MeetingRoomtemp() {
-    const {leave, toggleWebcam, toggleMic,toggleScreenShare,presenterId, participants,startRecording, stopRecording } = useMeeting({
+    const {
+      leave,
+      toggleWebcam,
+      toggleMic,
+      toggleScreenShare,
+      presenterId,
+      participants,
+      startRecording,
+      stopRecording,
+    } = useMeeting({
       onPresenterChanged,
-      onRecordingStateChanged
+      onRecordingStateChanged,
     });
-    const [idPersonRecord, setIsIdPersonRecord] = useState(null)
-    const [count_Record, setcount_Record] = useState(0)
+    const [idPersonRecord, setIsIdPersonRecord] = useState(null);
+    const [count_Record, setcount_Record] = useState(0);
 
-   function onRecordingStateChanged(data) {
-      const { status, id} = data;
-    console.log(data)
-    setIsIdPersonRecord(id)
-      if (status === "RECORDING_STARTING") {
+    function onRecordingStateChanged(data) {
+      const {status, id} = data;
+      console.log(data);
+      setIsIdPersonRecord(id);
+      if (status === 'RECORDING_STARTING') {
         setIsRecording(true);
-        console.log("Meeting recording is starting");
-      } else if (status === "RECORDING_STOPPED") {
+        console.log('Meeting recording is starting');
+      } else if (status === 'RECORDING_STOPPED') {
         setIsRecording(false);
-        console.log("Meeting recording is stopped");
+        console.log('Meeting recording is stopped');
       } else {
         //
       }
@@ -480,50 +499,51 @@ const TeamRoom = ({navigation, route}) => {
     const handleStartRecording = async () => {
       startRecording(null, null, {
         layout: {
-          type: "GRID",
-          priority: "SPEAKER",
+          type: 'GRID',
+          priority: 'SPEAKER',
           gridSize: 4,
         },
-        theme: "DARK",
-        mode: "video-and-audio",
-        quality: "high",
-        orientation: "portrait",
+        theme: 'DARK',
+        mode: 'video-and-audio',
+        quality: 'high',
+        orientation: 'portrait',
       });
-     
     };
-  
+
     const handleStopRecording = async () => {
-        const currentDate = moment().format('D/M/YYYY_h:mm A');
-        const documentRef = firestore()
-        .collection('Class')
-        .doc(classId);
+      const currentDate = moment().format('D/M/YYYY_h:mm A');
+      const documentRef = firestore().collection('Class').doc(classId);
       await documentRef
         .update({
           Recordings: firestore.FieldValue.arrayUnion({
             id: meetingId,
             name: currentDate,
-            user:profileData?.name,
-            count:count_Record+1,
-            composerId:idPersonRecord,
+            user: profileData?.name,
+            count: count_Record + 1,
+            composerId: idPersonRecord,
           }),
         })
         .then(() => {
           console.log('haha');
-          setcount_Record(count_Record+1);
+          setcount_Record(count_Record + 1);
         });
-        console.log("kkkk")
-        stopRecording();
+      console.log('kkkk');
+      stopRecording();
       setIsRecording1(false);
     };
-    const { screenShareStream, screenShareOn } = useParticipant(presenterId);
-    const [isRedording, setIsRecording] = useState(false)
-    const [isRedording1, setIsRecording1] = useState(false)
+    const {screenShareStream, screenShareOn} = useParticipant(presenterId);
+    const [isRedording, setIsRecording] = useState(false);
+    const [isRedording1, setIsRecording1] = useState(false);
 
     useEffect(() => {
       // const participantsArrId = [...participants.keys()];
-      console.log('oncam')
+      console.log('oncam');
 
-       if(realJoin==false){console.log('huhu');JoinMeeting();setMyIdMeeting(participantsArrId[participantsArrId.length - 1])}
+      if (realJoin == false) {
+        console.log('huhu');
+        JoinMeeting();
+        setMyIdMeeting(participantsArrId[participantsArrId.length - 1]);
+      }
       //  else {
       //   joinAgain()
       //  }
@@ -538,7 +558,7 @@ const TeamRoom = ({navigation, route}) => {
     //       if (Participants[i].System_userId==profileData?.id) {
     //         console.log('joinagain')
     //         Participants[i].id= participantsArrId[participantsArrId.length - 1]
-    //       } 
+    //       }
     //       }
     //       await documentRef.update({ Participants: Participants });
     //     } else {
@@ -550,52 +570,50 @@ const TeamRoom = ({navigation, route}) => {
     // }
     const JoinMeeting = async () => {
       const participantsArrId = [...participants.keys()];
-      const e = [...participants]
-      console.log(e)
-      console.log(realJoin)
-      const documentRef = firestore()
-        .collection('Class')
-        .doc(classId);
+      const e = [...participants];
+      console.log(e);
+      console.log(realJoin);
+      const documentRef = firestore().collection('Class').doc(classId);
       await documentRef
         .update({
           Participants: firestore.FieldValue.arrayUnion({
             id: participantsArrId[participantsArrId.length - 1],
             name: profileData?.name,
-            image:profileData?.userImg,
-            System_userId:profileData?.id
+            image: profileData?.userImg,
+            System_userId: profileData?.id,
           }),
         })
         .then(() => {
           console.log(profileData?.id);
-          setRealJoin(true)
+          setRealJoin(true);
         });
     };
     // useEffect(() => {
     //   const interval = setInterval(() => {
     //     setSeconds(seconds => seconds + 1);
     //   }, 1000);
-  
+
     //   return () => clearInterval(interval);
     // }, []);
-  
+
     // useEffect(() => {
     //   const minutes = Math.floor(seconds / 60);
     //   const remainingSeconds = seconds % 60;
-  
+
     //   const formattedMinutes = String(minutes).padStart(2, '0');
     //   const formattedSeconds = String(remainingSeconds).padStart(2, '0');
-  
+
     //   setFormattedTime(`${formattedMinutes}:${formattedSeconds}`);
     // }, [seconds]);
-    const [listAttendee, setListAttendee] = useState(null)
+    const [listAttendee, setListAttendee] = useState(null);
     useEffect(() => {
-      console.log('hihihohohi')
+      console.log('hihihohohi');
       const docRef = firestore().collection('Class').doc(classId);
 
-      const unsubscribe = docRef.onSnapshot((documentSnapshot) => {
+      const unsubscribe = docRef.onSnapshot(documentSnapshot => {
         if (documentSnapshot.exists) {
           setListAttendee(documentSnapshot.data().Participants);
-          console.log('s2'+meetingId)
+          console.log('s2' + meetingId);
         } else {
           console.log('Document does not exist!');
         }
@@ -614,16 +632,15 @@ const TeamRoom = ({navigation, route}) => {
     //   });
 
     // }
-     //Callback for when the presenter changes
-  function onPresenterChanged(presenterId) {
-    if(presenterId){
-      console.log(presenterId, "started screen share");
-    }else{
-      console.log("someone stopped screen share");
+    //Callback for when the presenter changes
+    function onPresenterChanged(presenterId) {
+      if (presenterId) {
+        console.log(presenterId, 'started screen share');
+      } else {
+        console.log('someone stopped screen share');
+      }
     }
-  }
-  
-   
+
     const participantsArrId = [...participants.keys()];
     const [Share, SetShare] = useState(false);
     const handleMicToggle = () => {
@@ -636,7 +653,6 @@ const TeamRoom = ({navigation, route}) => {
       setIsCamMuted(!isCamMuted);
     };
 
-
     return (
       <View style={styles.container2}>
         <View
@@ -644,10 +660,14 @@ const TeamRoom = ({navigation, route}) => {
             AppStyle.viewstyle.component_upzone,
             {backgroundColor: '#363636'},
           ]}>
-          <TouchableOpacity style={{marginLeft: '2%'}} onPress={()=>{setIsJoin(false)}}>
+          <TouchableOpacity
+            style={{marginLeft: '2%'}}
+            onPress={() => {
+              setIsJoin(false);
+            }}>
             <FontAwesome name="chevron-left" color="white" size={20} />
           </TouchableOpacity>
-          <View style={{width:width}}>
+          <View style={{width: width}}>
             <Text
               style={{
                 textAlign: 'left',
@@ -657,60 +677,58 @@ const TeamRoom = ({navigation, route}) => {
               }}>
               Buổi học ngày {moment().format('DD/MM/YYYY')}
             </Text>
-            <View style={{flexDirection:'row', alignItems:'center'}}>
-          <Text
-              style={{
-                textAlign: 'left',
-                color: 'white',
-                fontSize: 18,
-                marginLeft: 15,
-              }}>
-              {"00:00"+' '+listAttendee?.length} attendees
-            </Text>
-            <View style={{flex: 1}} />
-          <TouchableOpacity style={{}}
-            onPress={() => {
-              if(isRedording1){
-                handleStopRecording();
-              }
-              else {
-                setIsRecording1(true);
-                handleStartRecording();
-              }
-            }}>
-            {isRedording == false ? (
-              <Icon name="record-vinyl" color="gray" size={20} />
-            ) : (
-              <Icon name="record-vinyl" color="#8B0016" size={20} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft:10}}
-            onPress={() => {
-              handleMicToggle();
-            }}>
-            {isMicMuted == false ? (
-              <FontAwesome name="microphone-slash" color="gray" size={20} />
-            ) : (
-              <FontAwesome name="microphone" color="black" size={20} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft:10}}
-            onPress={() => {
-              handleCamToggle();
-            }}>
-            {isCamMuted == false ? (
-              <Icon name="video-slash" color="gray" size={20} />
-            ) : (
-              <Icon name="video" color="gray" size={20} />
-            )}
-          </TouchableOpacity>
-          <View style={{width:35}}/>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Text
+                style={{
+                  textAlign: 'left',
+                  color: 'white',
+                  fontSize: 18,
+                  marginLeft: 15,
+                }}>
+                {'00:00' + ' ' + listAttendee?.length} attendees
+              </Text>
+              <View style={{flex: 1}} />
+              <TouchableOpacity
+                style={{}}
+                onPress={() => {
+                  if (isRedording1) {
+                    handleStopRecording();
+                  } else {
+                    setIsRecording1(true);
+                    handleStartRecording();
+                  }
+                }}>
+                {isRedording == false ? (
+                  <Icon name="record-vinyl" color="gray" size={20} />
+                ) : (
+                  <Icon name="record-vinyl" color="#8B0016" size={20} />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{marginLeft: 10}}
+                onPress={() => {
+                  handleMicToggle();
+                }}>
+                {isMicMuted == false ? (
+                  <FontAwesome name="microphone-slash" color="gray" size={20} />
+                ) : (
+                  <FontAwesome name="microphone" color="black" size={20} />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{marginLeft: 10}}
+                onPress={() => {
+                  handleCamToggle();
+                }}>
+                {isCamMuted == false ? (
+                  <Icon name="video-slash" color="gray" size={20} />
+                ) : (
+                  <Icon name="video" color="gray" size={20} />
+                )}
+              </TouchableOpacity>
+              <View style={{width: 35}} />
+            </View>
           </View>
-            
-          </View>
-
-         
-          
         </View>
         {!screenShareOn && listAttendee?.length > 0 && (
           <FlatList
@@ -730,20 +748,21 @@ const TeamRoom = ({navigation, route}) => {
         )}
         {screenShareOn && screenShareStream && (
           <>
-             <RTCView
-          streamURL={new MediaStream([screenShareStream.track]).toURL()}
-          objectFit={"contain"}
-          style={{
-            height: height*0.75,
-            width:width*0.95,
-            alignSelf:'center',
-            marginVertical:5
-          }}
-        />
-        <Text style={{color:"white", alignSelf:'center'}}>{profileData?.name} is sharing! </Text>
+            <RTCView
+              streamURL={new MediaStream([screenShareStream.track]).toURL()}
+              objectFit={'contain'}
+              style={{
+                height: height * 0.75,
+                width: width * 0.95,
+                alignSelf: 'center',
+                marginVertical: 5,
+              }}
+            />
+            <Text style={{color: 'white', alignSelf: 'center'}}>
+              {profileData?.name} is sharing!{' '}
+            </Text>
           </>
-       
-          
+
           // <View
           //   style={{
           //     height: 400,
@@ -759,7 +778,7 @@ const TeamRoom = ({navigation, route}) => {
           //     }}></View>
           // </View>
         )}
-         <View style={{flex: 1}} />
+        <View style={{flex: 1}} />
         {/*{Share &&(
           <View style={{marginBottom: 5}}>
             <FlatList
@@ -783,15 +802,36 @@ const TeamRoom = ({navigation, route}) => {
             justifyContent: 'space-evenly',
             alignItems: 'center',
           }}>
-          <TouchableOpacity onPress={() => navigation.push('AttendeeScreen',{list:listAttendee})}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.push('AttendeeScreen', {list: listAttendee})
+            }>
             <Icon name="users" color="black" size={20} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.push('ReplyScreen',{postId:classInfo.classId, postName:classInfo.ClassName, sign:'TeamRoom'})}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.push('ReplyScreen', {
+                postId: classInfo.classId,
+                postName: classInfo.ClassName,
+                sign: 'TeamRoom',
+              })
+            }>
             <Icon name="rocketchat" color="black" size={20} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => {toggleScreenShare()}}>
-            {(!screenShareOn||presenterId!=myIdMeeting)&&<Ionicons name={'arrow-up-outline'} size={20} color={'black'} />}
-            {screenShareOn&&presenterId==myIdMeeting&&<Ionicons name={'stop-circle-outline'} size={20} color={'#8B0016'} />}
+          <TouchableOpacity
+            onPress={() => {
+              toggleScreenShare();
+            }}>
+            {(!screenShareOn || presenterId != myIdMeeting) && (
+              <Ionicons name={'arrow-up-outline'} size={20} color={'black'} />
+            )}
+            {screenShareOn && presenterId == myIdMeeting && (
+              <Ionicons
+                name={'stop-circle-outline'}
+                size={20}
+                color={'#8B0016'}
+              />
+            )}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
@@ -799,7 +839,7 @@ const TeamRoom = ({navigation, route}) => {
               onParticipantLeft();
               // setMeetingId(null);
               setIsJoin(false);
-              setRealJoin(false)
+              setRealJoin(false);
             }}>
             <Icon name="phone-slash" color="#8B0016" size={20} />
           </TouchableOpacity>
@@ -823,22 +863,21 @@ const TeamRoom = ({navigation, route}) => {
       participants,
     } = useMeeting({});
 
-  
     // useEffect(() => {
     //   const interval = setInterval(() => {
     //     setSeconds(seconds => seconds + 1);
     //   }, 1000);
-  
+
     //   return () => clearInterval(interval);
     // }, []);
-  
+
     // useEffect(() => {
     //   const minutes = Math.floor(seconds / 60);
     //   const remainingSeconds = seconds % 60;
-  
+
     //   const formattedMinutes = String(minutes).padStart(2, '0');
     //   const formattedSeconds = String(remainingSeconds).padStart(2, '0');
-  
+
     //   setFormattedTime(`${formattedMinutes}:${formattedSeconds}`);
     // }, [seconds]);
     const {localWebcamOn} = useMeeting();
@@ -863,8 +902,7 @@ const TeamRoom = ({navigation, route}) => {
     const {join} = useMeeting({});
 
     //Getting the leave and end method from hook and assigning event callbacks
-    const {end} = useMeeting({
-    });
+    const {end} = useMeeting({});
 
     //  const participantsArrId = [...participants.keys()];
     const handleMicToggle = () => {
@@ -926,49 +964,57 @@ const TeamRoom = ({navigation, route}) => {
               <Icon name="video" color="gray" size={20} />
             )}
           </TouchableOpacity>
-          {isTeacher&&<TouchableOpacity
-            onPress={() => {
-              end();console.log("end");onMeetingLeft()
-            }}>
-            <Text>End</Text>
-          </TouchableOpacity>}
+          {isTeacher && (
+            <TouchableOpacity
+              onPress={() => {
+                end();
+                console.log('end');
+                onMeetingLeft();
+              }}>
+              <Text>End</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        {!realJoin&&<TouchableOpacity
-          style={{
-            backgroundColor: 'white',
-            width: 50,
-            borderRadius: 20,
-            height: 40,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          onPress={() => {
-            join();
-            setIsJoin(true);
-          }}>
-          <Text>Join</Text>
-        </TouchableOpacity>}
-        {realJoin&&<TouchableOpacity
-          style={{
-            backgroundColor: 'white',
-            width: 50,
-            borderRadius: 20,
-            height: 40,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          onPress={() => {
-            setIsJoin(true);
-          }}>
-          <Text>Join</Text>
-        </TouchableOpacity>}
+        {!realJoin && (
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'white',
+              width: 50,
+              borderRadius: 20,
+              height: 40,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            onPress={() => {
+              join();
+              setIsJoin(true);
+            }}>
+            <Text>Join</Text>
+          </TouchableOpacity>
+        )}
+        {realJoin && (
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'white',
+              width: 50,
+              borderRadius: 20,
+              height: 40,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            onPress={() => {
+              setIsJoin(true);
+            }}>
+            <Text>Join</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
   const showAlert = () => {
     const {leave} = useMeeting({});
-    if(realJoin)
+    if (realJoin)
       Alert.alert(
         'Hey!',
         'If you leave, you will exit the meeting.',
@@ -979,7 +1025,7 @@ const TeamRoom = ({navigation, route}) => {
               leave();
               onParticipantLeft();
               setIsJoin(false);
-              setRealJoin(false)
+              setRealJoin(false);
               navigation.goBack();
             },
           },
@@ -1004,110 +1050,110 @@ const TeamRoom = ({navigation, route}) => {
             fontSize: 20,
             marginLeft: 15,
           }}>
-          Lớp luyện SW Toeic 150+
+          {classInfo?.ClassName}
         </Text>
         <View style={{flex: 1}} />
-        {isTeacher&&<TouchableOpacity
-          style={{marginRight: '5%'}}
-          onPress={() => {
-            setIsCreate(true);
-            getMeetingId();
-          }}
-          // onPress={()=>navigation.push('MeetingRoom')}
-        >
-          <Icon name={'video'} color="white" size={20} />
-        </TouchableOpacity>}
-      </View>
-      <View       style={{height:40}}>
-      <ScrollView
-      horizontal={true}>
-        <View 
-           style={{
-        alignItems: 'center',
-        alignSelf: 'center',
-        height:40,
-        flexDirection:'row'
-          }}
-          >
+        {isTeacher && (
           <TouchableOpacity
-          style={[styles.historyButton]}
-          onPress={() => {
-            setSelectedTab(1);
-          }}>
-          <Text
-            style={[
-              AppStyle.button.buttonText,
-              {color: selectedTab == 1 ? PRIMARY_COLOR : '#333'},
-            ]}>
-            Posts
-          </Text>
-        </TouchableOpacity>
-        <View
-          style={{
-            width: 1,
-            height: 30,
-            backgroundColor: 'black',
-            marginHorizontal: 10,
-          }}
-        />
-        <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => {
-            setSelectedTab(2);
-          }}>
-          <Text
-            style={[
-              AppStyle.button.buttonText,
-              {color: selectedTab == 2 ? PRIMARY_COLOR : 'black'},
-            ]}>
-            Files
-          </Text>
-        </TouchableOpacity>
-        
-        <View
-          style={{
-            width: 1,
-            height: 30,
-            backgroundColor: 'black',
-            marginHorizontal: 10,
-          }}
-        />
-        <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => {
-            setSelectedTab(3);
-          }}>
-          <Text
-            style={[
-              AppStyle.button.buttonText,
-              {color: selectedTab == 3 ? PRIMARY_COLOR : 'black'},
-            ]}>
-            Recordings
-          </Text>
-        </TouchableOpacity>
-        <View
-          style={{
-            width: 1,
-            height: 30,
-            backgroundColor: 'black',
-            marginHorizontal: 10,
-          }}
-        />
-        <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => {
-            toggleModal();
-          }}>
-          <Text
-            style={[
-              AppStyle.button.buttonText,
-              {color: selectedTab == 4 ? PRIMARY_COLOR : 'black'},
-            ]}>
-            More
-          </Text>
-        </TouchableOpacity>
-       
-        {/* <TouchableOpacity
+            style={{marginRight: '5%'}}
+            onPress={() => {
+              setIsCreate(true);
+              getMeetingId();
+            }}
+            // onPress={()=>navigation.push('MeetingRoom')}
+          >
+            <Icon name={'video'} color="white" size={20} />
+          </TouchableOpacity>
+        )}
+      </View>
+      <View style={{height: 40}}>
+        <ScrollView horizontal={true}>
+          <View
+            style={{
+              alignItems: 'center',
+              alignSelf: 'center',
+              height: 40,
+              flexDirection: 'row',
+            }}>
+            <TouchableOpacity
+              style={[styles.historyButton]}
+              onPress={() => {
+                setSelectedTab(1);
+              }}>
+              <Text
+                style={[
+                  AppStyle.button.buttonText,
+                  {color: selectedTab == 1 ? PRIMARY_COLOR : '#333'},
+                ]}>
+                Posts
+              </Text>
+            </TouchableOpacity>
+            <View
+              style={{
+                width: 1,
+                height: 30,
+                backgroundColor: 'black',
+                marginHorizontal: 10,
+              }}
+            />
+            <TouchableOpacity
+              style={styles.historyButton}
+              onPress={() => {
+                setSelectedTab(2);
+              }}>
+              <Text
+                style={[
+                  AppStyle.button.buttonText,
+                  {color: selectedTab == 2 ? PRIMARY_COLOR : 'black'},
+                ]}>
+                Files
+              </Text>
+            </TouchableOpacity>
+
+            <View
+              style={{
+                width: 1,
+                height: 30,
+                backgroundColor: 'black',
+                marginHorizontal: 10,
+              }}
+            />
+            <TouchableOpacity
+              style={styles.historyButton}
+              onPress={() => {
+                setSelectedTab(3);
+              }}>
+              <Text
+                style={[
+                  AppStyle.button.buttonText,
+                  {color: selectedTab == 3 ? PRIMARY_COLOR : 'black'},
+                ]}>
+                Recordings
+              </Text>
+            </TouchableOpacity>
+            <View
+              style={{
+                width: 1,
+                height: 30,
+                backgroundColor: 'black',
+                marginHorizontal: 10,
+              }}
+            />
+            <TouchableOpacity
+              style={styles.historyButton}
+              onPress={() => {
+                toggleModal();
+              }}>
+              <Text
+                style={[
+                  AppStyle.button.buttonText,
+                  {color: selectedTab == 4 ? PRIMARY_COLOR : 'black'},
+                ]}>
+                More
+              </Text>
+            </TouchableOpacity>
+
+            {/* <TouchableOpacity
           style={styles.historyButton}
           onPress={() => {
             setSelectedTab(4);
@@ -1121,39 +1167,43 @@ const TeamRoom = ({navigation, route}) => {
             Asignments
           </Text>
         </TouchableOpacity> */}
-
           </View>
-      </ScrollView>
+        </ScrollView>
       </View>
       {selectedTab == 1 && (
         <View>
-             {
-            rangeDate!=null&&<FlatList
+          {rangeDate != null && (
+            <FlatList
               data={rangeDate}
               renderItem={({item, index}) => (
-                <DateItem item={item} key={index}/>
+                <DateItem item={item} key={index} />
               )}
             />
-          }
-          {
-            rangeDate==null&&isTeacher&&
-            <View style={{width:width*0.9, height:100, justifyContent:'space-evenly', alignItems:'center', alignSelf:'center'}}>
-               <Text>To begin, let set Schedule for your class</Text>
-               <TouchableOpacity
-          style={{
-            backgroundColor: PRIMARY_COLOR,
-            padding:5,
-            borderRadius: 15,
-            height: 40,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          onPress={() => {
-          }}>
-          <Text>Set schedule!</Text>
-        </TouchableOpacity>
+          )}
+          {rangeDate == null && isTeacher && (
+            <View
+              style={{
+                width: width * 0.9,
+                height: 100,
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+                alignSelf: 'center',
+              }}>
+              <Text>To begin, let set Schedule for your class</Text>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: PRIMARY_COLOR,
+                  padding: 5,
+                  borderRadius: 15,
+                  height: 40,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => {}}>
+                <Text>Set schedule!</Text>
+              </TouchableOpacity>
             </View>
-          }
+          )}
         </View>
       )}
       {selectedTab == 2 && (
@@ -1171,30 +1221,45 @@ const TeamRoom = ({navigation, route}) => {
       {selectedTab == 3 && (
         <FlatList
           data={records}
-          renderItem={({item, index}) => <RecordingCard record={item} 
-          show = {()=>{navigation.push("ShowRecord",{url:item.File, name: item.Name})}}
-          />}
+          renderItem={({item, index}) => (
+            <RecordingCard
+              record={item}
+              show={() => {
+                navigation.push('ShowRecord', {
+                  url: item.File,
+                  name: item.Name,
+                });
+              }}
+            />
+          )}
         />
       )}
-       {isTeacher&&selectedTab != 3&&<TouchableOpacity
-        style={{
-          position: 'absolute',
-          marginLeft: screenWidth - 80,
-          marginTop: screenHeight - 120,
-          borderRadius: 25,
-          width: 50,
-          height: 50,
-          backgroundColor: PRIMARY_COLOR,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        onPress={() => navigation.push('NewPost',{classId:classId, userInfo:profileData})}>
-        {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
-        {selectedTab == 2 && <PopupMenu />}
-        {/* {selectedTab == 3 && (
+      {isTeacher && selectedTab != 3 && (
+        <TouchableOpacity
+          style={{
+            position: 'absolute',
+            marginLeft: screenWidth - 80,
+            marginTop: screenHeight - 120,
+            borderRadius: 25,
+            width: 50,
+            height: 50,
+            backgroundColor: PRIMARY_COLOR,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={() =>
+            navigation.push('NewPost', {
+              classId: classId,
+              userInfo: profileData,
+            })
+          }>
+          {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
+          {selectedTab == 2 && <PopupMenu />}
+          {/* {selectedTab == 3 && (
           <Ionicons name={'arrow-up-outline'} size={20} color={'white'} />
         )} */}
-      </TouchableOpacity>}
+        </TouchableOpacity>
+      )}
       {Side()}
     </View>
   ) : (
@@ -1217,26 +1282,29 @@ const TeamRoom = ({navigation, route}) => {
                 // showAlert();
                 // setMeetingId(null);
                 // const {leave} = useMeeting({});
-    if(realJoin)
-      Alert.alert(
-        'Hey!',
-        'If you leave, you will exit the meeting.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // leave();
-              onParticipantLeft();
-              setIsJoin(false);
-              setRealJoin(false)
-              navigation.goBack();
-            },
-          },
-          {text: 'Cancel', onPress: () => console.log('Cancel pressed')},
-        ],
-        {cancelable: false},
-      );
-                }}>
+                if (realJoin)
+                  Alert.alert(
+                    'Hey!',
+                    'If you leave, you will exit the meeting.',
+                    [
+                      {
+                        text: 'OK',
+                        onPress: () => {
+                          // leave();
+                          onParticipantLeft();
+                          setIsJoin(false);
+                          setRealJoin(false);
+                          navigation.goBack();
+                        },
+                      },
+                      {
+                        text: 'Cancel',
+                        onPress: () => console.log('Cancel pressed'),
+                      },
+                    ],
+                    {cancelable: false},
+                  );
+              }}>
               <FontAwesome name="chevron-left" color="white" size={20} />
             </TouchableOpacity>
             <Text
@@ -1246,18 +1314,20 @@ const TeamRoom = ({navigation, route}) => {
                 fontSize: 20,
                 marginLeft: 15,
               }}>
-              Lớp luyện SW Toeic 150+
+              {classInfo?.ClassName}
             </Text>
             <View style={{flex: 1}} />
-            {isTeacher&&<TouchableOpacity
-              style={{marginRight: '5%'}}
-              onPress={() => {
-                getMeetingId();
-              }}
-              // onPress={()=>navigation.push('MeetingRoom')}
-            >
-              <Icon name={'video'} color="white" size={20} />
-            </TouchableOpacity>}
+            {isTeacher && (
+              <TouchableOpacity
+                style={{marginRight: '5%'}}
+                onPress={() => {
+                  getMeetingId();
+                }}
+                // onPress={()=>navigation.push('MeetingRoom')}
+              >
+                <Icon name={'video'} color="white" size={20} />
+              </TouchableOpacity>
+            )}
           </View>
           <View
             style={{
@@ -1326,34 +1396,39 @@ const TeamRoom = ({navigation, route}) => {
           </View>
           {selectedTab == 1 && (
             <View>
-             <MeetingView />
-             {
-            rangeDate!=null&&<FlatList
-              data={rangeDate}
-              renderItem={({item, index}) => (
-                <DateItem item={item} key={index}/>
+              <MeetingView />
+              {rangeDate != null && (
+                <FlatList
+                  data={rangeDate}
+                  renderItem={({item, index}) => (
+                    <DateItem item={item} key={index} />
+                  )}
+                />
               )}
-            />
-          }
-          {
-            rangeDate==null&&isTeacher&&
-            <View style={{width:width*0.9, height:100, justifyContent:'space-evenly', alignItems:'center', alignSelf:'center'}}>
-               <Text>To begin, let set Schedule for your class</Text>
-               <TouchableOpacity
-          style={{
-            backgroundColor: PRIMARY_COLOR,
-            padding:5,
-            borderRadius: 15,
-            height: 40,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          onPress={() => {
-          }}>
-          <Text>Set schedule!</Text>
-        </TouchableOpacity>
-            </View>
-          }
+              {rangeDate == null && isTeacher && (
+                <View
+                  style={{
+                    width: width * 0.9,
+                    height: 100,
+                    justifyContent: 'space-evenly',
+                    alignItems: 'center',
+                    alignSelf: 'center',
+                  }}>
+                  <Text>To begin, let set Schedule for your class</Text>
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: PRIMARY_COLOR,
+                      padding: 5,
+                      borderRadius: 15,
+                      height: 40,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => {}}>
+                    <Text>Set schedule!</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           )}
           {selectedTab == 2 && (
@@ -1371,30 +1446,42 @@ const TeamRoom = ({navigation, route}) => {
           {selectedTab == 3 && (
             <FlatList
               data={Record}
-              renderItem={({item, index}) => <RecordingCard record={item} 
-              show = {()=>{navigation.push("ShowRecord",{url:item.File, name: item.Name})}}
-              />}
+              renderItem={({item, index}) => (
+                <RecordingCard
+                  record={item}
+                  show={() => {
+                    navigation.push('ShowRecord', {
+                      url: item.File,
+                      name: item.Name,
+                    });
+                  }}
+                />
+              )}
             />
           )}
-           {isTeacher&&selectedTab != 3&&<TouchableOpacity
-            style={{
-              position: 'absolute',
-              marginLeft: screenWidth - 80,
-              marginTop: screenHeight - 120,
-              borderRadius: 25,
-              width: 50,
-              height: 50,
-              backgroundColor: PRIMARY_COLOR,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            onPress={() => navigation.push('NewPost', {classId:classId})}>
-            {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
-            {selectedTab == 2 && <PopupMenu />}
-            {/* {selectedTab == 3 && (
+          {isTeacher && selectedTab != 3 && (
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                marginLeft: screenWidth - 80,
+                marginTop: screenHeight - 120,
+                borderRadius: 25,
+                width: 50,
+                height: 50,
+                backgroundColor: PRIMARY_COLOR,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              onPress={() => navigation.push('NewPost', {classId: classId})}>
+              {selectedTab == 1 && (
+                <Icon name={'pen'} color="white" size={20} />
+              )}
+              {selectedTab == 2 && <PopupMenu />}
+              {/* {selectedTab == 3 && (
               <Ionicons name={'arrow-up-outline'} size={20} color={'white'} />
             )} */}
-          </TouchableOpacity>}
+            </TouchableOpacity>
+          )}
           {Side()}
         </View>
       )}

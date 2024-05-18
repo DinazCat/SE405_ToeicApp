@@ -21,10 +21,10 @@ const CallRoom = ({navigation, route}) => {
           micEnabled: micEnabled,
           webcamEnabled: webcamEnabled,
           name: name,
-          notification: {
-            title: 'Video SDK Meeting',
-            message: 'Meeting is running.',
-          },
+          // notification: {
+          //   title: 'Video SDK Meeting',
+          //   message: 'Meeting is running.',
+          // },
         }}
         token={token}>
         <MeetingConsumer

@@ -256,7 +256,6 @@ const CompleteCard = ({navigation, route}) => {
             justifyContent: 'space-evenly',
             marginTop: '10%',
           }}>
-          {
             <TouchableOpacity
               style={[AppStyle.button.button2]}
               onPress={() => {
@@ -272,7 +271,6 @@ const CompleteCard = ({navigation, route}) => {
               }}>
               <Text style={AppStyle.button.button2_Text}>Show answer</Text>
             </TouchableOpacity>
-          }
           {sign == 'Home' ? (
             <TouchableOpacity
               style={[AppStyle.button.button2]}

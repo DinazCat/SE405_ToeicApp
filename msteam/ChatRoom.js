@@ -33,10 +33,12 @@ const ChatRoom = ({route, navigation}) => {
   const [messages, setMessages] = useState(chatRoomData.messages || []);
   const [haveMesssage, setHaveMessage] = useState(!chatRoomData.isNewChat);
   const [inputMessage, setInputMessage] = useState('');
-  const [callee, setCallee] = useState('DxL5c5T2XYZZE0ONGGPLpj0tOsK2');
+  const [callee, setCallee] = useState(chatRoomData.calleeId);
   const [isCalling, setisCalling] = useState(false);
   const [videosdkToken, setVideosdkToken] = useState(null);
   const [videosdkMeeting, setVideosdkMeeting] = useState(null);
+
+  const flatListRef = useRef(null);
 
   const videosdkTokenRef = useRef();
   const videosdkMeetingRef = useRef();
@@ -49,14 +51,20 @@ const ChatRoom = ({route, navigation}) => {
 
   useEffect(() => {
     socketServices.initializeSocket();
-    socketServices.on('new message', message => {
-      setMessages([...messages, message]);
-      console.log([...messages, message]);
+    socketServices.on('new message', ({message, roomId}) => {
+      // setMessages([...messages, message]);
+      // console.log([...messages, message]);
+      if (roomId == chatRoomData.Id) getChatRoomData();
     });
     // return () => {
     //   socketServices.disconnect();
     // };
   }, []);
+
+  const getChatRoomData = async () => {
+    const chatRoom = await Api.getChatRoomData(chatRoomData.Id);
+    setMessages(chatRoom.messages);
+  };
 
   const sendMessage = async () => {
     if (!socketServices || !inputMessage.trim()) return;
@@ -72,7 +80,8 @@ const ChatRoom = ({route, navigation}) => {
         timestamp: new Date().getTime(),
         type: 'text',
       };
-      socketServices.emit('chat message', {roomId: result, message});
+      socketServices.emit('chat message', {roomId: chatRoomData.Id, message});
+      socketServices.emit('chats update', {roomId: chatRoomData.Id});
       setInputMessage('');
     } else {
       const newChatRoom = {
@@ -93,17 +102,14 @@ const ChatRoom = ({route, navigation}) => {
       const result = await Api.addNewChat(newChatRoom);
       console.log(result);
       if (result) {
-        console.log(0.1);
         socketServices.emit('join room', {
           roomId: result,
           userId: currentUser.id,
         });
-        console.log(0.2);
         socketServices.emit('join room', {
           roomId: result,
           userId: chatRoomData.Uid,
         });
-        console.log(0.3);
 
         const message = {
           from: {
@@ -117,7 +123,7 @@ const ChatRoom = ({route, navigation}) => {
         };
 
         socketServices.emit('chat message', {roomId: result, message});
-        console.log(0.4);
+        socketServices.emit('chats update', {roomId: result});
         setInputMessage('');
         setHaveMessage(true);
       }
@@ -176,11 +182,9 @@ const ChatRoom = ({route, navigation}) => {
 
           Incomingvideocall.configure(incomingCallAnswer, endIncomingCall);
           Incomingvideocall.displayIncomingCall(callerInfo.name);
-          console.log(10.1);
 
           break;
         case 'ACCEPTED':
-          console.log(11);
           setisCalling(false);
           getTokenAndMeetingId();
           navigation.navigate('CallRoom', {
@@ -190,7 +194,6 @@ const ChatRoom = ({route, navigation}) => {
           });
           break;
         case 'REJECTED':
-          console.log(12);
           Toast.show('Call Rejected');
           setisCalling(false);
           break;
@@ -234,6 +237,13 @@ const ChatRoom = ({route, navigation}) => {
     }
   };
 
+  // Callback function to scroll to the end of the FlatList
+  const scrollToBottom = () => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToEnd({animated: false});
+    }
+  };
+
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -245,7 +255,9 @@ const ChatRoom = ({route, navigation}) => {
         <Image
           style={styles.image}
           source={{
-            uri: chatRoomData.imageUri,
+            uri:
+              chatRoomData.imageUri ||
+              'https://cdn-icons-png.flaticon.com/512/1946/1946429.png',
           }}
         />
         <Text style={styles.header} numberOfLines={1}>
@@ -287,13 +299,26 @@ const ChatRoom = ({route, navigation}) => {
           <FlatList
             data={messages}
             renderItem={({item, index}) => {
+              const isFirstMessageOfDay =
+                index === 0 ||
+                new Date(messages[index - 1].timestamp).toDateString() !==
+                  new Date(item.timestamp).toDateString();
               return (
-                <ChatMessage
-                  item={item}
-                  isMine={item.from.userId === auth().currentUser.uid}
-                />
+                <View>
+                  {isFirstMessageOfDay && (
+                    <Text style={styles.DateText}>
+                      {new Date(item.timestamp).toDateString()}
+                    </Text>
+                  )}
+                  <ChatMessage
+                    item={item}
+                    isMine={item.from.userId === auth().currentUser.uid}
+                  />
+                </View>
               );
             }}
+            ref={flatListRef}
+            onLayout={scrollToBottom}
           />
         </View>
       )}
@@ -401,6 +426,12 @@ const styles = StyleSheet.create({
     color: 'white',
     padding: 2,
     marginHorizontal: 7,
+  },
+  DateText: {
+    color: '#333',
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 10,
   },
 });
 export default ChatRoom;

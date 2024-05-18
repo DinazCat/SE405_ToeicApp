@@ -84,7 +84,7 @@ const setUserInfo = async userData => {
   }
 };
 const setTeacherInfo = async userData => {
-  console.log("setteacherinfoId"+ userData.id)
+  console.log('setteacherinfoId' + userData.id);
   const endpoint = '/setTeacherInfo/' + userData.id;
   console.log(endpoint);
   try {
@@ -505,6 +505,16 @@ const addNewChat = async data => {
   }
 };
 
+const getChatRoomData = async id => {
+  try {
+    const response = await client.get(`/ChatRoom/${id}`);
+    return response.data.chatData;
+  } catch (error) {
+    console.log('error: ', error.message);
+    return null;
+  }
+};
+
 const addClass = async data => {
   try {
     await client.post('/Class/add', data);
@@ -662,6 +672,7 @@ export default {
   initiateCall,
   updateCallStatus,
   getUserChatRooms,
+  getChatRoomData,
   addNewChat,
   addClass,
   getAllClasses,
@@ -673,5 +684,5 @@ export default {
   getRangeDate,
   addReview,
   updateReview,
-  setTeacherInfo
+  setTeacherInfo,
 };

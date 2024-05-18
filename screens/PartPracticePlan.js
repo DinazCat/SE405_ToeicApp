@@ -281,7 +281,7 @@ const PartPracticePlan = ({navigation, route}) => {
                     height: 60,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginLeft: '33%',
+                    marginLeft: '34%',
                   }}
                   onPress={onBegin}>
                   <Text style={{color: 'white', fontSize: 18}}>Begin</Text>

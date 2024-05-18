@@ -55,7 +55,8 @@ const OneToOneMeetingViewer = () => {
                 fontSize: 16,
                 color: '#050A0E',
               }}>
-              {meetingId ? meetingId : 'xxx - xxx - xxx'}
+              {/* {meetingId ? meetingId : 'xxx - xxx - xxx'} */}
+              Tường Nguyễn Cát
             </Text>
           </View>
         </View>

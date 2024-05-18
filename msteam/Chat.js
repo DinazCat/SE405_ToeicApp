@@ -16,25 +16,34 @@ import ChatCard from '../ComponentTeam/ChatCard';
 import AppStyle from '../theme';
 import Api from '../api/Api';
 import auth from '@react-native-firebase/auth';
+import socketServices from '../api/socketService';
 
 const Chat = ({navigation}) => {
   const [currentUser, setCurrentUser] = useState();
   const [userChats, setUserChats] = useState([]);
 
   useEffect(() => {
+    socketServices.initializeSocket();
+    socketServices.on('new chat', users => {
+      if (users.find(user => user.userId === auth().currentUser.uid)) {
+        getUserChats();
+      }
+    });
+  }, []);
+  useEffect(() => {
     const getCurrentUser = async () => {
       const data = await Api.getUserData(auth().currentUser.uid);
       setCurrentUser(data);
     };
 
-    const getUserChats = async () => {
-      const result = await Api.getUserChatRooms();
-      setUserChats(result);
-      console.log(result)
-    };
-
     getCurrentUser();
+    getUserChats();
   }, []);
+
+  const getUserChats = async () => {
+    const result = await Api.getUserChatRooms(auth().currentUser.uid);
+    setUserChats(result);
+  };
   const chatData = [
     {
       name: 'Nguyễn Quỳnh Hoa',
@@ -156,7 +165,7 @@ const Chat = ({navigation}) => {
       </View>
       <FlatList
         style={{marginTop: 10}}
-        data={chatData}
+        data={userChats}
         renderItem={({item, index}) => (
           <ChatCard key={index} item={item} navigation={navigation} />
         )}
