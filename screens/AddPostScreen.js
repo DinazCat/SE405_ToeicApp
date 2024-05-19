@@ -31,6 +31,7 @@ import SpeakP5QuestionForm from '../components/SpeakP5QuestionForm';
 import SpeakP6QuestionForm from '../components/SpeakP6QuestionForm';
 import WriteP1QuestionForm from '../components/WriteP1QuestionForm';
 import WriteP23QuestionForm from '../components/WriteP23QuestionForm';
+import uploadfile from '../api/uploadfile';
 
 const AddPostScreen = ({navigation, route}) => {
   const {sign, Answer, part, item} = route.params;
@@ -171,23 +172,18 @@ const AddPostScreen = ({navigation, route}) => {
             name: 'image.jpg',
             type: 'image/jpg',
           });
-          console.log('hah')
-          // const response = await axios.post(
-          //   'http://192.168.1.7:3000/upload',
-          //   formData,
-          // ).catch((e)=>{console.log(e)})
+          console.log('hah');
           const config = {
             method: 'post',
-            url: 'http://192.168.1.7:3000/upload',
-            headers: { 
-              'Content-Type': 'multipart/form-data'
+            url: uploadfile.upImage,
+            headers: {
+              'Content-Type': 'multipart/form-data',
             },
-            data : formData
+            data: formData,
           };
-          
-          
-          const response = await  axios(config)
-          console.log('hah1')
+
+          const response = await axios(config);
+          console.log('hah1');
 
           list.push({uri: response.data.photo, type: 'img'});
         } else if (image[i].type == 'video') {
@@ -197,10 +193,7 @@ const AddPostScreen = ({navigation, route}) => {
             name: 'video.mp4',
             type: 'video/mp4',
           });
-          const response = await axios.post(
-            'http://192.168.1.107:3000/uploadvideo',
-            formData,
-          );
+          const response = await axios.post(uploadfile.upVideo, formData);
           list.push({uri: response.data.video, type: 'video'});
         } else if (image[i].type == 'pdf') {
           const formData = new FormData();
@@ -209,10 +202,7 @@ const AddPostScreen = ({navigation, route}) => {
             name: 'file.pdf',
             type: 'application/pdf',
           });
-          const response = await axios.post(
-            'http://192.168.1.107:3000/uploadpdf',
-            formData,
-          );
+          const response = await axios.post(uploadfile.upPdf, formData);
           list.push({
             uri: response.data.filepdf,
             type: 'pdf',

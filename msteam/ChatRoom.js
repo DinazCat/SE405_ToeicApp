@@ -26,6 +26,10 @@ import Api from '../api/Api';
 import auth from '@react-native-firebase/auth';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import socketServices from '../api/socketService';
+import ImagePicker from 'react-native-image-crop-picker';
+import DocumentPicker from 'react-native-document-picker';
+import uploadfile from '../api/uploadfile';
+import axios from 'axios';
 
 const ChatRoom = ({route, navigation}) => {
   const {chatRoomData} = route.params;
@@ -37,6 +41,8 @@ const ChatRoom = ({route, navigation}) => {
   const [isCalling, setisCalling] = useState(false);
   const [videosdkToken, setVideosdkToken] = useState(null);
   const [videosdkMeeting, setVideosdkMeeting] = useState(null);
+  const [imagePath, setImagePath] = useState(null);
+  const [file, setFile] = useState(null);
 
   const flatListRef = useRef(null);
 
@@ -51,15 +57,20 @@ const ChatRoom = ({route, navigation}) => {
 
   useEffect(() => {
     socketServices.initializeSocket();
-    socketServices.on('new message', ({message, roomId}) => {
+    socketServices.on('new message', async ({message, roomId}) => {
       // setMessages([...messages, message]);
       // console.log([...messages, message]);
-      if (roomId == chatRoomData.Id) getChatRoomData();
+      if (roomId == chatRoomData.Id) await getChatRoomData();
+      scrollToBottom();
     });
     // return () => {
     //   socketServices.disconnect();
     // };
   }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatRoomData]);
 
   const getChatRoomData = async () => {
     const chatRoom = await Api.getChatRoomData(chatRoomData.Id);
@@ -154,15 +165,14 @@ const ChatRoom = ({route, navigation}) => {
       );
       switch (type) {
         case 'CALL_INITIATED':
-          console.log(10);
-          const incomingCallAnswer = ({callUUID}) => {
-            Api.updateCallStatus({
+          const incomingCallAnswer = async ({callUUID}) => {
+            await Api.updateCallStatus({
               callerInfo,
               type: 'ACCEPTED',
             });
             Incomingvideocall.endIncomingcallAnswer(callUUID);
             setisCalling(false);
-            getTokenAndMeetingId();
+            await getTokenAndMeetingId();
             // Linking.openURL(
             //   `videocalling://meetingscreen/${videoSDKInfo.token}/${videoSDKInfo.meetingId}`,
             // ).catch(err => {
@@ -240,8 +250,124 @@ const ChatRoom = ({route, navigation}) => {
   // Callback function to scroll to the end of the FlatList
   const scrollToBottom = () => {
     if (flatListRef.current) {
-      flatListRef.current.scrollToEnd({animated: false});
+      setTimeout(() => {
+        flatListRef.current.scrollToEnd({animated: false});
+      }, 100);
     }
+  };
+
+  const openLibrary = async () => {
+    ImagePicker.openPicker({
+      cropping: true,
+    }).then(async img => {
+      setImagePath(img.path);
+      await sendImage(img.path);
+    });
+  };
+
+  const openCamera = () => {
+    ImagePicker.openCamera({
+      cropping: true,
+    }).then(async img => {
+      setImagePath(img.path);
+      await sendImage(img.path);
+    });
+  };
+
+  const pickFile = async () => {
+    try {
+      const res = await DocumentPicker.pick({
+        type: [DocumentPicker.types.allFiles],
+      });
+      setFile(res);
+    } catch (err) {}
+  };
+
+  const uploadImg = async img => {
+    const formData = new FormData();
+    formData.append('image', {
+      uri: img,
+      name: 'image.jpg',
+      type: 'image/jpg',
+    });
+
+    const config = {
+      method: 'post',
+      url: uploadfile.upImage,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      data: formData,
+    };
+
+    const response = await axios(config);
+    console.log(response.data.photo);
+    return response.data.photo;
+  };
+
+  const sendImage = async imagePath => {
+    if (!imagePath) return;
+    const imgUrl = await uploadImg(imagePath);
+    console.log(imgUrl);
+    // if (haveMesssage) {
+    //   const message = {
+    //     from: {
+    //       userId: currentUser.id,
+    //       name: currentUser.name,
+    //       avatar: currentUser.userImg,
+    //     },
+    //     imageUrl: imgUrl,
+    //     timestamp: new Date().getTime(),
+    //     type: 'image',
+    //   };
+    //   socketServices.emit('chat message', {roomId: chatRoomData.Id, message});
+    //   socketServices.emit('chats update', {roomId: chatRoomData.Id});
+    // } else {
+    //   const newChatRoom = {
+    //     users: [
+    //       {
+    //         userId: currentUser.id,
+    //         name: currentUser.name,
+    //         avatar: currentUser.userImg,
+    //       },
+    //       {
+    //         userId: chatRoomData.toUid,
+    //         name: chatRoomData.name,
+    //         avatar: chatRoomData.imageUri,
+    //       },
+    //     ],
+    //     messages: [],
+    //   };
+    //   const result = await Api.addNewChat(newChatRoom);
+    //   console.log(result);
+    //   if (result) {
+    //     socketServices.emit('join room', {
+    //       roomId: result,
+    //       userId: currentUser.id,
+    //     });
+    //     socketServices.emit('join room', {
+    //       roomId: result,
+    //       userId: chatRoomData.Uid,
+    //     });
+
+    //     const message = {
+    //       from: {
+    //         userId: currentUser.id,
+    //         name: currentUser.name,
+    //         avatar: currentUser.userImg,
+    //       },
+    //       imageUrl: imgUrl,
+    //       timestamp: new Date().getTime(),
+    //       type: 'image',
+    //     };
+
+    //     socketServices.emit('chat message', {roomId: result, message});
+    //     socketServices.emit('chats update', {roomId: result});
+    //     setHaveMessage(true);
+    //   }
+    // }
+
+    setImagePath(null);
   };
 
   return (
@@ -323,13 +449,13 @@ const ChatRoom = ({route, navigation}) => {
         </View>
       )}
       <View style={[styles.bottomViewContainer, {backgroundColor: '#fff'}]}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={openLibrary}>
           <IonIcon name="image-outline" style={styles.iconButton} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={openCamera}>
           <IonIcon name="camera-outline" style={styles.iconButton} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={pickFile}>
           <IonIcon name="document-attach-outline" style={styles.iconButton} />
         </TouchableOpacity>
         <TextInput

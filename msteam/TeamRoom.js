@@ -540,7 +540,6 @@ const TeamRoom = ({navigation, route}) => {
       console.log('oncam');
 
       if (realJoin == false) {
-        console.log('huhu');
         JoinMeeting();
         setMyIdMeeting(participantsArrId[participantsArrId.length - 1]);
       }

@@ -16,20 +16,59 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import ImagePicker from 'react-native-image-crop-picker';
-
+import DropDownPicker from 'react-native-dropdown-picker';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import FormInput from '../components/FormInput';
-
+import TextRecognition from '@react-native-ml-kit/text-recognition';
+import uploadfile from '../api/uploadfile';
+const universityList = [
+  {
+    label: `Công nghệ Thông tin`,
+    value: `Công nghệ Thông tin`,
+  },
+  {
+    label: 'Khoa học Xã hội và Nhân văn',
+    value: 'Khoa học Xã hội và Nhân văn',
+  },
+  {
+    label: 'Khoa học tự nhiên',
+    value: 'Khoa học tự nhiên',
+  },
+  {
+    label: 'Đại học Bách Khoa',
+    value: 'Đại học Bách Khoa',
+  },
+  {
+    label: 'Đại học Quốc tế',
+    value: 'Đại học Quốc tế',
+  },
+  {
+    label: 'Sư phạm Kỹ thuật',
+    value: 'Sư phạm Kỹ thuật',
+  },
+  {
+    label: 'Đại học Công nghiệp',
+    value: 'Đại học Công nghiệp',
+  },
+  {
+    label: 'Đại học Kinh tế',
+    value: 'Đại học Kinh tế',
+  },
+  {
+    label: 'Kinh tế Quốc dân',
+    value: 'Kinh tế Quốc dân',
+  },
+];
 const RegisterTeacher1 = ({navigation}) => {
   const [name, setName] = useState('');
-  const [initBirthdate, setInitBirthdate] = useState(() => {
-    const date = new Date();
-    date.setFullYear(date.getFullYear() - 19);
-    date.setMonth(11);
-    date.setDate(31);
-    return date;
-  });
-  const [birthdate, setBirthdate] = useState(initBirthdate);
+  // const [initBirthdate, setInitBirthdate] = useState(() => {
+  //   const date = new Date();
+  //   date.setFullYear(date.getFullYear() - 19);
+  //   date.setMonth(11);
+  //   date.setDate(31);
+  //   return date;
+  // });
+  const [birthdate, setBirthdate] = useState();
   const [phone, setPhone] = useState('');
   const [university, setUniversity] = useState('');
   const [score, setScore] = useState('');
@@ -40,48 +79,119 @@ const RegisterTeacher1 = ({navigation}) => {
   const [otherImages, setOtherImages] = useState([]);
   const [openPicker, setOpenPicker] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [frontImage, setFrontImage] = useState('');
+  const [backImage, setBackImage] = useState('');
+  const [openDropdown, setOpenDropdown] = useState(false);
+  const [cropSize, setCropSize] = useState([400,250])
 
   //handle datetime picker
-  const showDatePicker = () => {
-    setOpenPicker(true);
-  };
+  // const showDatePicker = () => {
+  //   setOpenPicker(true);
+  // };
 
-  const hideDatePicker = () => {
-    setOpenPicker(false);
-  };
+  // const hideDatePicker = () => {
+  //   setOpenPicker(false);
+  // };
 
-  const handleConfirm = date => {
-    hideDatePicker();
-    setBirthdate(date);
-  };
+  // const handleConfirm = date => {
+  //   hideDatePicker();
+  //   setBirthdate(date);
+  // };
 
   //handle modal upload image
   const openLibrary = async () => {
     setOpenModal(false);
     ImagePicker.openPicker({
-      width: 300,
-      height: 150,
+      width: cropSize[0],
+      height: cropSize[1],
       cropping: true,
-    }).then(img => {
+    }).then(async img => {
       if (typeImage === 'toeicImage'){
-        setToeicImage(img.path)       
+        setToeicImage(img.path)    
+        const result = await TextRecognition.recognize(img.path);
+        // console.log(result.text)
+        const numberPattern = /\d+/;
+        let match = result.blocks[result.blocks.length-1].text.match(numberPattern);
+        if(match){
+          setScore(match[0])
+        }
+        else {
+          match = result.blocks[result.blocks.length-2].text.match(numberPattern);
+          setScore(match[0])
+        }
+        let Lpoint = 0;
+        for (let block of result.blocks) {
+          console.log('Block text:', block.text);
+        }
+        for(let i = 8 ; i < result.blocks.length-1; i++){
+          const match = result.blocks[i].text.match(numberPattern);
+          if(match&&Number(match[0])>200&&Number(match[0])<495){
+            Lpoint = match[0]; break;
+          }
+        }
+        console.log(Lpoint)
+        let Rpoint = Number(match[0])-Number(Lpoint)
+        setSkills(["Listening "+Lpoint, "Reading "+Rpoint])
       }
       else if (typeImage === 'otherImages') {
         setOtherImages([...otherImages, img.path]);
+        const result = await TextRecognition.recognize(img.path);
+        const lines = result.text.split('\n')
+        console.log(lines)
+        let title=lines[0]
+        if(lines[0].includes("TOEFL")){
+          title = "TOEFL IBT"
+        }
+        console.log(title)
+        setOtherCertificates([...otherCertificates,title])
       }
+      else if (typeImage === 'front'){
+        setFrontImage(img.path);
+        const result = await TextRecognition.recognize(img.path);
+        const lines = result.text.split('\n')
+        // setName(lines[9])
+        const regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
+        const regex2 = /^[A-ZÀ-Ỹ\s]+$/
+        const datePattern = /\b(\d{2}\/\d{2}\/\d{4})\b/;
+           for (let i = 8; i < lines.length; i++) {
+              if(regex.test(lines[i])) {console.log(lines[i]),setBirthdate(lines[i])}
+              else if(lines[i].match(datePattern)){
+                const match = lines[i].match(datePattern);
+                console.log(match[0])
+                setBirthdate(match[0]) 
+              }
+              if(regex2.test(lines[i])) setName(lines[i])
+        }
+      } 
+      else if (typeImage === 'back') setBackImage(img.path);
     });
   };
 
   const openCamera = () => {
     setOpenModal(false);
     ImagePicker.openCamera({
-      width: 300,
-      height: 150,
+      width: 350,
+      height: 190,
       cropping: true,
-    }).then(img => {
-      if (typeImage === 'toeicImage') setToeicImage(img.path);
-      else if (typeImage === 'otherImages')
+    }).then(async img => {
+      if (typeImage === 'toeicImage'){
+        setToeicImage(img.path)    
+        const result = await TextRecognition.recognize(img.path);
+        for (let block of result.blocks) {
+          console.log('Block text:', block.text);
+        }
+      }
+      else if (typeImage === 'otherImages') {
         setOtherImages([...otherImages, img.path]);
+      }
+      else if (typeImage === 'front'){
+        setFrontImage(img.path);
+        const result = await TextRecognition.recognize(img.path);
+        for (let block of result.blocks) {
+          console.log('Block text:', block.text);
+        }
+      } 
+      else if (typeImage === 'back') setBackImage(img.path);
     });
   };
 
@@ -124,12 +234,14 @@ const RegisterTeacher1 = ({navigation}) => {
       );
       return;
     }
+    else if (frontImage === '' || backImage === '') {
+      Alert.alert('Input cannot be blank!', 'Please upload your ID card fully');
+      return;
+    }
 
     navigation.push('RegisterTeacher2', {
       name: name,
-      birthdate: `${birthdate.getDate()}/${
-        birthdate.getMonth() + 1
-      }/${birthdate.getFullYear()}`,
+      birthdate: birthdate,
       phone: phone,
       university: university,
       score: score,
@@ -137,6 +249,8 @@ const RegisterTeacher1 = ({navigation}) => {
       otherCertificate: otherCertificates,
       toeicCertificateImage: toeicImage,
       otherCertificateImages: otherImages,
+      frontIDImage: frontImage,
+      backIDImage: backImage,
     });
   };
 
@@ -177,8 +291,8 @@ const RegisterTeacher1 = ({navigation}) => {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Register Teacher</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.cancelButton}>Cancel</Text>
+        <TouchableOpacity  style={styles.cancelButton} onPress={() => {navigation.navigate("Login")}}>
+          <Text>Cancel</Text>
         </TouchableOpacity>
       </View>
 
@@ -188,35 +302,113 @@ const RegisterTeacher1 = ({navigation}) => {
           <View style={[styles.step]} />
           <View style={[styles.step]} />
         </View>
+        <View
+          style={{
+            display: 'flex',
+            width: '100%',
+            flexDirection: 'row',
+            gap: 10,
+          }}>
+          <View
+            style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
+          />
+          <Text style={[styles.title, {fontWeight: '600'}]}>
+            Upload Your citizen id card
+          </Text>
+          <View
+            style={{flex: 1, height: 1, backgroundColor: '#000', marginTop: 16}}
+          />
+        </View>
 
+
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={() => {
+              setCropSize([400,250])
+              setOpenModal(true);
+              setTypeImage('front');
+            }}>
+            <FontAwesome5 name="camera" size={35} color={card_color} />
+            <Text style={styles.buttonText}>Front ID</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={() => {
+              setCropSize([400,250])
+              setOpenModal(true);
+              setTypeImage('back');
+            }}>
+            <FontAwesome5 name="camera" size={35} color={card_color} />
+            <Text style={styles.buttonText}>Back ID</Text>
+          </TouchableOpacity>
+        </View>
+
+        {frontImage && (
+          <View
+            style={{display: 'flex', alignItems: 'center', marginBottom: 20}}>
+            <Text style={styles.titleImage}>The front of the ID card</Text>
+            <View style={{position: 'relative', width: 300, height: 150}}>
+              <TouchableOpacity
+                style={styles.removeImage}
+                onPress={() => setFrontImage('')}>
+                <Ionicons name="close" style={{color: 'white'}} size={20} />
+              </TouchableOpacity>
+              <Image source={{uri: frontImage}} style={styles.image} />
+            </View>
+          </View>
+        )}
+
+        {backImage && (
+          <View
+            style={{display: 'flex', alignItems: 'center', marginBottom: 20}}>
+            <Text style={styles.titleImage}>The back of the ID card</Text>
+            <View
+              style={{
+                position: 'relative',
+                width: 300,
+                height: 150,
+              }}>
+              <TouchableOpacity
+                style={styles.removeImage}
+                onPress={() => setBackImage('')}>
+                <Ionicons name="close" style={{color: 'white'}} size={20} />
+              </TouchableOpacity>
+              <Image source={{uri: backImage}} style={styles.image} />
+            </View>
+          </View>
+        )}
         <Text style={styles.title}>Enter Your Full Name</Text>
         <FormInput
           onChangeText={value => setName(value)}
           iconType="user"
           autoCapitalize="none"
           autoCorrect={false}
+          lbValue = {name}
         />
 
         <Text style={styles.title}>Enter Your Birthdate</Text>
         <TouchableOpacity
           style={styles.inputContainer}
-          onPress={showDatePicker}>
+          onPress={()=>{}}>
           <View style={styles.iconStyle}>
             <FontAwesome5 name="calendar" size={22} color="#666" light />
           </View>
           <Text
             style={{fontSize: 16, color: '#333', padding: 2, paddingLeft: 8}}>
-            {moment(birthdate).format('DD/MM/YYYY')}
+            {/* {moment(birthdate).format('DD/MM/YYYY')} */}
+            {birthdate}
           </Text>
         </TouchableOpacity>
-        <DateTimePickerModal
+        {/* <DateTimePickerModal
           isVisible={openPicker}
           mode="date"
           date={birthdate}
           maximumDate={initBirthdate}
           onConfirm={handleConfirm}
           onCancel={hideDatePicker}
-        />
+        /> */}
         <Text style={styles.note}>
           *You must be 18 years or older to register
         </Text>
@@ -231,62 +423,22 @@ const RegisterTeacher1 = ({navigation}) => {
         />
 
         <Text style={styles.title}>Enter Your University</Text>
-        <FormInput
-          onChangeText={value => setUniversity(value)}
-          iconType="school"
-          autoCapitalize="none"
-          autoCorrect={false}
+        <DropDownPicker
+          placeholder="Select university"
+          items={universityList}
+          open={openDropdown}
+          setOpen={() => setOpenDropdown(!openDropdown)}
+          value={university}
+          setValue={item => setUniversity(item)}
+          maxHeight={160}
+          dropDownMaxHeight={160}
+          style={[styles.inputContainer, {zIndex: 1}]}
+          placeholderStyle={{fontSize: 16, color: '#555'}}
+          labelStyle={{fontSize: 16, color: '#333'}}
+          listItemContainer={{height: 40}}
+          listItemLabelStyle={{fontSize: 16, color: '#333'}}
+          dropDownContainerStyle={{backgroundColor: '#fafafa', borderColor:'#ccc'}}
         />
-
-        <Text style={styles.title}>Enter Your Toeic Score</Text>
-        <FormInput
-          onChangeText={value => setScore(value)}
-          iconType="certificate"
-          keyboardType="numeric"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        <Text style={styles.note}>*Required Toeic score is 880+</Text>
-
-        <Text style={styles.title}>Enter Your Skills</Text>
-        <View style={styles.multilineContainer}>
-          <View style={styles.iconStyle}>
-            <FontAwesome5 name="pen-fancy" size={22} color="#666" light />
-          </View>
-          <TextInput
-            style={styles.input}
-            multiline
-            onChangeText={value => {
-              temp = value.trim().split('\n');
-              setSkills(temp.filter(item => item !== ''));
-            }}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-        <Text style={styles.note}>*(Required) Each skill is on a row</Text>
-
-        <Text style={styles.title}>Enter Your Other Certificates</Text>
-        <View style={styles.multilineContainer}>
-          <View style={styles.iconStyle}>
-            <FontAwesome5 name="certificate" size={22} color="#666" light />
-          </View>
-          <TextInput
-            style={styles.input}
-            multiline
-            onChangeText={value => {
-              temp = value.trim().split('\n');
-              setOtherCertificates(temp.filter(item => item !== ''));
-            }}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-        <Text style={styles.note}>
-          *Each certificate is on a row with the syntax: {'\n'}  Certificate name
-          - score - expiration date
-        </Text>
-
         <View
           style={{
             display: 'flex',
@@ -308,6 +460,7 @@ const RegisterTeacher1 = ({navigation}) => {
           <TouchableOpacity
             style={styles.buttonContainer}
             onPress={() => {
+              setCropSize([400,200])
               setOpenModal(true);
               setTypeImage('toeicImage');
             }}>
@@ -320,6 +473,7 @@ const RegisterTeacher1 = ({navigation}) => {
           <TouchableOpacity
             style={styles.buttonContainer}
             onPress={() => {
+              setCropSize([600,800])
               setOpenModal(true);
               setTypeImage('otherImages');
             }}>
@@ -394,6 +548,60 @@ const RegisterTeacher1 = ({navigation}) => {
           </View>
         )}
 
+
+        <Text style={styles.title}>Your Toeic Score</Text>
+        <FormInput
+          onChangeText={value => setScore(value)}
+          iconType="certificate"
+          keyboardType="numeric"
+          autoCapitalize="none"
+          autoCorrect={false}
+          lbValue={score}
+        />
+        <Text style={styles.note}>*Required Toeic score is 880+</Text>
+
+        <Text style={styles.title}>Your Skills</Text>
+        <View style={styles.multilineContainer}>
+          <View style={styles.iconStyle}>
+            <FontAwesome5 name="pen-fancy" size={22} color="#666" light />
+          </View>
+          <TextInput
+            style={styles.input}
+            multiline
+            onChangeText={value => {
+              temp = value.trim().split('\n');
+              setSkills(temp.filter(item => item !== ''));
+            }}
+            autoCapitalize="none"
+            autoCorrect={false}
+            value={skills[0]?skills[0]:""+'\n'+skills[1]?skills[1]:""}
+          />
+        </View>
+        <Text style={styles.note}>*(Required) Each skill is on a row</Text>
+
+        <Text style={styles.title}>Your Other Certificates</Text>
+        <View style={styles.multilineContainer}>
+          <View style={styles.iconStyle}>
+            <FontAwesome5 name="certificate" size={22} color="#666" light />
+          </View>
+          <TextInput
+            style={styles.input}
+            multiline
+            onChangeText={value => {
+              temp = value.trim().split('\n');
+              setOtherCertificates(temp.filter(item => item !== ''));
+            }}
+            autoCapitalize="none"
+            autoCorrect={false}
+            value={otherCertificates?.join('\n')}
+          />
+        </View>
+        <Text style={styles.note}>
+          *Each certificate is on a row with the syntax: {'\n'}  Certificate name
+          {/* - score - expiration date */}
+        </Text>
+
+       
         <TouchableOpacity onPress={onNext}>
           <Text style={styles.button}>Next</Text>
         </TouchableOpacity>
@@ -420,10 +628,10 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     position: 'absolute',
-    right: 0,
+    right: 10,
     zIndex: 2,
     bottom: 0,
-    marginBottom: 4,
+    marginBottom: 26,
   },
   headerTitle: {
     fontSize: 24,

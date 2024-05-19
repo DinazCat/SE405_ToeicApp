@@ -13,9 +13,8 @@ const MeetingContainer = ({webcamEnabled}) => {
 
   const {join, changeWebcam, participants, leave} = useMeeting({
     onMeetingJoined: () => {
-      setTimeout(() => {
-        setJoined(true);
-      }, 500);
+      console.log('join successfully');
+      setJoined(true);
     },
   });
 

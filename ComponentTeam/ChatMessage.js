@@ -24,7 +24,7 @@ const ChatMessage = ({item, isMine}) => {
         )}
         {item.type == 'image' && (
           <View>
-            <Image style={styles.image} source={{uri: item.image}} />
+            <Image style={styles.image} source={{uri: item.imageUrl}} />
             <Text style={styles.timeText}>{item.timestamp}</Text>
           </View>
         )}
