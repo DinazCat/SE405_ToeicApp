@@ -7,7 +7,6 @@ import {
   Modal,
   TextInput,
   Alert,
-  runTransaction,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
