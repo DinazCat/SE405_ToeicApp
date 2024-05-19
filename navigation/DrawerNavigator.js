@@ -17,6 +17,7 @@ import auth from '@react-native-firebase/auth';
 import AnalysisStack from './AnalysisStack';
 import {NavigationContainter} from '@react-navigation/native';
 import BottomTab from './BottomTab';
+import ExploreStack from './ExploreStack';
 
 const Drawer = createDrawerNavigator();
 const SideMenu = () => {
@@ -112,6 +113,15 @@ function DrawerNavigator() {
           drawerIcon: () => (
             <Image source={require('../assets/classroom.png')} />
           ),
+          headerShown: false,
+        }}
+      />
+      <Drawer.Screen
+        name="Explore"
+        component={ExploreStack}
+        options={{
+          drawerLabel: 'Explore',
+          drawerIcon: () => <Image source={require('../assets/explore.png')} />,
           headerShown: false,
         }}
       />
