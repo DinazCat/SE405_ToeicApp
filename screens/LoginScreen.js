@@ -5,6 +5,8 @@ import {
   Image,
   TouchableOpacity,
   ImageBackground,
+  KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
 import React, {useState, useContext} from 'react';
 import FormInput from '../components/FormInput';
@@ -21,72 +23,86 @@ const LoginScreen = ({navigation}) => {
       source={require('../assets/bg1.jpg')}
       resizeMode="cover"
       style={{flex: 1}}>
-      <View style={styles.container}>
-        <Image style={styles.logo} source={require('../assets/penguin.png')} />
-
-        <FormInput
-          lbValue={email}
-          onChangeText={userEmail => setEmail(userEmail)}
-          placeholderText="Email"
-          iconType="user"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-
-        <FormInput
-          lbValue={password}
-          onChangeText={userPassword => setPassword(userPassword)}
-          placeholderText="Password"
-          iconType="lock"
-          secureTextEntry={true}
-        />
-        <TouchableOpacity
-          style={{marginBottom: 20}}
-          onPress={() => navigation.navigate('ForgotPassword')}>
-          <Text style={styles.forgotButtonText}>Forgot Password?</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={{width: '100%', alignItems: 'center'}}
-          onPress={() => navigation.navigate('RegisterTeacher1')}>
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: 'bold',
-              color: '#222',
-            }}>
-            Want to become a Teacher?
-          </Text>
-        </TouchableOpacity>
-
-        <FormButton title="Sign in" onPress={() => login(email, password)} />
-
-        <Text style={styles.orText}>_or_</Text>
-
-        {Platform.OS === 'android' ? (
-          <TouchableOpacity
-            style={styles.googleButton}
-            onPress={() => googleLogin('Student')}>
+      <KeyboardAvoidingView
+        style={{flex: 1}}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={{flexGrow: 1}}>
+          <View style={styles.container}>
             <Image
-              style={styles.iconWrapper}
-              source={require('../assets/google.png')}
+              style={styles.logo}
+              source={require('../assets/penguin.png')}
             />
-            <View style={styles.btnTxtWrapper}>
-              <Text style={styles.buttonText}>Sign in with Google</Text>
-            </View>
-          </TouchableOpacity>
-        ) : null}
 
-        <TouchableOpacity
-          style={styles.textButton}
-          onPress={() => navigation.navigate('Signup', {type: 'Student'})}>
-          <Text style={styles.navButtonText}>
-            Don't have an acount?{' '}
-            <Text style={{fontWeight: 'bold', color: '#000'}}>Create here</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
+            <FormInput
+              lbValue={email}
+              onChangeText={userEmail => setEmail(userEmail)}
+              placeholderText="Email"
+              iconType="user"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+
+            <FormInput
+              lbValue={password}
+              onChangeText={userPassword => setPassword(userPassword)}
+              placeholderText="Password"
+              iconType="lock"
+              secureTextEntry={true}
+            />
+            <TouchableOpacity
+              style={{marginBottom: 20}}
+              onPress={() => navigation.navigate('ForgotPassword')}>
+              <Text style={styles.forgotButtonText}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{width: '100%', alignItems: 'center'}}
+              onPress={() => navigation.navigate('RegisterTeacher1')}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  color: '#222',
+                }}>
+                Want to become a Teacher?
+              </Text>
+            </TouchableOpacity>
+
+            <FormButton
+              title="Sign in"
+              onPress={() => login(email, password)}
+            />
+
+            <Text style={styles.orText}>_or_</Text>
+
+            {Platform.OS === 'android' ? (
+              <TouchableOpacity
+                style={styles.googleButton}
+                onPress={() => googleLogin('Student')}>
+                <Image
+                  style={styles.iconWrapper}
+                  source={require('../assets/google.png')}
+                />
+                <View style={styles.btnTxtWrapper}>
+                  <Text style={styles.buttonText}>Sign in with Google</Text>
+                </View>
+              </TouchableOpacity>
+            ) : null}
+
+            <TouchableOpacity
+              style={styles.textButton}
+              onPress={() => navigation.navigate('Signup', {type: 'Student'})}>
+              <Text style={styles.navButtonText}>
+                Don't have an acount?{' '}
+                <Text style={{fontWeight: 'bold', color: '#000'}}>
+                  Create here
+                </Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 };
