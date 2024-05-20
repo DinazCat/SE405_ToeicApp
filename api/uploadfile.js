@@ -1,8 +1,11 @@
-const ipAddress = '192.168.1.6:3000'
+const ipAddress = '192.168.1.26:3000'
 const upImage = `http://${ipAddress}/upload`
 const upVideo=`http://${ipAddress}/uploadvideo`
+const upvideo2 = `http://${ipAddress}/uploadvideotoFirestore`
 // const upAudio = 'http://192.168.1.7:3000/uploadaudio'
 const upPdf = `http://${ipAddress}/uploadpdf`
+const updoc = `http://${ipAddress}/uploaddoc`
+const upslide = `http://${ipAddress}/uploadppt`
 const API_KEY = 'AIzaSyAor3Lt0QmIYuT30ZMp3S6PaVyxW65bdfU'; //put your key here.
 //this endpoint will tell Google to use the Vision API. We are passing in our key as well.
 const API_URL = `https://vision.googleapis.com/v1/images:annotate?key=${API_KEY}`;
@@ -42,4 +45,4 @@ const  callGoogleVisionAsync =async (image)=> {
     : { text: "This image doesn't contain any text!" };
   }
   
-export default {upImage, upVideo, upPdf,callGoogleVisionAsync}
+export default {upImage, upVideo, upPdf,callGoogleVisionAsync, updoc, upslide, upvideo2}

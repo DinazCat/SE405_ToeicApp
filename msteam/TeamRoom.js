@@ -28,6 +28,8 @@ import auth from '@react-native-firebase/auth';
 import MeetingRoom from './MeetingRoom';
 import DateItem from '../ComponentTeam/DateItem';
 import {AuthContext} from '../navigation/AuthProvider';
+import DocumentPicker from 'react-native-document-picker';
+import axios from 'axios';
 import {
   MeetingProvider,
   useMeeting,
@@ -40,6 +42,8 @@ import {useNavigation} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import Api from '../api/Api';
 import moment from 'moment';
+import uploadfile from '../api/uploadfile';
+import CreateFolder from '../ComponentTeam/CreateFolder';
 const {width, height} = Dimensions.get('window');
 const TeamRoom = ({navigation, route}) => {
   const {user, isTeacher} = useContext(AuthContext);
@@ -56,6 +60,7 @@ const TeamRoom = ({navigation, route}) => {
   const [classInfo, setClassInfo] = useState(null)
   const [teacherInfo, setTeacherInfo] = useState(null)
   const [rangeDate, setRangeDate] = useState(null)
+  const [createFolder, setCreateFolder] = useState(false)
  
   const getInFoClass = async()=>{
     const classtemp = await firestore()
@@ -149,9 +154,17 @@ const TeamRoom = ({navigation, route}) => {
   }
   useEffect(() => {
     socketServices.initializeSocket()
-    receiveMeetingId()
+    receiveMeetingId();
+    getFiles()
     getProfile();
   }, []);
+  const getFiles = async()=>{
+    socketServices.on('getFiles',(data) => {
+      if(data.ClassId==classId){
+        setFileandFolder(data.Files)
+      }
+    });
+  }
   const receiveMeetingId = async()=>{
     console.log('receiveMeetingId')
     socketServices.on('getMeetingId',(data) => {
@@ -233,19 +246,19 @@ const TeamRoom = ({navigation, route}) => {
     Dimensions.addEventListener('change', updateScreenWidth);
   }, []);
   const [selectedTab, setSelectedTab] = useState(1);
-  const postData = [
-    {
-      userName: 'Nguyễn Quỳnh Hoa',
-      postTime: '1PM at 2/24/2024',
-      text: 'Lịch học tuần này đã thay đổi, các bạn chú ý theo dõi nhé.',
-      sign: 'topic',
-    },
-    {
-      userName: 'Nguyễn Quỳnh Hoa',
-      postTime: '1PM at 2/24/2024',
-      sign: 'meeting',
-    },
-  ];
+  // const postData = [
+  //   {
+  //     userName: 'Nguyễn Quỳnh Hoa',
+  //     postTime: '1PM at 2/24/2024',
+  //     text: 'Lịch học tuần này đã thay đổi, các bạn chú ý theo dõi nhé.',
+  //     sign: 'topic',
+  //   },
+  //   {
+  //     userName: 'Nguyễn Quỳnh Hoa',
+  //     postTime: '1PM at 2/24/2024',
+  //     sign: 'meeting',
+  //   },
+  // ];
   // const Record = [
   //   {
   //     User: 'Nguyễn Quỳnh Hoa',
@@ -266,32 +279,155 @@ const TeamRoom = ({navigation, route}) => {
   useEffect(() => {
     getRecords()
   }, []);
-  const fileandfolder = [
-    {
-      User: 'Nguyễn Quỳnh Hoa',
-      Time: '1PM at 2/24/2024',
-      Name: 'Tài liệu các đề thi 2023',
-      sign: 'folder',
-    },
-    {
-      User: 'Nguyễn Thị Thy',
-      Time: '1PM at 3/24/2024',
-      Name: 'Buổi học ngày 24/3/2024',
-      sign: 'file',
-    },
-  ];
+  const [fileandfolder, setFileandFolder] = useState([])
+  // const fileandfolder = [
+  //   {
+  //     User: 'Nguyễn Quỳnh Hoa',
+  //     Time: '1PM at 2/24/2024',
+  //     Name: 'Tài liệu các đề thi 2023',
+  //     sign: 'folder',
+  //   },
+  //   {
+  //     User: 'Nguyễn Thị Thy',
+  //     Time: '1PM at 3/24/2024',
+  //     Name: 'Buổi học ngày 24/3/2024',
+  //     sign: 'file',
+  //   },
+  // ];
+  const sendFileToNodejs = async(dataFile, type)=>{
+    let title = ''
+    let url = uploadfile.upImage
+    if(dataFile.sign == 'filePDF' )
+      {
+        title = 'pdf';
+        url = uploadfile.upPdf
+      }
+      else if(dataFile.sign == 'fileWord' )
+        {
+          title = 'doc'
+          url = uploadfile.updoc
+        }
+        else if(dataFile.sign == 'filePPT' )
+          {
+            title = 'ppt'
+            url = uploadfile.upslide
+          }
+          else if(dataFile.sign == 'fileImage' )
+            {
+              title = 'image';
+              url = uploadfile.upImage
+            }
+            else if(dataFile.sign == "fileMp4" )
+              {
+                title = 'video';
+                url = uploadfile.upvideo2
+              }
+    const formData = new FormData();
+          formData.append(title, {
+            uri: dataFile.Link,
+            name: dataFile.Name,
+            type: type,
+          });
+          console.log(url)
+          const config = {
+            method: 'post',
+            url: url,
+            headers: { 
+              'Content-Type': 'multipart/form-data'
+            },
+            data : formData
+          };
+          
+          // const response = await fetch(url, {
+          //   method: 'POST',
+          //   body: formData,
+          //   headers: {
+          //     'Content-Type': 'multipart/form-data'
+          //   }
+          // });
+      
+          const response = await  axios(config)
+          // console.log(response)
+          // console.log(response.json())
+          // return 'jjj'
+          if(dataFile.sign == 'filePDF' )
+            {
+              return response.data.filepdf
+            }
+            else if(dataFile.sign == 'fileWord' )
+              {
+                return response.data.filedoc
+              }
+              else if(dataFile.sign == 'filePPT' )
+                {
+                  return response.data.fileppt
+                }
+                else if(dataFile.sign == 'fileImage' )
+                  {
+                    return response.data.photo
+                  }
+                  else if(dataFile.sign == "fileMp4" )
+                    {
+                      return response.data.video
+                    }
+  }
+  const [visible, setvisible] = useState(false);
+  const handleFilePicker = async () => {
+    try {
+      const res = await DocumentPicker.pick({
+        type: [DocumentPicker.types.pdf,DocumentPicker.types.doc,DocumentPicker.types.docx,DocumentPicker.types.video,DocumentPicker.types.images,DocumentPicker.types.ppt,DocumentPicker.types.pptx],
+        allowMultiSelection: false,
+        copyTo: 'cachesDirectory',
+      });
+      console.log(res);
+      let data = {
+        User: profileData.name,
+        Time: getTime(),
+        Name: res[0].name,
+        sign: 'filePDF',
+        Link:res[0].fileCopyUri
+      };
+      if(res[0].type=="application/pdf"){
+        data.sign= 'filePDF'
+      }
+      else if(res[0].type=="application/vnd.openxmlformats-officedocument.wordprocessingml.document"){
+         data.sign = 'fileWord'
+      }
+      else if(res[0].type=="application/vnd.openxmlformats-officedocument.presentationml.presentation"){
+        data.sign = 'filePPT'
+     }
+     else if(res[0].type=="image/jpeg"){
+      data.sign = 'fileImage'
+     }
+     else if(res[0].type=="video/mp4"){
+      data.sign = "fileMp4"
+    }
+   const newLink = await sendFileToNodejs(data,res[0].type)
+   data.Link = newLink.substring(8);
+   console.log(newLink)
+   //gọi api gửi lên firestore
+   await Api.updateFile(data,classId)
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        console.log('User cancelled the file picker');
+      } else {
+        console.log('Something went wrong', err);
+      }
+    }
+  };
   const PopupMenu = () => {
-    const [visible, setvisible] = useState(false);
     const options = [
       {
         title: 'Create folder',
         action: async () => {
           setvisible(false);
+          setCreateFolder(true)
         },
       },
       {
         title: 'Up file',
         action: () => {
+          handleFilePicker()
           setvisible(false);
         },
       },
@@ -306,13 +442,13 @@ const TeamRoom = ({navigation, route}) => {
     return (
       <View style={{flexDirection: 'colunm'}}>
         {visible && (
-          <View style={{backgroundColor: 'white'}}>
+          <View style={{backgroundColor: PRIMARY_COLOR, width:100, height:200, alignItems:'center', justifyContent:'center', borderRadius:15}}>
             {options.map((op, i) => (
               <TouchableOpacity
                 style={[styles.popupitem]}
                 key={i}
                 onPress={op.action}>
-                <Text style={{color: 'black', fontSize: 15}}>{op.title}</Text>
+                <Text style={{color: 'white', fontSize: 15}}>{op.title}</Text>
                 {i != 2 && <Text>--------</Text>}
               </TouchableOpacity>
             ))}
@@ -324,7 +460,15 @@ const TeamRoom = ({navigation, route}) => {
       </View>
     );
   };
-
+const getTime=()=>{
+  const currentDate = new Date()
+  const currentDay = currentDate.getDate(); 
+  const currentMonth = currentDate.getMonth() + 1; 
+  const currentYear = currentDate.getFullYear(); 
+  const currentHours = currentDate.getHours(); 
+  const currentMinutes = currentDate.getMinutes();
+  return currentDay+'/'+currentMonth+'/'+currentYear+' at '+currentHours+':'+currentMinutes
+}
   function AttendeeCard({person, color}) {
     const {webcamStream, webcamOn, micOn, micStream} = useParticipant(person.id);
     return webcamOn && webcamStream ? (
@@ -406,6 +550,7 @@ const TeamRoom = ({navigation, route}) => {
         // setIsJoin(false);
       });
   }
+  
   async function onMeetingLeft() {
     console.log('onMeetingLeft');
     setIsJoin(false);
@@ -1157,16 +1302,20 @@ const TeamRoom = ({navigation, route}) => {
         </View>
       )}
       {selectedTab == 2 && (
-        <FlatList
+        <ScrollView>
+          <FlatList
           data={fileandfolder}
           renderItem={({item, index}) => {
-            if (item.sign == 'file') {
+            if (item.sign == 'fileImage' || item.sign == 'fileMp4' || item.sign == 'filePPT' || item.sign == 'fileWord' || item.sign == 'filePDF') {
               return <FileCard record={item} />;
             } else if (item.sign == 'folder') {
               return <FolderCard record={item} />;
             }
           }}
         />
+        {createFolder&&<CreateFolder close={()=>setCreateFolder(false)} teacherName={profileData?.name} classId={classId}/>}
+        </ScrollView>
+        
       )}
       {selectedTab == 3 && (
         <FlatList
@@ -1175,6 +1324,7 @@ const TeamRoom = ({navigation, route}) => {
           show = {()=>{navigation.push("ShowRecord",{url:item.File, name: item.Name})}}
           />}
         />
+        
       )}
        {isTeacher&&selectedTab != 3&&<TouchableOpacity
         style={{
@@ -1188,7 +1338,7 @@ const TeamRoom = ({navigation, route}) => {
           justifyContent: 'center',
           alignItems: 'center',
         }}
-        onPress={() => navigation.push('NewPost',{classId:classId, userInfo:profileData})}>
+        onPress={() => {selectedTab==1?navigation.push('NewPost',{classId:classId, userInfo:profileData}):setvisible(true)}}>
         {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
         {selectedTab == 2 && <PopupMenu />}
         {/* {selectedTab == 3 && (
@@ -1357,16 +1507,19 @@ const TeamRoom = ({navigation, route}) => {
             </View>
           )}
           {selectedTab == 2 && (
+            <ScrollView>
             <FlatList
-              data={fileandfolder}
-              renderItem={({item, index}) => {
-                if (item.sign == 'file') {
-                  return <FileCard record={item} />;
-                } else if (item.sign == 'folder') {
-                  return <FolderCard record={item} />;
-                }
-              }}
-            />
+            data={fileandfolder}
+            renderItem={({item, index}) => {
+              if (item.sign == 'fileImage' || item.sign == 'fileMp4' || item.sign == 'filePPT' || item.sign == 'fileWord' || item.sign == 'filePDF') {
+                return <FileCard record={item} />;
+              } else if (item.sign == 'folder') {
+                return <FolderCard record={item} />;
+              }
+            }}
+          />
+            {createFolder&&<CreateFolder close={()=>setCreateFolder(false)} teacherName={profileData?.name} classId={classId}/>}
+          </ScrollView>
           )}
           {selectedTab == 3 && (
             <FlatList
@@ -1388,7 +1541,7 @@ const TeamRoom = ({navigation, route}) => {
               justifyContent: 'center',
               alignItems: 'center',
             }}
-            onPress={() => navigation.push('NewPost', {classId:classId})}>
+            onPress={() => {selectedTab==1?navigation.push('NewPost',{classId:classId, userInfo:profileData}):setvisible(true)}}>
             {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
             {selectedTab == 2 && <PopupMenu />}
             {/* {selectedTab == 3 && (
@@ -1430,7 +1583,7 @@ const styles = StyleSheet.create({
   popupitem: {
     borderBottomColor: 'black',
     alignItems: 'center',
-    width: 80,
+    width: 100,
     alignSelf: 'center',
   },
   container2: {
@@ -1489,13 +1642,14 @@ const styles = StyleSheet.create({
     height: 65,
     textAlign: 'center',
   },
-  popupitem: {
-    borderBottomColor: 'black',
-    alignItems: 'center',
-    width: 60,
-    alignSelf: 'center',
-    paddingVertical: 5,
-  },
+  // popupitem: {
+  //   borderBottomColor: 'black',
+  //   alignItems: 'center',
+  //   width: 60,
+  //   alignSelf: 'center',
+  //   paddingVertical: 5,
+  //   textAlign:'center'
+  // },
   buttonmain: {
     height: 90,
     borderRadius: 20,
