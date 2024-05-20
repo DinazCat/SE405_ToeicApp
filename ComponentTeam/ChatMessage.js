@@ -25,7 +25,9 @@ const ChatMessage = ({item, isMine}) => {
         {item.type == 'image' && (
           <View>
             <Image style={styles.image} source={{uri: item.imageUrl}} />
-            <Text style={styles.timeText}>{item.timestamp}</Text>
+            <Text style={styles.timeText}>
+              {moment(item.timestamp).format('HH:mm')}
+            </Text>
           </View>
         )}
         {item.type == 'file' && (
@@ -39,7 +41,9 @@ const ChatMessage = ({item, isMine}) => {
               />
               <Text style={styles.fileName}>hocvnvnvv.txt</Text>
             </View>
-            <Text style={styles.timeText}>{item.timestamp}</Text>
+            <Text style={styles.timeText}>
+              {moment(item.timestamp).format('HH:mm')}
+            </Text>
           </View>
         )}
       </View>

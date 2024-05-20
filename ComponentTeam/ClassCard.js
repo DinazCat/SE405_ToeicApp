@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import AppStyle from '../theme';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 const {width, height} = Dimensions.get('window');
-const ClassCard = ({item, navigation}) => {
+const ClassCard = ({item, navigation, fromAsignment}) => {
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
   );
@@ -33,7 +33,13 @@ const ClassCard = ({item, navigation}) => {
   return (
     <TouchableOpacity
       style={{marginTop: 10}}
-      onPress={() => navigation.push('TeamRoom',{classId:item.classId})}>
+      onPress={() => {
+        if (fromAsignment === 'upload')
+          navigation.push('CreateAsignment', {classId: item.classId});
+        else if (fromAsignment === 'online')
+          navigation.push('CreateAsignment2', {classId: item.classId});
+        else navigation.push('TeamRoom', {classId: item.classId});
+      }}>
       <View
         style={{
           width: screenWidth * 0.9,

@@ -156,7 +156,7 @@ const AsignmentScreen = ({navigation}) => {
             justifyContent: 'center',
             alignItems: 'center',
           }}
-          onPress={() => navigation.navigate('CreateAsignment2')}>
+          onPress={() => navigation.navigate('BeforeNewAsignment')}>
           <Icon name={'plus'} size={20} color={'white'} />
         </TouchableOpacity>
       )}

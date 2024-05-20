@@ -629,7 +629,29 @@ const updateReview = async data => {
     console.log('error: ', error.message);
   }
 };
+const updateFile = async (data,classId) => {
+  try {
+    await client.put('/updateFile/'+classId, data);
+  } catch (error) {
+    console.error('Error', error);
+  }
+};
+const addFolder = async data => {
+  try {
+    const response = await client.post('/CreateFolder/add', data);
+    return response.data.Id;
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
 
+const updateFolder = async (data,folderId) => {
+  try {
+    await client.put('/updateFolder/'+folderId, data);
+  } catch (error) {
+    console.error('Error', error);
+  }
+};
 export default {
   getVocabLesson,
   getVocabinLesson,
@@ -685,4 +707,10 @@ export default {
   addReview,
   updateReview,
   setTeacherInfo,
+<<<<<<< HEAD
+=======
+  updateFile,
+  addFolder,
+  updateFolder
+>>>>>>> 543e4bfa85ca30ddb108b8b29c6b17f0a3111ff9
 };
