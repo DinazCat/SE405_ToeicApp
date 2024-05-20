@@ -320,7 +320,7 @@ const TeamRoom = ({navigation, route}) => {
             else if(dataFile.sign == "fileMp4" )
               {
                 title = 'video';
-                url = uploadfile.upvideo2
+                url = uploadfile.upVideo
               }
     const formData = new FormData();
           formData.append(title, {
