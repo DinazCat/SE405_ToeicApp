@@ -21,6 +21,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import Api from '../api/Api';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import axios from 'axios';
+import uploadfile from '../api/uploadfile';
 
 const ChangeProfileScreen = ({navigation, route}) => {
   const [OpenModal, setOpenModal] = useState(false);
@@ -42,7 +43,7 @@ const ChangeProfileScreen = ({navigation, route}) => {
       });
       console.log(1);
       const response = await axios.post(
-        'http://192.168.1.11:3000/upload',
+        `http://${uploadfile.ipAddress}/upload`,
         formData,
       );
       console.log(2);

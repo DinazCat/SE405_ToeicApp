@@ -13,7 +13,9 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AppStyle from '../theme';
 import VideoPlayer from 'react-native-video-player';
 import {WebView} from 'react-native-webview';
+import uploadfile from '../api/uploadfile';
 const {width, height} = Dimensions.get('window');
+
 const FileViewScreen = ({navigation, route}) => {
   const {link, sign, name} = route.params;
   const [url, setURL] = useState('');
@@ -45,20 +47,20 @@ const FileViewScreen = ({navigation, route}) => {
     console.log('h1');
     if (sign == 'fileWord') {
       const response = await fetch(
-        `http://192.168.1.26:3000/getfilehtml/${link}`,
+        `http://${uploadfile.ipAddress}/getfilehtml/${link}`,
       ).catch(e => console.log(e));
       const data = await response.json();
       setURL(data.html);
     } else if (sign == 'fileImage') {
       const response = await fetch(
-        `http://192.168.1.26:3000/getfilebase64/${link}`,
+        `http://${uploadfile.ipAddress}/getfilebase64/${link}`,
       ).catch(e => console.log(e));
       const data = await response.json();
       const base64 = `data:image/jpg;base64,${data.base64}`;
       setURL(base64);
     } else if (sign == 'fileMp4') {
       const response = await fetch(
-        `http://192.168.1.26:3000/getfilebase64/${link}`,
+        `http://${uploadfile.ipAddress}/getfilebase64/${link}`,
       ).catch(e => console.log(e));
       const data = await response.json();
       const base64 = `data:video/mp4;base64,${data.base64}`;
@@ -74,7 +76,7 @@ const FileViewScreen = ({navigation, route}) => {
       setURL(html);
     } else if (sign == 'filePDF') {
       const response = await fetch(
-        `http://192.168.1.26:3000/getfilebase64/${link}`,
+        `http://${uploadfile.ipAddress}/getfilebase64/${link}`,
       ).catch(e => console.log(e));
       const data = await response.json();
       setURL(data.base64);

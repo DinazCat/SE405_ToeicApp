@@ -1,8 +1,73 @@
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import React from 'react';
 import moment from 'moment';
+import RNFS from 'react-native-fs';
+import FileViewer from 'react-native-file-viewer';
 
 const ChatMessage = ({item, isMine}) => {
+  function formatFileSize(bytes) {
+    if (bytes < 1024) {
+      return bytes + ' bytes';
+    } else if (bytes < 1024 * 1024) {
+      return (bytes / 1024).toFixed(2) + ' KB';
+    } else {
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+  }
+  function truncateText(fileName, maxLength) {
+    if (fileName.length <= maxLength) {
+      return fileName;
+    }
+
+    const extension = fileName.split('.').pop();
+    const nameWithoutExtension = fileName.substring(
+      0,
+      fileName.lastIndexOf('.'),
+    );
+    const truncatedName = nameWithoutExtension.substring(
+      0,
+      maxLength - extension.length - 4,
+    );
+
+    return `${truncatedName}... .${extension}`;
+  }
+
+  const downloadFile = async (fileUrl, fileName) => {
+    const downloadDest = `${RNFS.DocumentDirectoryPath}/${fileName}`;
+    try {
+      console.log(fileUrl);
+      const ret = await RNFS.downloadFile({
+        fromUrl: fileUrl,
+        toFile: downloadDest,
+      }).promise;
+      console.log(2);
+      if (ret.statusCode === 200) {
+        openFile(downloadDest);
+      } else {
+        Alert.alert('Download failed', 'Failed to download file');
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Download failed', 'Failed to download file');
+    }
+  };
+
+  const openFile = async filePath => {
+    try {
+      await FileViewer.open(filePath);
+    } catch (err) {
+      console.error('Error opening file:', err);
+      Alert.alert('Open failed', 'Failed to open file');
+    }
+  };
+
   return (
     <View
       style={[
@@ -31,7 +96,9 @@ const ChatMessage = ({item, isMine}) => {
           </View>
         )}
         {item.type == 'file' && (
-          <View style={!isMine && styles.othersMessageContent}>
+          <TouchableOpacity
+            style={!isMine && styles.othersMessageContent}
+            onPress={() => downloadFile(item.file?.url, item.file?.name)}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Image
                 source={{
@@ -39,12 +106,17 @@ const ChatMessage = ({item, isMine}) => {
                 }}
                 style={styles.fileImage}
               />
-              <Text style={styles.fileName}>hocvnvnvv.txt</Text>
+              <Text style={styles.fileName}>
+                {isMine
+                  ? truncateText(item.file?.name, 25)
+                  : truncateText(item.file?.name, 20)}
+              </Text>
             </View>
             <Text style={styles.timeText}>
+              {formatFileSize(item.file?.size)} -{' '}
               {moment(item.timestamp).format('HH:mm')}
             </Text>
-          </View>
+          </TouchableOpacity>
         )}
       </View>
     </View>

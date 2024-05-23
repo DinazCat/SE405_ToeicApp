@@ -77,70 +77,6 @@ const ChatRoom = ({route, navigation}) => {
     setMessages(chatRoom.messages);
   };
 
-  const sendMessage = async () => {
-    if (!socketServices || !inputMessage.trim()) return;
-
-    if (haveMesssage) {
-      const message = {
-        from: {
-          userId: currentUser.id,
-          name: currentUser.name,
-          avatar: currentUser.userImg,
-        },
-        content: inputMessage,
-        timestamp: new Date().getTime(),
-        type: 'text',
-      };
-      socketServices.emit('chat message', {roomId: chatRoomData.Id, message});
-      socketServices.emit('chats update', {roomId: chatRoomData.Id});
-      setInputMessage('');
-    } else {
-      const newChatRoom = {
-        users: [
-          {
-            userId: currentUser.id,
-            name: currentUser.name,
-            avatar: currentUser.userImg,
-          },
-          {
-            userId: chatRoomData.toUid,
-            name: chatRoomData.name,
-            avatar: chatRoomData.imageUri,
-          },
-        ],
-        messages: [],
-      };
-      const result = await Api.addNewChat(newChatRoom);
-      console.log(result);
-      if (result) {
-        socketServices.emit('join room', {
-          roomId: result,
-          userId: currentUser.id,
-        });
-        socketServices.emit('join room', {
-          roomId: result,
-          userId: chatRoomData.Uid,
-        });
-
-        const message = {
-          from: {
-            userId: currentUser.id,
-            name: currentUser.name,
-            avatar: currentUser.userImg,
-          },
-          content: inputMessage,
-          timestamp: new Date().getTime(),
-          type: 'text',
-        };
-
-        socketServices.emit('chat message', {roomId: result, message});
-        socketServices.emit('chats update', {roomId: result});
-        setInputMessage('');
-        setHaveMessage(true);
-      }
-    }
-  };
-
   useEffect(() => {
     const getCurrentUser = async () => {
       const data = await Api.getUserData(auth().currentUser.uid);
@@ -256,6 +192,60 @@ const ChatRoom = ({route, navigation}) => {
     }
   };
 
+  const sendMessage = async () => {
+    if (!socketServices || !inputMessage.trim()) return;
+
+    const message = {
+      from: {
+        userId: currentUser.id,
+        name: currentUser.name,
+        avatar: currentUser.userImg,
+      },
+      content: inputMessage,
+      timestamp: new Date().getTime(),
+      type: 'text',
+    };
+
+    if (haveMesssage) {
+      socketServices.emit('chat message', {roomId: chatRoomData.Id, message});
+      socketServices.emit('chats update', {roomId: chatRoomData.Id});
+      setInputMessage('');
+    } else {
+      const newChatRoom = {
+        users: [
+          {
+            userId: currentUser.id,
+            name: currentUser.name,
+            avatar: currentUser.userImg,
+          },
+          {
+            userId: chatRoomData.toUid,
+            name: chatRoomData.name,
+            avatar: chatRoomData.imageUri,
+          },
+        ],
+        messages: [],
+      };
+      const result = await Api.addNewChat(newChatRoom);
+      console.log(result);
+      if (result) {
+        socketServices.emit('join room', {
+          roomId: result,
+          userId: currentUser.id,
+        });
+        socketServices.emit('join room', {
+          roomId: result,
+          userId: chatRoomData.Uid,
+        });
+
+        socketServices.emit('chat message', {roomId: result, message});
+        socketServices.emit('chats update', {roomId: result});
+        setInputMessage('');
+        setHaveMessage(true);
+      }
+    }
+  };
+
   const openLibrary = async () => {
     ImagePicker.openPicker({
       cropping: true,
@@ -274,15 +264,6 @@ const ChatRoom = ({route, navigation}) => {
     });
   };
 
-  const pickFile = async () => {
-    try {
-      const res = await DocumentPicker.pick({
-        type: [DocumentPicker.types.allFiles],
-      });
-      setFile(res);
-    } catch (err) {}
-  };
-
   const uploadImg = async img => {
     const formData = new FormData();
     formData.append('image', {
@@ -291,9 +272,11 @@ const ChatRoom = ({route, navigation}) => {
       type: 'image/jpg',
     });
 
+    console.log(img);
+
     const config = {
       method: 'post',
-      url: uploadfile.upImage,
+      url: `http://${uploadfile.ipAddress}/uploadImgToStorage`,
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -301,75 +284,157 @@ const ChatRoom = ({route, navigation}) => {
     };
 
     const response = await axios(config);
-    console.log(response.data.photo);
-    return response.data.photo;
+    return response.data.imgUrl;
   };
 
   const sendImage = async imagePath => {
     if (!imagePath) return;
     const imgUrl = await uploadImg(imagePath);
-    console.log(imgUrl);
-    // if (haveMesssage) {
-    //   const message = {
-    //     from: {
-    //       userId: currentUser.id,
-    //       name: currentUser.name,
-    //       avatar: currentUser.userImg,
-    //     },
-    //     imageUrl: imgUrl,
-    //     timestamp: new Date().getTime(),
-    //     type: 'image',
-    //   };
-    //   socketServices.emit('chat message', {roomId: chatRoomData.Id, message});
-    //   socketServices.emit('chats update', {roomId: chatRoomData.Id});
-    // } else {
-    //   const newChatRoom = {
-    //     users: [
-    //       {
-    //         userId: currentUser.id,
-    //         name: currentUser.name,
-    //         avatar: currentUser.userImg,
-    //       },
-    //       {
-    //         userId: chatRoomData.toUid,
-    //         name: chatRoomData.name,
-    //         avatar: chatRoomData.imageUri,
-    //       },
-    //     ],
-    //     messages: [],
-    //   };
-    //   const result = await Api.addNewChat(newChatRoom);
-    //   console.log(result);
-    //   if (result) {
-    //     socketServices.emit('join room', {
-    //       roomId: result,
-    //       userId: currentUser.id,
-    //     });
-    //     socketServices.emit('join room', {
-    //       roomId: result,
-    //       userId: chatRoomData.Uid,
-    //     });
+    if (!imgUrl) return;
 
-    //     const message = {
-    //       from: {
-    //         userId: currentUser.id,
-    //         name: currentUser.name,
-    //         avatar: currentUser.userImg,
-    //       },
-    //       imageUrl: imgUrl,
-    //       timestamp: new Date().getTime(),
-    //       type: 'image',
-    //     };
+    const message = {
+      from: {
+        userId: currentUser.id,
+        name: currentUser.name,
+        avatar: currentUser.userImg,
+      },
+      imageUrl: imgUrl,
+      timestamp: new Date().getTime(),
+      type: 'image',
+    };
 
-    //     socketServices.emit('chat message', {roomId: result, message});
-    //     socketServices.emit('chats update', {roomId: result});
-    //     setHaveMessage(true);
-    //   }
-    // }
+    if (haveMesssage) {
+      socketServices.emit('chat message', {roomId: chatRoomData.Id, message});
+      socketServices.emit('chats update', {roomId: chatRoomData.Id});
+    } else {
+      const newChatRoom = {
+        users: [
+          {
+            userId: currentUser.id,
+            name: currentUser.name,
+            avatar: currentUser.userImg,
+          },
+          {
+            userId: chatRoomData.toUid,
+            name: chatRoomData.name,
+            avatar: chatRoomData.imageUri,
+          },
+        ],
+        messages: [],
+      };
+      const result = await Api.addNewChat(newChatRoom);
+      console.log(result);
+      if (result) {
+        socketServices.emit('join room', {
+          roomId: result,
+          userId: currentUser.id,
+        });
+        socketServices.emit('join room', {
+          roomId: result,
+          userId: chatRoomData.Uid,
+        });
+
+        socketServices.emit('chat message', {roomId: result, message});
+        socketServices.emit('chats update', {roomId: result});
+        setHaveMessage(true);
+      }
+    }
 
     setImagePath(null);
   };
 
+  const pickFile = async () => {
+    try {
+      const res = await DocumentPicker.pick({
+        type: [DocumentPicker.types.allFiles],
+        allowMultiSelection: false,
+      });
+      setFile(res[0]);
+      await sendFile(res[0]);
+    } catch (err) {}
+  };
+
+  const uploadFile = async file => {
+    const formData = new FormData();
+    formData.append('file', {
+      uri: file.uri,
+      type: file.type,
+      name: file.name,
+    });
+
+    try {
+      const response = await axios.post(
+        `http://${uploadfile.ipAddress}/uploadFile`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+      console.log(response.data);
+      return response.data.file;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    }
+  };
+
+  const sendFile = async file => {
+    if (!file) return;
+
+    const fileData = await uploadFile(file);
+    if (!fileData) return;
+
+    const message = {
+      from: {
+        userId: currentUser.id,
+        name: currentUser.name,
+        avatar: currentUser.userImg,
+      },
+      file: fileData,
+      timestamp: new Date().getTime(),
+      type: 'file',
+    };
+
+    if (haveMesssage) {
+      socketServices.emit('chat message', {roomId: chatRoomData.Id, message});
+      socketServices.emit('chats update', {roomId: chatRoomData.Id});
+    } else {
+      const newChatRoom = {
+        users: [
+          {
+            userId: currentUser.id,
+            name: currentUser.name,
+            avatar: currentUser.userImg,
+          },
+          {
+            userId: chatRoomData.toUid,
+            name: chatRoomData.name,
+            avatar: chatRoomData.imageUri,
+          },
+        ],
+        messages: [],
+      };
+      const result = await Api.addNewChat(newChatRoom);
+      console.log(result);
+      if (result) {
+        socketServices.emit('join room', {
+          roomId: result,
+          userId: currentUser.id,
+        });
+        socketServices.emit('join room', {
+          roomId: result,
+          userId: chatRoomData.Uid,
+        });
+
+        socketServices.emit('chat message', {roomId: result, message});
+        socketServices.emit('chats update', {roomId: result});
+        setHaveMessage(true);
+      }
+    }
+
+    setFile(null);
+  };
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>

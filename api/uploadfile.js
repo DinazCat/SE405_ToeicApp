@@ -46,6 +46,7 @@ const callGoogleVisionAsync = async image => {
 };
 
 export default {
+  ipAddress,
   upImage,
   upVideo,
   upPdf,

@@ -707,10 +707,7 @@ export default {
   addReview,
   updateReview,
   setTeacherInfo,
-<<<<<<< HEAD
-=======
   updateFile,
   addFolder,
   updateFolder
->>>>>>> 543e4bfa85ca30ddb108b8b29c6b17f0a3111ff9
 };

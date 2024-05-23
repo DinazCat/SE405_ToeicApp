@@ -161,6 +161,7 @@ const CreateAsignment2 = ({navigation}) => {
             width={'20%'}
             value={numberOfAttemps}
             onChangeText={txt => setNumberOfAttemps(txt)}
+            keyboardType="numeric"
           />
         </View>
 
