@@ -5,13 +5,17 @@ import {
   View,
   Dimensions,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext, useRef} from 'react';
 import AsignmentCard from '../ComponentTeam/AsignmentCard';
 import AppStyle from '../theme';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import {AuthContext} from '../navigation/AuthProvider';
+import Api from '../api/Api';
+import socketServices from '../api/socketService';
 
 const AsignmentScreen = ({navigation}) => {
+  const {user} = useContext(AuthContext);
   const [selectedTab, setSelectedTab] = useState(0);
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
@@ -19,6 +23,12 @@ const AsignmentScreen = ({navigation}) => {
   const [screenHeight, setScreenHeight] = useState(
     Dimensions.get('window').height,
   );
+
+  const [upcomingAssignments, setUpcoming] = useState([]);
+  const [pastDueAssignments, setPastDue] = useState([]);
+  const [completedAssignments, setCompleted] = useState([]);
+
+  const assignments = useRef();
   useEffect(() => {
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
@@ -27,35 +37,86 @@ const AsignmentScreen = ({navigation}) => {
 
     Dimensions.addEventListener('change', updateScreenWidth);
   }, []);
-  const UpcommingAsignments = [
-    {
-      Date: '23-3-2023 Sat',
-      Asignments: [
-        {
-          Title: 'Bài tập 1',
-          Class: 'Lớp luyện SW 150+',
-          Due: '22:00 Saturday, 23 March 2023',
-        },
-        {
-          Title: 'Bài tập reading 1-5',
-          Class: 'Lớp luyện RL 750+',
-          Due: '23:30 Saturday, 23 March 2023',
-        },
-      ],
-    },
-    {
-      Date: '25-3-2024 Mon',
-      Asignments: [
-        {
-          Title: 'Bài tập quay vid speaking topic Family',
-          Class: 'Lớp luyện SW 150+',
-          Due: '12:00 Monday, 25 March 2023',
-        },
-      ],
-    },
-  ];
-  const PastDueAsignments = [];
-  const CompletedAsignments = [];
+
+  useEffect(async () => {
+    await getAsignments();
+    categorizeAssignments();
+  }, []);
+
+  useEffect(() => {
+    socketServices.initializeSocket();
+    socketServices.on('assignment change', async () => {
+      console.log('haha');
+      await getAsignments();
+      categorizeAssignments();
+    });
+  }, []);
+
+  const getAsignments = async () => {
+    const res = await Api.getClassesByUser(user.uid);
+    let userClassIds = res.map(classItem => classItem.classId);
+
+    const userAsignments = await Api.getClassAsignments(userClassIds);
+    assignments.current = userAsignments;
+  };
+
+  function compareDateTime(date, time) {
+    const currentDate = new Date();
+    const dueDate = new Date(date);
+    const dueTime = new Date(time);
+
+    const dueDateTime = new Date(
+      dueDate.getFullYear(),
+      dueDate.getMonth(),
+      dueDate.getDate(),
+      dueTime.getHours(),
+      dueTime.getMinutes(),
+      dueTime.getSeconds(),
+    );
+    return currentDate < dueDateTime;
+  }
+
+  const categorizeAssignments = () => {
+    const now = new Date();
+    const upcomingAssignments = [];
+    const pastDueAssignments = [];
+    const completedAssignments = [];
+
+    assignments.current.forEach(assignment => {
+      if (compareDateTime(assignment.dueDate, assignment.dueTime)) {
+        upcomingAssignments.push(assignment);
+      }
+      if (!compareDateTime(assignment.dueDate, assignment.dueTime)) {
+        console.log(assignment.submissions);
+        const foundUserSubmission = assignment.submissions?.find(
+          submission => submission.userId === user.uid,
+        );
+        if (foundUserSubmission) {
+          completedAssignments.push(assignment);
+        } else pastDueAssignments.push(assignment);
+      }
+    });
+
+    setUpcoming(upcomingAssignments);
+    setPastDue(pastDueAssignments);
+    setCompleted(completedAssignments);
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      categorizeAssignments();
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [assignments]);
+
+  const formatDate = dateString => {
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString('en-GB').replace(/\//g, '-');
+    return formattedDate;
+  };
+
+  const previousUpcommingDates = {};
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.upzone}>
@@ -103,42 +164,57 @@ const AsignmentScreen = ({navigation}) => {
       <View style={styles.devider} />
       {selectedTab == 0 && (
         <>
-          {UpcommingAsignments.map((item, key) => (
-            <>
-              <Text style={styles.DateText}>{item.Date}</Text>
-              {item.Asignments.map((item1, key) => (
+          {upcomingAssignments.map((item, key) => {
+            const showDate = !previousUpcommingDates[formatDate(item.dueDate)];
+            if (showDate) {
+              previousUpcommingDates[formatDate(item.dueDate)] = true;
+            }
+
+            return (
+              <>
+                {showDate && (
+                  <Text style={styles.DateText}>
+                    {formatDate(item.dueDate)}
+                  </Text>
+                )}
                 <AsignmentCard
                   key={key}
-                  item={item1}
-                  onPress={() =>
-                    navigation.navigate('AsignmentDetail2', {asignment: item1})
-                  }
+                  item={item}
+                  onPress={() => {
+                    const userSubmission = item.submissions?.find(
+                      submission => submission.userId === user.uid,
+                    );
+                    navigation.navigate('AsignmentDetail', {
+                      assignment: item,
+                      isPastDue: !compareDateTime(item.dueDate, item.dueTime),
+                      isSubmitted: userSubmission ? true : false,
+                      submissionFiles: userSubmission
+                        ? userSubmission.submissionFiles
+                        : [],
+                    });
+                  }}
                 />
-              ))}
-            </>
-          ))}
+              </>
+            );
+          })}
         </>
       )}
       {selectedTab == 1 && (
         <>
-          {UpcommingAsignments.map((item, key) => (
+          {pastDueAssignments.map((item, key) => (
             <>
               <Text style={styles.DateText}>{item.Date}</Text>
-              {item.Asignments.map((item1, key) => (
-                <AsignmentCard key={key} item={item1} />
-              ))}
+              <AsignmentCard key={key} item={item} />
             </>
           ))}
         </>
       )}
       {selectedTab == 2 && (
         <>
-          {UpcommingAsignments.map((item, key) => (
+          {completedAssignments.map((item, key) => (
             <>
               <Text style={styles.DateText}>{item.Date}</Text>
-              {item.Asignments.map((item1, key) => (
-                <AsignmentCard key={key} item={item1} />
-              ))}
+              <AsignmentCard key={key} item={item} />
             </>
           ))}
         </>

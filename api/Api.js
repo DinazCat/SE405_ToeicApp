@@ -629,9 +629,9 @@ const updateReview = async data => {
     console.log('error: ', error.message);
   }
 };
-const updateFile = async (data,classId) => {
+const updateFile = async (data, classId) => {
   try {
-    await client.put('/updateFile/'+classId, data);
+    await client.put('/updateFile/' + classId, data);
   } catch (error) {
     console.error('Error', error);
   }
@@ -645,9 +645,53 @@ const addFolder = async data => {
   }
 };
 
-const updateFolder = async (data,folderId) => {
+const updateFolder = async (data, folderId) => {
   try {
-    await client.put('/updateFolder/'+folderId, data);
+    await client.put('/updateFolder/' + folderId, data);
+  } catch (error) {
+    console.error('Error', error);
+  }
+};
+
+const addAsignment = async data => {
+  try {
+    const response = await client.post('/Asignment/add', data);
+    return response.data.id;
+  } catch (error) {
+    console.log('error: ', error.message);
+    return null;
+  }
+};
+
+const getClassAsignments = async classIds => {
+  try {
+    const response = await client.get('/getClassAsignment', {
+      params: {classIds},
+    });
+    if (response.data.success) {
+      return response.data.list;
+    } else {
+      console.log('not get');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+    return [];
+  }
+};
+
+const getAsignmentData = async id => {
+  try {
+    const response = await client.get(`/Asignment/${id}`);
+    return response.data.data;
+  } catch (error) {
+    console.log('error: ', error.message);
+    return null;
+  }
+};
+
+const updateAsignment = async (data, id) => {
+  try {
+    await client.put('/Asignment/update/' + id, data);
   } catch (error) {
     console.error('Error', error);
   }
@@ -709,5 +753,9 @@ export default {
   setTeacherInfo,
   updateFile,
   addFolder,
-  updateFolder
+  updateFolder,
+  getClassAsignments,
+  getAsignmentData,
+  updateAsignment,
+  addAsignment,
 };

@@ -3,6 +3,30 @@ import React, {useState, useEffect} from 'react';
 import AppStyle from '../theme';
 
 const AsignmentCard = ({item, onPress}) => {
+  const getTime = string => {
+    const date = new Date(string);
+    const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+
+    const time = timeFormatter?.format(date);
+    return time;
+  };
+
+  const getDate = string => {
+    const date = new Date(string);
+    const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    const formattedDate = dateFormatter?.format(date);
+    return formattedDate;
+  };
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Image
@@ -12,11 +36,11 @@ const AsignmentCard = ({item, onPress}) => {
         }}
       />
       <View style={{flex: 1}}>
-        <Text style={[styles.AsignmentText]}>{item.Title}</Text>
+        <Text style={[styles.AsignmentText]}>{item.title}</Text>
         <Text style={[styles.ClassText, {color: '#E13737'}]}>
-          Due at {item.Due}
+          Due at {getTime(item.dueTime)} {getDate(item.dueDate)}
         </Text>
-        <Text style={[styles.ClassText]}>{item.Class}</Text>
+        <Text style={[styles.ClassText]}>{item.className}</Text>
       </View>
     </TouchableOpacity>
   );

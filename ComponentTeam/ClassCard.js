@@ -35,7 +35,10 @@ const ClassCard = ({item, navigation, fromAsignment}) => {
       style={{marginTop: 10}}
       onPress={() => {
         if (fromAsignment === 'upload')
-          navigation.push('CreateAsignment', {classId: item.classId});
+          navigation.push('CreateAsignment', {
+            classId: item.classId,
+            className: item.ClassName,
+          });
         else if (fromAsignment === 'online')
           navigation.push('CreateAsignment2', {classId: item.classId});
         else navigation.push('TeamRoom', {classId: item.classId});

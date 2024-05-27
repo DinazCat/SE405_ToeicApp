@@ -158,7 +158,7 @@ import FolderCard from '../ComponentTeam/FolderCard';
       data.sign = 'fileImage'
      }
      else if(res[0].type=="video/mp4"){
-      data.sign = "fileMp4"
+      data.sign = "fileMp4" 
     }
    const newLink = await sendFileToNodejs(data,res[0].type)
    data.Link = newLink.substring(8);

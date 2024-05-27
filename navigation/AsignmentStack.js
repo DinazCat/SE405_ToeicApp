@@ -6,6 +6,7 @@ import AsignmentDetail2 from '../msteam/AsignmentDetail2';
 import CreateAsignment from '../msteam/CreateAsignment';
 import CreateAsignment2 from '../msteam/CreateAsignment2';
 import BeforeNewAsignment from '../msteam/BeforeNewAsignment';
+import FileViewScreen from '../msteam/FileViewScreen';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
@@ -54,6 +55,11 @@ export default function AsignmentStack({navigation, route}) {
       <Stack.Screen
         name="BeforeNewAsignment"
         component={BeforeNewAsignment}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="FileViewScreen"
+        component={FileViewScreen}
         options={{header: () => null}}
       />
     </Stack.Navigator>

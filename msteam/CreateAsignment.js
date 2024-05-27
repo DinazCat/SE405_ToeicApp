@@ -14,13 +14,17 @@ import CheckBox from '@react-native-community/checkbox';
 import FileItem from '../ComponentTeam/FileItem';
 import DocumentPicker from 'react-native-document-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import DropDownPicker from 'react-native-dropdown-picker';
+import {create} from 'react-test-renderer';
+import Api from '../api/Api';
+import uploadfile from '../api/uploadfile';
+import axios from 'axios';
 
 const CreateAsignment = ({navigation, route}) => {
   const [title, setTitle] = useState();
   const [instruction, setInstruction] = useState();
   const [point, setPoint] = useState();
   const [resourceFiles, setResourceFiles] = useState([]);
-  const [assignTo, setAsignTo] = useState();
   const [dueDate, setDueDate] = useState();
   const [dueTime, setDueTime] = useState();
   const [checked, setCheck] = useState(false);
@@ -28,14 +32,38 @@ const CreateAsignment = ({navigation, route}) => {
   const [time, setTime] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [assignToItems, setAsignToItems] = useState([
+    {label: 'All members', value: 'all'},
+  ]);
+  const [assignTo, setAsignTo] = useState(
+    assignToItems.length > 0 ? assignToItems[0].value : null,
+  );
+
+  const [openAssignPicker, setOpenAssignPicker] = useState(false);
 
   const pickFile = async () => {
     try {
       const res = await DocumentPicker.pick({
-        type: [DocumentPicker.types.allFiles],
+        type: [
+          DocumentPicker.types.pdf,
+          DocumentPicker.types.doc,
+          DocumentPicker.types.docx,
+          DocumentPicker.types.video,
+          DocumentPicker.types.images,
+          DocumentPicker.types.ppt,
+          DocumentPicker.types.pptx,
+        ],
+        allowMultiSelection: false,
+        copyTo: 'cachesDirectory',
       });
       setResourceFiles([...resourceFiles, res[0]]);
-    } catch (err) {}
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        console.log('User cancelled the file picker');
+      } else {
+        console.log('Something went wrong', err);
+      }
+    }
   };
 
   const onDatePickerChange = (event, selectedDate) => {
@@ -62,6 +90,114 @@ const CreateAsignment = ({navigation, route}) => {
     setDueTime(formattedTime);
   };
 
+  const onSaveAsignment = async () => {
+    console.log(resourceFiles);
+
+    let files = [];
+
+    for (let file of resourceFiles) {
+      let data = {
+        Name: file.name,
+        sign: 'filePDF',
+        Link: file.fileCopyUri,
+      };
+      if (file.type == 'application/pdf') {
+        data.sign = 'filePDF';
+      } else if (
+        file.type ==
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ) {
+        data.sign = 'fileWord';
+      } else if (
+        file.type ==
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      ) {
+        data.sign = 'filePPT';
+      } else if (file.type == 'image/jpeg') {
+        data.sign = 'fileImage';
+      } else if (file.type == 'video/mp4') {
+        data.sign = 'fileMp4';
+      }
+
+      console.log(1);
+
+      const newLink = await sendFileToNodejs(data, file.type);
+      console.log(2);
+      data.Link = newLink.substring(8);
+      console.log(newLink);
+      files.push(data);
+    }
+
+    const asignment = {
+      classId: route.params.classId,
+      className: route.params.className,
+      title: title,
+      instruction: instruction,
+      point: point,
+      dueDate: date,
+      dueTime: time,
+      lateAllow: checked,
+      createdAt: new Date(),
+      resourceFiles: files,
+    };
+    console.log(asignment);
+
+    const res = await Api.addAsignment(asignment);
+    if (res) {
+      navigation.replace('AsignmentScreen');
+    }
+  };
+
+  const sendFileToNodejs = async (dataFile, type) => {
+    let title = '';
+    let url = uploadfile.upImage;
+    if (dataFile.sign == 'filePDF') {
+      title = 'pdf';
+      url = uploadfile.upPdf;
+    } else if (dataFile.sign == 'fileWord') {
+      title = 'doc';
+      url = uploadfile.updoc;
+    } else if (dataFile.sign == 'filePPT') {
+      title = 'ppt';
+      url = uploadfile.upslide;
+    } else if (dataFile.sign == 'fileImage') {
+      title = 'image';
+      url = uploadfile.upImage;
+    } else if (dataFile.sign == 'fileMp4') {
+      title = 'video';
+      url = uploadfile.upVideo;
+    }
+    const formData = new FormData();
+    formData.append(title, {
+      uri: dataFile.Link,
+      name: dataFile.Name,
+      type: type,
+    });
+    console.log(url);
+    const config = {
+      method: 'post',
+      url: url,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      data: formData,
+    };
+
+    const response = await axios(config);
+    console.log(response);
+    if (dataFile.sign == 'filePDF') {
+      return response.data.filepdf;
+    } else if (dataFile.sign == 'fileWord') {
+      return response.data.filedoc;
+    } else if (dataFile.sign == 'filePPT') {
+      return response.data.fileppt;
+    } else if (dataFile.sign == 'fileImage') {
+      return response.data.photo;
+    } else if (dataFile.sign == 'fileMp4') {
+      return response.data.video;
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -74,10 +210,12 @@ const CreateAsignment = ({navigation, route}) => {
           <Text style={styles.headerText}>Create New Asignment</Text>
         </View>
         <View style={{flex: 1}} />
-        <Text style={styles.SaveText}>Save</Text>
+        <Text style={styles.SaveText} onPress={onSaveAsignment}>
+          Save
+        </Text>
       </View>
       <View style={{paddingHorizontal: 5}}>
-        <Text style={[styles.KeyText, {marginTop: 10}]}>Title: </Text>
+        <Text style={[styles.KeyText, {marginTop: 10}]}>Title*: </Text>
         <TextInput
           multiline={true}
           style={[styles.Input]}
@@ -104,26 +242,41 @@ const CreateAsignment = ({navigation, route}) => {
           </View>
         </TouchableOpacity>
         {resourceFiles.length !== 0 &&
-          resourceFiles.map(file => <FileItem item={file} />)}
+          resourceFiles.map(file => (
+            <FileItem
+              item={file}
+              onDelete={() => {
+                const updatedFiles = resourceFiles.filter(item => item != file);
+                setResourceFiles(updatedFiles);
+              }}
+            />
+          ))}
         <Text style={[styles.KeyText, {marginTop: 10}]}>Points: </Text>
         <TextInput
           style={[styles.Input]}
+          keyboardType="numeric"
           placeholderTextColor={'#555'}
           width={'96%'}
           value={point}
           onChangeText={txt => setPoint(txt)}
         />
         <Text style={[styles.KeyText, {marginTop: 10}]}>Assign To: </Text>
-        <TextInput
-          style={[styles.Input]}
-          placeholderTextColor={'#555'}
-          width={'96%'}
+        <DropDownPicker
+          open={openAssignPicker}
           value={assignTo}
-          onChangeText={txt => setAsignTo(txt)}
+          items={assignToItems}
+          setOpen={setOpenAssignPicker}
+          setValue={setAsignTo}
+          setItems={setAsignToItems}
+          style={styles.Input}
+          dropDownContainerStyle={styles.dropdownContainer}
+          labelStyle={styles.label}
+          selectedItemLabelStyle={styles.selectedLabel}
+          listItemLabelStyle={styles.listItemLabel}
         />
         <View style={{flexDirection: 'row'}}>
           <View style={{width: '55%'}}>
-            <Text style={[styles.KeyText, {marginTop: 10}]}>Due Date: </Text>
+            <Text style={[styles.KeyText, {marginTop: 10}]}>Due Date*: </Text>
             <View
               style={[styles.Input, styles.IconInput]}
               placeholderTextColor={'#555'}
@@ -136,7 +289,7 @@ const CreateAsignment = ({navigation, route}) => {
             </View>
           </View>
           <View style={{width: '44%'}}>
-            <Text style={[styles.KeyText, {marginTop: 10}]}>Due Time: </Text>
+            <Text style={[styles.KeyText, {marginTop: 10}]}>Due Time*: </Text>
             <View
               style={[styles.Input, styles.IconInput]}
               placeholderTextColor={'#555'}
