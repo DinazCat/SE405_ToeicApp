@@ -6,6 +6,8 @@ import {
   ScrollView,
   FlatList,
 } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import axios from 'axios';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {card_color} from '../assets/colors/color';
 import AppStyle from '../theme';
@@ -43,6 +45,21 @@ const stories = [
 ];
 
 const StoryScreen = ({navigation}) => {
+  const [books, setBooks] = useState([]);
+  useEffect(async () => {
+    console.log('hh')
+     await axios.get(`https://www.googleapis.com/books/v1/volumes?q=subject:novel&filter=full&key=AIzaSyAor3Lt0QmIYuT30ZMp3S6PaVyxW65bdfU`)
+    .then(response => {
+      const books = response.data.items.slice(0, 10).map(item => ({
+        id: item.id,
+        title: item.volumeInfo.title,
+        imageUrl: item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : null,
+        previewLink: item.volumeInfo.previewLink,
+        author:item.volumeInfo.authors?item.volumeInfo.authors.join(', ') :''
+      }));
+      setBooks(books);
+    })
+  }, []);
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -55,12 +72,12 @@ const StoryScreen = ({navigation}) => {
       </View>
 
       <ScrollView style={{padding: 10}}>
-        <FlatList
-          data={stories}
+        {books.length!=0&&<FlatList
+          data={books}
           renderItem={({item}) => (
-            <ExploreCard item={item} navigation={navigation} />
+            <ExploreCard item={{...item,category:'Story'}} navigation={navigation} />
           )}
-        />
+        />}
         <View style={{height: 40}} />
       </ScrollView>
     </View>
