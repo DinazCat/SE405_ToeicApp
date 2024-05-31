@@ -4,10 +4,9 @@ import Chat from '../msteam/Chat';
 import ChatRoom from '../msteam/ChatRoom';
 import ChatRoomOptions from '../msteam/ChatRoomOptions';
 import CallRoom from '../msteam/CallRoom';
-import ClassMembers from '../msteam/ClassMembers';
-import MeetingRoom from '../msteam/MeetingRoom';
-import ReplyScreen from '../msteam/ReplyScreen';
-import AttendeeScreen from '../msteam/AttendeeScreen';
+import NewGroupChat from '../msteam/NewGroupChat';
+import ChatMembers from '../msteam/ChatMembers';
+import AddChatMember from '../msteam/AddChatMember';
 import NewChat from '../msteam/NewChat';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 import OverlayPermissionModule from 'videosdk-rn-android-overlay-permission';
@@ -61,6 +60,11 @@ export default function ChatStack({navigation, route}) {
         options={{header: () => null}}
       />
       <Stack.Screen
+        name="NewGroupChat"
+        component={NewGroupChat}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
         name="ChatRoomOptions"
         component={ChatRoomOptions}
         options={{header: () => null}}
@@ -70,22 +74,16 @@ export default function ChatStack({navigation, route}) {
         component={CallRoom}
         options={{header: () => null}}
       />
-      {/* <Stack.Screen
-        name="MeetingRoom"
-        component={MeetingRoom}
+      <Stack.Screen
+        name="ChatMembers"
+        component={ChatMembers}
         options={{header: () => null}}
       />
       <Stack.Screen
-        name="ReplyScreen"
-        component={ReplyScreen}
+        name="AddChatMember"
+        component={AddChatMember}
         options={{header: () => null}}
       />
-
-      <Stack.Screen
-        name="AttendeeScreen"
-        component={AttendeeScreen}
-        options={{header: () => null}}
-      /> */}
     </Stack.Navigator>
   );
 }

@@ -207,6 +207,7 @@ const ChatRoom = ({route, navigation}) => {
     };
 
     if (haveMesssage) {
+      console.log(chatRoomData.Id);
       socketServices.emit('chat message', {roomId: chatRoomData.Id, message});
       socketServices.emit('chats update', {roomId: chatRoomData.Id});
       setInputMessage('');
@@ -435,6 +436,13 @@ const ChatRoom = ({route, navigation}) => {
 
     setFile(null);
   };
+
+  const truncateText = (text, maxLength) => {
+    const truncatedText =
+      text.length > maxLength ? text.substring(0, maxLength - 3) + '...' : text;
+    return truncatedText;
+  };
+
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -452,7 +460,7 @@ const ChatRoom = ({route, navigation}) => {
           }}
         />
         <Text style={styles.header} numberOfLines={1}>
-          {chatRoomData.name}
+          {truncateText(chatRoomData.name, 18)}
         </Text>
         <View style={{flex: 1}}></View>
         <TouchableOpacity>

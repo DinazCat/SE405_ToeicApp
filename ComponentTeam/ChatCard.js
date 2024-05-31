@@ -27,8 +27,10 @@ const ChatCard = ({item, navigation}) => {
   }, []);
 
   const getFirstName = str => {
-    const words = str.split(' ');
-    return words[0];
+    if (str) {
+      const words = str.split(' ');
+      return words[0];
+    }
   };
 
   const getImageUri = () => {
@@ -92,24 +94,24 @@ const ChatCard = ({item, navigation}) => {
                 fontSize: 14,
                 marginStart: 'auto',
               }}>
-              {moment(item.messages[item.messages.length - 1].timestamp).format(
-                'HH:mm',
-              )}
+              {moment(
+                item.messages[item.messages.length - 1]?.timestamp,
+              ).format('HH:mm')}
             </Text>
           </View>
           <Text numberOfLines={1} style={{color: 'gray', fontSize: 16}}>
-            {item.messages[item.messages.length - 1].from.userId ===
+            {item.messages[item.messages.length - 1]?.from.userId ===
             auth().currentUser.uid
               ? 'You: '
-              : item.messages[item.messages.length - 1].from.name ===
+              : item.messages[item.messages.length - 1]?.from.name ===
                 getChatName()
               ? ''
               : getFirstName(
-                  item.messages[item.messages.length - 1].from.name,
+                  item.messages[item.messages.length - 1]?.from.name,
                 ) + ': '}
-            {item.messages[item.messages.length - 1].type === 'text'
-              ? item.messages[item.messages.length - 1].content
-              : '[' + item.messages[item.messages.length - 1].type + ']'}
+            {item.messages[item.messages.length - 1]?.type === 'text'
+              ? item.messages[item.messages.length - 1]?.content
+              : '[' + item.messages[item.messages.length - 1]?.type + ']'}
           </Text>
         </View>
       </View>

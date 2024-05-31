@@ -5,38 +5,29 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  Dimensions,
   FlatList,
   TextInput,
 } from 'react-native';
 import React, {useState, useEffect, useRef} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Slider from '@react-native-community/slider';
-import Icon from 'react-native-vector-icons/FontAwesome5';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import AppStyle from '../theme';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import ChatCard from '../ComponentTeam/ChatCard';
 import Api from '../api/Api';
 
-const NewChat = ({route, navigation}) => {
-  const {userChats, currentUser} = route.params;
+const NewGroupChat = ({navigation, route}) => {
+  const {currentUser} = route.params;
+  const [users, setUsers] = useState(route.params.users);
   const [searchInput, setSearchInput] = useState('');
   const [filterUsers, setFilterUsers] = useState([]);
-  const users = useRef();
-
-  useEffect(() => {
-    const getAllUsers = async () => {
-      users.current = await Api.getAllUsers();
-    };
-
-    getAllUsers();
-  }, []);
+  const [groupName, setGroupName] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState([]);
 
   const onTextChange = txt => {
     setSearchInput(txt);
     if (txt.trim()) {
-      const searchResult = users.current.filter(
+      const searchResult = users.filter(
         user =>
           user.name.toLowerCase().includes(txt.toLowerCase()) ||
           user.email.toLowerCase().includes(txt.toLowerCase()),
@@ -45,33 +36,83 @@ const NewChat = ({route, navigation}) => {
     } else setFilterUsers([]);
   };
 
-  const onNewChatCardPress = item => {
-    const chatExisted = userChats.find(chatroom => {
-      if (chatroom.users?.length === 2) {
-        const haveUser = chatroom.users.some(user => user.userId === item.id);
-        return haveUser;
-      }
-      return false;
-    });
+  const onUserCardPress = item => {
+    if (selectedUsers.includes(item)) {
+      setSelectedUsers(selectedUsers.filter(user => user !== item));
+    } else setSelectedUsers([...selectedUsers, item]);
+  };
 
-    if (chatExisted) {
+  const onDone = async () => {
+    const users = selectedUsers.map(user => ({
+      userId: user.id,
+      name: user.name,
+      avatar: user.userImg,
+    }));
+    users.push({
+      userId: currentUser.id,
+      name: currentUser.name,
+      avatar: currentUser.userImg,
+    });
+    const newChatRoom = {
+      users: users,
+      messages: [],
+      name: groupName,
+      imageUri:
+        'https://www.clipartmax.com/png/middle/117-1179268_engagement-people-icon-green-png.png',
+    };
+    console.log(newChatRoom);
+    const result = await Api.addNewChat(newChatRoom);
+    console.log(result);
+    if (result) {
       navigation.push('ChatRoom', {
         chatRoomData: {
-          ...chatExisted,
-          imageUri: chatExisted.imageUri ? chatExisted.imageUri : item.userImg,
-          name: chatExisted.name ? chatExisted.name : item.name,
-        },
-      });
-    } else {
-      navigation.push('ChatRoom', {
-        chatRoomData: {
-          isNewChat: true,
-          imageUri: item.userImg,
-          name: item.name,
-          toUid: item.id,
+          ...newChatRoom,
+          Id: result,
+          imageUri: newChatRoom.imageUri,
+          name: newChatRoom.name,
         },
       });
     }
+  };
+
+  const NewChatCard = ({item, onPress}) => {
+    return (
+      <TouchableOpacity style={{marginTop: 10}} onPress={onPress}>
+        <View style={[styles.cardContainer]}>
+          <View style={{position: 'relative'}}>
+            <Image
+              style={styles.image}
+              source={{
+                uri: item.userImg
+                  ? item.userImg
+                  : 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png',
+              }}
+            />
+          </View>
+
+          <View style={{display: 'flex', flex: 1}}>
+            <View style={{display: 'flex', flex: 1, flexDirection: 'row'}}>
+              <Text
+                numberOfLines={1}
+                style={{
+                  color: 'black',
+                  fontSize: 18,
+                  fontWeight: 600,
+                }}>
+                {item.name}
+              </Text>
+              <View style={{flex: 1}} />
+              {selectedUsers.includes(item) && (
+                <IonIcon name="checkmark-outline" color={'#000'} size={20} />
+              )}
+            </View>
+            <Text numberOfLines={1} style={{color: 'gray', fontSize: 16}}>
+              {item.email}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -82,30 +123,36 @@ const NewChat = ({route, navigation}) => {
           onPress={() => navigation.goBack()}>
           <FontAwesome name="chevron-left" color="white" size={20} />
         </TouchableOpacity>
-        <Text style={styles.header}>New chat</Text>
+        <Text style={styles.header}>New Group chat</Text>
+        <View style={{flex: 1}} />
+        <Text
+          onPress={onDone}
+          style={[
+            styles.header,
+            {textDecorationLine: 'underline', marginRight: 10},
+          ]}>
+          Done
+        </Text>
       </View>
       <View style={styles.inputContainer}>
-        <Text style={{color: '#666'}}>To:</Text>
+        <TextInput
+          value={groupName}
+          onChangeText={txt => setGroupName(txt)}
+          placeholder={'Group name'}
+          placeholderTextColor={'#666'}
+          style={styles.input}
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        <IonIcon name="search-outline" color={'#666'} size={20} />
         <TextInput
           value={searchInput}
           onChangeText={txt => onTextChange(txt)}
           placeholder={'Enter name or email address'}
           placeholderTextColor={'#666'}
-          multiline={true}
           style={styles.input}
         />
       </View>
-      <TouchableOpacity
-        style={styles.inputContainer}
-        onPress={() =>
-          navigation.navigate('NewGroupChat', {
-            users: users.current,
-            currentUser,
-          })
-        }>
-        <IonIcon name="people-circle-outline" color={'#666'} size={30} />
-        <Text style={{color: '#666'}}>Create group chat</Text>
-      </TouchableOpacity>
       <View>
         {filterUsers.length != 0 ? (
           <FlatList
@@ -115,7 +162,7 @@ const NewChat = ({route, navigation}) => {
                 key={index}
                 item={item}
                 navigation={navigation}
-                onPress={() => onNewChatCardPress(item)}
+                onPress={() => onUserCardPress(item)}
               />
             )}
             showsVerticalScrollIndicator={false}
@@ -127,13 +174,13 @@ const NewChat = ({route, navigation}) => {
             )}
             <Text style={styles.title}>Suggest</Text>
             <FlatList
-              data={userChats}
+              data={users}
               renderItem={({item, index}) => (
-                <ChatCard
+                <NewChatCard
                   key={index}
                   item={item}
                   navigation={navigation}
-                  onPress={() => onNewChatCardPress(item)}
+                  onPress={() => onUserCardPress(item)}
                 />
               )}
             />
@@ -144,41 +191,8 @@ const NewChat = ({route, navigation}) => {
   );
 };
 
-const NewChatCard = ({item, onPress}) => {
-  return (
-    <TouchableOpacity style={{marginTop: 10}} onPress={onPress}>
-      <View style={[styles.cardContainer]}>
-        <View style={{position: 'relative'}}>
-          <Image
-            style={styles.image}
-            source={{
-              uri: item.userImg
-                ? item.userImg
-                : 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png',
-            }}
-          />
-        </View>
+export default NewGroupChat;
 
-        <View style={{display: 'flex', flex: 1}}>
-          <View style={{display: 'flex', flex: 1, flexDirection: 'row'}}>
-            <Text
-              numberOfLines={1}
-              style={{
-                color: 'black',
-                fontSize: 18,
-                fontWeight: 600,
-              }}>
-              {item.name}
-            </Text>
-          </View>
-          <Text numberOfLines={1} style={{color: 'gray', fontSize: 16}}>
-            {item.email}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-};
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
@@ -231,4 +245,3 @@ const styles = StyleSheet.create({
     height: 50,
   },
 });
-export default NewChat;

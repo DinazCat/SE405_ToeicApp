@@ -140,6 +140,8 @@ const AsignmentScreen = ({navigation}) => {
   };
 
   const previousUpcommingDates = {};
+  const previousPastDueDates = {};
+  const previousCompletedDates = {};
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.upzone}>
@@ -212,22 +214,52 @@ const AsignmentScreen = ({navigation}) => {
       )}
       {selectedTab == 1 && (
         <>
-          {pastDueAssignments.map((item, key) => (
-            <>
-              <Text style={styles.DateText}>{item.Date}</Text>
-              <AsignmentCard key={key} item={item} />
-            </>
-          ))}
+          {pastDueAssignments.map((item, key) => {
+            const showDate = !previousPastDueDates[formatDate(item.dueDate)];
+            if (showDate) {
+              previousPastDueDates[formatDate(item.dueDate)] = true;
+            }
+
+            return (
+              <>
+                {showDate && (
+                  <Text style={styles.DateText}>
+                    {formatDate(item.dueDate)}
+                  </Text>
+                )}
+                <AsignmentCard
+                  key={key}
+                  item={item}
+                  onPress={() => onAssignmentPress(item)}
+                />
+              </>
+            );
+          })}
         </>
       )}
       {selectedTab == 2 && (
         <>
-          {completedAssignments.map((item, key) => (
-            <>
-              <Text style={styles.DateText}>{item.Date}</Text>
-              <AsignmentCard key={key} item={item} />
-            </>
-          ))}
+          {completedAssignments.map((item, key) => {
+            const showDate = !previousCompletedDates[formatDate(item.dueDate)];
+            if (showDate) {
+              previousCompletedDates[formatDate(item.dueDate)] = true;
+            }
+
+            return (
+              <>
+                {showDate && (
+                  <Text style={styles.DateText}>
+                    {formatDate(item.dueDate)}
+                  </Text>
+                )}
+                <AsignmentCard
+                  key={key}
+                  item={item}
+                  onPress={() => onAssignmentPress(item)}
+                />
+              </>
+            );
+          })}
         </>
       )}
       {true && (

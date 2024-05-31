@@ -10,6 +10,10 @@ import React, {useState, useEffect} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const ChatRoomOptions = ({navigation, route}) => {
+  const {chatRoomData} = route.params;
+  useEffect(() => {
+    console.log(chatRoomData);
+  });
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -25,17 +29,23 @@ const ChatRoomOptions = ({navigation, route}) => {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{justifyContent: 'center', alignItems: 'center'}}>
-          <Image style={styles.roomImg} source={{uri: route.params.imageUri}} />
-          <Text style={styles.roomName}>{route.params.roomName}</Text>
+          <Image style={styles.roomImg} source={{uri: chatRoomData.imageUri}} />
+          <Text style={styles.roomName}>{chatRoomData.name}</Text>
         </View>
 
         <View style={styles.btnsContainer}>
-          <TouchableOpacity style={styles.btnContainer}>
+          <TouchableOpacity
+            style={styles.btnContainer}
+            onPress={() =>
+              navigation.navigate('AddChatMember', {chatRoomData})
+            }>
             <Ionicons name="person-add-outline" size={27} color={'#555'} />
             <Text style={styles.btnText}>Add people</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.btnContainer}>
+          <TouchableOpacity
+            style={styles.btnContainer}
+            onPress={() => navigation.navigate('ChatMembers', {chatRoomData})}>
             <Ionicons name="people-outline" size={27} color={'#555'} />
             <Text style={styles.btnText}>See all members</Text>
           </TouchableOpacity>

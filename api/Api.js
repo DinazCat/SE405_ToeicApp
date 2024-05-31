@@ -515,6 +515,14 @@ const getChatRoomData = async id => {
   }
 };
 
+const updateChatRoom = async (data, id) => {
+  try {
+    await client.put('/ChatRoom/update/' + id, data);
+  } catch (error) {
+    console.error('Error', error);
+  }
+};
+
 const addClass = async data => {
   try {
     await client.post('/Class/add', data);
@@ -752,6 +760,7 @@ export default {
   updateCallStatus,
   getUserChatRooms,
   getChatRoomData,
+  updateChatRoom,
   addNewChat,
   addClass,
   getAllClasses,
