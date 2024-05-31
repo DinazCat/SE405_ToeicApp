@@ -110,6 +110,8 @@ const CompleteCard2 = ({navigation, route}) => {
               navigation.navigate('PartPracticePlan');
             } else if (skill != null)
               navigation.navigate('PartFormat', {skill: skill});
+            else if (from === 'assignment')
+              navigation.navigate('AsignmentScreen');
             else {
               navigation.goBack();
             }

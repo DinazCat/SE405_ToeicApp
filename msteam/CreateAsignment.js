@@ -139,6 +139,7 @@ const CreateAsignment = ({navigation, route}) => {
       lateAllow: checked,
       createdAt: new Date(),
       resourceFiles: files,
+      type: 1,
     };
     console.log(asignment);
 

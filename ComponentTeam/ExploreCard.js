@@ -44,10 +44,11 @@ const ExploreCard = ({navigation, item}) => {
         </View>
 
         <Text style={styles.title}>{item.title}</Text>
+        {item.category === 'Story'&&<Text style={[styles.title,{color:'gray', fontSize:15, fontStyle:'italic'}]}>{item.author}</Text>}
       </View>
       <Image
         source={
-          item.category === 'Video' ? {uri: item.thumbnail} : {uri: item.image}
+          item.category === 'Video'? {uri: item.thumbnail} : item.category === 'News'&&item.urlToImage!=null ? {uri: item.urlToImage}:{uri: item.imageUrl}
         }
         style={styles.image}
       />

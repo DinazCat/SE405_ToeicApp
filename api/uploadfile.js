@@ -1,4 +1,4 @@
-const ipAddress = '192.168.1.102:3000';
+const ipAddress = '192.168.1.8:3000';
 const upImage = `http://${ipAddress}/upload`;
 const upVideo = `http://${ipAddress}/uploadvideo`;
 const upvideo2 = `http://${ipAddress}/uploadvideotoFirestore`;
@@ -46,7 +46,6 @@ const callGoogleVisionAsync = async image => {
 };
 
 export default {
-  ipAddress,
   upImage,
   upVideo,
   upPdf,
@@ -54,4 +53,5 @@ export default {
   updoc,
   upslide,
   upvideo2,
+  ipAddress,
 };

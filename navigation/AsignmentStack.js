@@ -7,6 +7,18 @@ import CreateAsignment from '../msteam/CreateAsignment';
 import CreateAsignment2 from '../msteam/CreateAsignment2';
 import BeforeNewAsignment from '../msteam/BeforeNewAsignment';
 import FileViewScreen from '../msteam/FileViewScreen';
+import PartList from '../msteam/PartList';
+import InPartCard from '../components/InPartCard';
+import CompleteCard from '../components/CompleteCard';
+import CompleteCard2 from '../components/CompleteCard2';
+import QuestionScreen from '../screens/QuestionScreen';
+import ResultTable from '../components/ResultTable';
+import TestResultScreen from '../screens/TestResultScreen';
+import ReviewQuestion from '../screens/ReviewQuestion';
+import Test from '../screens/Test';
+import TestQuestions from '../screens/TestQuestions';
+import CompleteTestCard from '../components/CompleteTestCard';
+import InTestCard from '../components/InTestCard';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
@@ -60,6 +72,66 @@ export default function AsignmentStack({navigation, route}) {
       <Stack.Screen
         name="FileViewScreen"
         component={FileViewScreen}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="PartList"
+        component={PartList}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="InPartCard"
+        component={InPartCard}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="InTestCard"
+        component={InTestCard}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="Testinstack"
+        component={Test}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="QuestionScreen"
+        component={QuestionScreen}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="CompleteCard"
+        component={CompleteCard}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="CompleteCard2"
+        component={CompleteCard2}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="ResultTable"
+        component={ResultTable}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="TestResult"
+        component={TestResultScreen}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="ReviewQuestion"
+        component={ReviewQuestion}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="TestQuestions"
+        component={TestQuestions}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="CompleteTestCard"
+        component={CompleteTestCard}
         options={{header: () => null}}
       />
     </Stack.Navigator>

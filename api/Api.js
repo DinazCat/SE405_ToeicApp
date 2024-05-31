@@ -696,6 +696,19 @@ const updateAsignment = async (data, id) => {
     console.error('Error', error);
   }
 };
+const getAllQuestion = async part => {
+  try {
+    const response = await client.get('/getAllQuestion/' + part);
+    if (response.data.success) {
+      return response.data.Questions;
+    } else {
+      console.log('not get');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+    return [];
+  }
+};
 export default {
   getVocabLesson,
   getVocabinLesson,
@@ -758,4 +771,5 @@ export default {
   getAsignmentData,
   updateAsignment,
   addAsignment,
+  getAllQuestion,
 };

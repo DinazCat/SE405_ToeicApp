@@ -7,6 +7,7 @@ import StoryScreen from '../msteam/StoryScreen';
 import GrammarScreen from '../msteam/GrammarScreen';
 import VideoScreen from '../msteam/VideoScreen';
 import DetailVideo from '../msteam/DetailVideo';
+import PlayVideo from '../msteam/PlayVideo';
 
 const Stack = createNativeStackNavigator();
 export default function ExploreStack() {
@@ -45,6 +46,11 @@ export default function ExploreStack() {
       <Stack.Screen
         name="DetailVideo"
         component={DetailVideo}
+        options={{header: () => null}}
+      />
+       <Stack.Screen
+        name="PlayVideo"
+        component={PlayVideo}
         options={{header: () => null}}
       />
     </Stack.Navigator>

@@ -34,6 +34,7 @@ import RNFS from 'react-native-fs';
 import Api from '../api/Api';
 import {AuthContext} from '../navigation/AuthProvider';
 import {BackHandler} from 'react-native';
+import eventEmitter from '../utils/EventEmitter';
 
 Sound.setCategory('Playback');
 const {width} = Dimensions.get('window');
@@ -183,17 +184,6 @@ const QuestionScreen = ({navigation, route}) => {
   const onSubmit = async () => {
     if (part == 'S1' || part == 'S2' || part == 'S5') {
       try {
-        // for(const recordItem of recordList) {
-        //   // upload audio to storage
-        //   const audioData = await RNFS.readFile(recordItem.record, 'base64');
-        //   const audioUrl = await Api.uploadAudio(audioData)
-        //   .catch(error => console.error(error));
-        //   console.log('url: ' + audioUrl);
-        //   // upload data to firestore
-        //   const data = {
-        //     record: audioUrl,
-        //     QId: recordItem.QId,
-        //   }
         for (let i = 0; i < questionList.length; i++) {
           if (recordsRef.current[i] === undefined) {
             recordsRef.current[i] = {
@@ -230,9 +220,10 @@ const QuestionScreen = ({navigation, route}) => {
           DetailQty: 0,
           Score: 0,
         };
-        //console.log(practiceHistoryData);
-        //console.log(practiceHistoryData.result)
-        Api.pushPracticeHistory(data, sign);
+
+        if (route.params.from === 'assignment') {
+          eventEmitter.emit('completeAsignment', data);
+        } else Api.pushPracticeHistory(data, sign);
 
         navigation.navigate('CompleteCard2', {
           quantity: questionList.length,
@@ -240,6 +231,7 @@ const QuestionScreen = ({navigation, route}) => {
           part: part,
           isFromPL: route.params.isFromPL,
           questionL: audioUploadResults,
+          from: route.params.from,
         });
       } catch (error) {
         console.log('error at onSubmit: ', error);
@@ -309,6 +301,7 @@ const QuestionScreen = ({navigation, route}) => {
         part: part,
         isFromPL: route.params.isFromPL,
         questionL: audioUploadResults,
+        from: route.params.from,
       });
     } else if (part == 'W1' || part == 'W2' || part == 'W3') {
       for (let i = 0; i < questionList.length; i++) {
@@ -340,6 +333,7 @@ const QuestionScreen = ({navigation, route}) => {
         part: part,
         isFromPL: route.params.isFromPL,
         questionL: answersRef.current,
+        from: route.params.from,
       });
     } else if (part == 'L1' || part == 'L2') {
       if (soundL != '-1' && soundL[ItemIndex].isPlaying()) {
@@ -370,6 +364,7 @@ const QuestionScreen = ({navigation, route}) => {
         part: part,
         isFromPL: route.params.isFromPL,
         questionL: history,
+        from: route.params.from,
       });
     } else if (part == 'L3' || part == 'L4') {
       if (soundL != '-1' && soundL[ItemIndex].isPlaying()) {
@@ -405,6 +400,7 @@ const QuestionScreen = ({navigation, route}) => {
         isFromPL: route.params.isFromPL,
         isAssessment: route.params.isAssessment,
         questionL: history,
+        from: route.params.from,
       });
     } else if (part == 'R1') {
       const time = gettime();
@@ -433,6 +429,7 @@ const QuestionScreen = ({navigation, route}) => {
         isFromPL: route.params.isFromPL,
         isAssessment: route.params.isAssessment,
         questionL: history,
+        from: route.params.from,
       });
     } else if (part == 'R2' || part == 'R3') {
       const time = gettime();
@@ -466,6 +463,7 @@ const QuestionScreen = ({navigation, route}) => {
         isAssessment: route.params.isAssessment,
         questionL: history,
         DetailQty: qty,
+        from: route.params.from,
       });
     }
 

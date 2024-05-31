@@ -22,6 +22,7 @@ const CompleteCard = ({navigation, route}) => {
     partName,
     isFromPL,
     DetailQty,
+    from,
   } = route.params;
   const [questionList, setQuestionList] = useState(null);
   const [reviewList, setReviewList] = useState(null);
@@ -180,6 +181,8 @@ const CompleteCard = ({navigation, route}) => {
               navigation.navigate('PartPracticePlan');
             } else if (skill != null)
               navigation.navigate('PartFormat', {skill: skill});
+            else if (from === 'assignment')
+              navigation.navigate('AsignmentScreen');
             else {
               navigation.goBack();
             }
@@ -256,21 +259,21 @@ const CompleteCard = ({navigation, route}) => {
             justifyContent: 'space-evenly',
             marginTop: '10%',
           }}>
-            <TouchableOpacity
-              style={[AppStyle.button.button2]}
-              onPress={() => {
-                if (reviewList != null) {
-                  navigation.push('ResultTable', {
-                    History: answer,
-                    questionList: reviewList,
-                    part: part,
-                    score: score,
-                    quantity: quantity1,
-                  });
-                }
-              }}>
-              <Text style={AppStyle.button.button2_Text}>Show answer</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={[AppStyle.button.button2]}
+            onPress={() => {
+              if (reviewList != null) {
+                navigation.push('ResultTable', {
+                  History: answer,
+                  questionList: reviewList,
+                  part: part,
+                  score: score,
+                  quantity: quantity1,
+                });
+              }
+            }}>
+            <Text style={AppStyle.button.button2_Text}>Show answer</Text>
+          </TouchableOpacity>
           {sign == 'Home' ? (
             <TouchableOpacity
               style={[AppStyle.button.button2]}

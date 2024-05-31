@@ -1,16 +1,20 @@
-import {useState} from 'react';
+import {useState, useEffect, useContext} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
   FlatList,
 } from 'react-native';
 import AppStyle from '../theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
+import axios from 'axios';
+import { GrammarContext, ContentProvider } from './GrammarContext';
+import { AuthContext } from '../navigation/AuthProvider';
 
 const grammar = [
   {
@@ -23,8 +27,19 @@ const grammar = [
   },
 ];
 
-const GrammarScreen = ({navigation}) => {
+const GrammarScreen = ({navigation, route}) => {
+  const {loading, articleContent, articleContent2} = useContext(GrammarContext);
   const [open, setOpen] = useState('');
+  useEffect(()=>{
+    console.log(loading)
+  },[])
+  if (articleContent?.length==0&&articleContent2?.length==0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -57,8 +72,17 @@ const GrammarScreen = ({navigation}) => {
               </TouchableOpacity>
               {open === item.title &&
                 item.topic &&
-                item.topic.map(topic => (
+                item.topic.map((topic,index) => (
                   <TouchableOpacity
+                  onPress={()=>{
+                    if(item.title=='Noun'&&articleContent!=null){
+                      console.log('hi')
+                      navigation.push('DetailExplore', {news:{html:articleContent[index],category:'grammar'}});
+                    }
+                    else if(item.title=='Verb'&&articleContent2!=null){
+                      navigation.push('DetailExplore', {news:{html:articleContent2[index],category:'grammar'}});
+                    }
+                  }}
                     style={{
                       marginHorizontal: 10,
                       paddingVertical: 5,
@@ -104,6 +128,11 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: 'white',
     fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

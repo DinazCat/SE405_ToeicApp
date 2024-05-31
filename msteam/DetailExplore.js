@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {
   View,
   Animated,
@@ -11,6 +11,8 @@ import {
 import Slider from '@react-native-community/slider';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {card_color} from '../assets/colors/color';
+import {WebView} from 'react-native-webview';
+import axios from 'axios';
 
 const DetailExplore = ({navigation, route}) => {
   const [news] = useState(route.params.news);
@@ -19,9 +21,22 @@ const DetailExplore = ({navigation, route}) => {
   const [position, setPosition] = useState('00:00');
   const [position1, setPosition1] = useState(0);
   const [playState, setPlayState] = useState('playing');
-
+  const [articleContent, setArticleContent] = useState('<p>Unable to fetch content.</p>');
   const onSliderEditing = () => {};
-
+  // const fetchArticleContent = async() => {
+  //   await axios.get(`https://api.diffbot.com/v3/article?token=${'48f4ee28f347bf6b9131d270cec5a44d'}&url=${news.url}`)
+  //     .then(response => {
+  //       if (response.data.objects && response.data.objects.length > 0) {
+  //         setArticleContent(response.data.objects[0].html);
+  //       } else {
+  //         setArticleContent('<p>Unable to fetch content.</p>');
+  //       }
+  //     })
+  //     .catch(error => console.error(error));
+  // };
+  // useEffect(() => {
+  //   if(news.category=='grammar')fetchArticleContent()
+  // }, []);
   return (
     <Animated.View style={styles.container}>
       <View style={styles.header}>
@@ -31,12 +46,29 @@ const DetailExplore = ({navigation, route}) => {
           <FontAwesome name="chevron-left" color="black" size={20} />
         </TouchableOpacity>
       </View>
+      {news.category === 'News' &&<WebView source={{ uri: news.url }}
+       onShouldStartLoadWithRequest={(request) => {
+        // Chặn tất cả các yêu cầu điều hướng mới để giữ người dùng trong trang hiện tại
+        if (request.url !== news.url) {
+          return false;
+        }
+        return true;
+      }}
+       />}
+       {news.category === 'Story' &&<WebView
+          source={{ uri: news.previewLink }}
+          style={{ flex: 1 }}
+        />}
+          {news.category === 'grammar'&&<WebView
+           source={{ html: news.html}}
+          style={{ flex: 1 }}
+        />}
 
-      <ScrollView>
+      {/* <ScrollView>
         <Text style={styles.title}>{news.title}</Text>
 
         {/* Slider if needed*/}
-        {news.category === 'Story' && (
+        {/* {news.category === 'Story' && (
           <View style={styles.slider}>
             <TouchableOpacity style={{marginRight: 20}}>
               {playState === 'playing' ? (
@@ -62,11 +94,11 @@ const DetailExplore = ({navigation, route}) => {
         )}
 
         <View style={styles.imageContainer}>
-          <Image source={{uri: news.image}} style={styles.image} />
+          <Image source={{uri: news.urlToImage}} style={styles.image} />
         </View>
         <Text style={styles.content}>{news.content}</Text>
         <View style={{height: 40}} />
-      </ScrollView>
+      </ScrollView> */} 
     </Animated.View>
   );
 };

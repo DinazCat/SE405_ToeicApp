@@ -46,7 +46,6 @@ const AsignmentScreen = ({navigation}) => {
   useEffect(() => {
     socketServices.initializeSocket();
     socketServices.on('assignment change', async () => {
-      console.log('haha');
       await getAsignments();
       categorizeAssignments();
     });
@@ -116,6 +115,30 @@ const AsignmentScreen = ({navigation}) => {
     return formattedDate;
   };
 
+  const onAssignmentPress = item => {
+    if (item.type === 1) {
+      const userSubmission = item.submissions?.find(
+        submission => submission.userId === user.uid,
+      );
+      navigation.navigate('AsignmentDetail', {
+        assignment: item,
+        isPastDue: !compareDateTime(item.dueDate, item.dueTime),
+        isSubmitted: userSubmission ? true : false,
+        submissionFiles: userSubmission ? userSubmission.submissionFiles : [],
+      });
+    } else if (item.type === 2) {
+      const userSubmission = item.submissions?.find(
+        submission => submission.userId === user.uid,
+      );
+      navigation.navigate('AsignmentDetail2', {
+        assignment: item,
+        isPastDue: !compareDateTime(item.dueDate, item.dueTime),
+        isSubmitted: userSubmission ? true : false,
+        submissions: userSubmission ? userSubmission.submissions : [],
+      });
+    }
+  };
+
   const previousUpcommingDates = {};
   return (
     <View style={styles.container}>
@@ -180,19 +203,7 @@ const AsignmentScreen = ({navigation}) => {
                 <AsignmentCard
                   key={key}
                   item={item}
-                  onPress={() => {
-                    const userSubmission = item.submissions?.find(
-                      submission => submission.userId === user.uid,
-                    );
-                    navigation.navigate('AsignmentDetail', {
-                      assignment: item,
-                      isPastDue: !compareDateTime(item.dueDate, item.dueTime),
-                      isSubmitted: userSubmission ? true : false,
-                      submissionFiles: userSubmission
-                        ? userSubmission.submissionFiles
-                        : [],
-                    });
-                  }}
+                  onPress={() => onAssignmentPress(item)}
                 />
               </>
             );

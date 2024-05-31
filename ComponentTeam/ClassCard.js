@@ -40,7 +40,10 @@ const ClassCard = ({item, navigation, fromAsignment}) => {
             className: item.ClassName,
           });
         else if (fromAsignment === 'online')
-          navigation.push('CreateAsignment2', {classId: item.classId});
+          navigation.push('CreateAsignment2', {
+            classId: item.classId,
+            className: item.ClassName,
+          });
         else navigation.push('TeamRoom', {classId: item.classId});
       }}>
       <View
