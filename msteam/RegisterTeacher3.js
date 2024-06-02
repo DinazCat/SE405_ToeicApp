@@ -6,7 +6,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
@@ -22,7 +22,10 @@ const RegisterTeacher3 = ({navigation, route}) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const {registerTeacher} = useContext(AuthContext);
   // const [teacherData,setTeacherData] = useState({...route.params})
-
+  useEffect(() => {
+    let temp = {...route.params}
+    console.log()
+  }, []);
   const uploadImg = async(img)=>{
     console.log(img)
     const formData = new FormData();

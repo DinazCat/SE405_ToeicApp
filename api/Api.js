@@ -642,6 +642,31 @@ const updateFolder = async (data,folderId) => {
     console.error('Error', error);
   }
 };
+// router.get("/getTestTeacher", getTestTeacher);
+const getTestTeacher = async () => {
+  const endpoint = '/getTestTeacher';
+  try {
+    const response = await client.get(endpoint);
+    if (response.data.success) {
+      return response.data.tests;
+    } else {
+      console.log('not get');
+    }
+  } catch (error) {
+    console.log('error: ', error.message);
+    return [];
+  }
+};
+// router.get("/Transaction/:userId/:classId", checkTransaction);
+const checkTransaction = async (userId, classId) => {
+  const endpoint = '/Transaction/'+userId+'/'+classId;
+  try {
+    const response = await client.get(endpoint);
+      return response.data.pay;
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
 export default {
   getVocabLesson,
   getVocabinLesson,
@@ -698,5 +723,7 @@ export default {
   setTeacherInfo,
   updateFile,
   addFolder,
-  updateFolder
+  updateFolder,
+  getTestTeacher,
+  checkTransaction
 };

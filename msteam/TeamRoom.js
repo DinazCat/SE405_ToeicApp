@@ -9,6 +9,7 @@ import {
   FlatList,
   Modal,
   SafeAreaView,
+  ActivityIndicator,
   TextInput,
   Alert
 } from 'react-native';
@@ -45,6 +46,7 @@ import moment from 'moment';
 import uploadfile from '../api/uploadfile';
 import CreateFolder from '../ComponentTeam/CreateFolder';
 const {width, height} = Dimensions.get('window');
+import FormButton from '../components/FormButton';
 const TeamRoom = ({navigation, route}) => {
   const {user, isTeacher} = useContext(AuthContext);
   const {classId} = route.params
@@ -61,6 +63,8 @@ const TeamRoom = ({navigation, route}) => {
   const [teacherInfo, setTeacherInfo] = useState(null)
   const [rangeDate, setRangeDate] = useState(null)
   const [createFolder, setCreateFolder] = useState(false)
+  const [isLimit, setIsLimit] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
  
   const getInFoClass = async()=>{
     const classtemp = await firestore()
@@ -72,13 +76,40 @@ const TeamRoom = ({navigation, route}) => {
     if(classtemp.data().Schedule?.length>0){
       const content = await Api.getRangeDate(classId)
       setRangeDate(content)
+      if(classtemp.data().PaymentPlan=='Free 2 days'&&!isTeacher){
+        const currentDate = new Date()
+        const currentDay = currentDate.getDate(); 
+        const currentMonth = currentDate.getMonth() + 1; 
+        const currentYear = currentDate.getFullYear(); 
+        let list = content[1].Date.split('/')
+        console.log(content[1].Date)
+        let due = false
+        if(currentYear > list[2]) {
+          due = true;
+        }
+        else if(currentYear == list[2]){
+          if(currentMonth>list[1]){
+            due = true
+          }
+          else if(currentDay > list[0]){
+            due = true
+          }
+        }
+        if(due==true){
+          let pay = await Api.checkTransaction(user.uid,classId)
+          setIsLimit(!pay)
+        }
+        setIsLoading(false)
+      }
+      else setIsLoading(false)
     }  
-    // RealTimePost(content)
+    setIsLoading(false)
   }
 
 
   useEffect(() => {
     getInFoClass();
+
   }, []);
   const [isModalVisible, setModalVisible] = useState(false);
   const toggleModal = () => {
@@ -174,8 +205,6 @@ const TeamRoom = ({navigation, route}) => {
     });
   }
   const sendMeetingId = async(data)=>{
-    // console.log("send ")
-    // socketServices.emit('MeetingId', data);
     const documentRef = firestore()
     .collection('Class')
     .doc(classId);
@@ -186,18 +215,9 @@ const TeamRoom = ({navigation, route}) => {
   }
   
   const getMeetingId = async id => {
-    console.log('idatgetMeetingId'+id)
     const meetingId = id == null ? await createMeeting({token}) : id;
     console.log(meetingId);
-    //sau này thêm tên class
     sendMeetingId(meetingId)
-    //  const documentRef = firestore()
-    //     .collection('Class')
-    //     .doc('0VA2PZf3PVGlbWlF9EiV');
-    //   await documentRef
-    //     .update({
-    //       MeetingId:meetingId
-    //     })
     setMeetingId(meetingId);
   };
   const [screenWidth, setScreenWidth] = useState(
@@ -208,35 +228,7 @@ const TeamRoom = ({navigation, route}) => {
   );
   const [isJoin, setIsJoin] = useState(false);
   const [realJoin, setRealJoin] = useState(false);
-  // const checkAgain=async()=>{
-  //   const docRef = await firestore().collection('Class').doc('0VA2PZf3PVGlbWlF9EiV');
 
-  //   docRef.onSnapshot((documentSnapshot) => {
-  //     if (documentSnapshot.exists) {
-  //       // Dữ liệu tài liệu đã được cập nhật
-  //       // setMeetingId(documentSnapshot.data().MeetingId)
-  //       let c = false;
-  //       for(let i = 0; i < documentSnapshot.data().Participants.length; i++){
-  //         if(documentSnapshot.data().Participants[i].System_userId==auth().currentUser.uid){
-  //           c = true;break;
-  //         }
-  //       }
-  //       if(c==true){
-  //         console.log("hhh")
-  //         setRealJoin(true);
-  //       }
-  //       else {
-  //         setRealJoin(false);
-  //       }
-  //     } else {
-  //       // Tài liệu không tồn tại
-  //       console.log('Document does not exist!');
-  //     }
-  //   });
-  // }
-  // useEffect(() => {
-  //  checkAgain()
-  // }, []);
   useEffect(() => {
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
@@ -246,31 +238,6 @@ const TeamRoom = ({navigation, route}) => {
     Dimensions.addEventListener('change', updateScreenWidth);
   }, []);
   const [selectedTab, setSelectedTab] = useState(1);
-  // const postData = [
-  //   {
-  //     userName: 'Nguyễn Quỳnh Hoa',
-  //     postTime: '1PM at 2/24/2024',
-  //     text: 'Lịch học tuần này đã thay đổi, các bạn chú ý theo dõi nhé.',
-  //     sign: 'topic',
-  //   },
-  //   {
-  //     userName: 'Nguyễn Quỳnh Hoa',
-  //     postTime: '1PM at 2/24/2024',
-  //     sign: 'meeting',
-  //   },
-  // ];
-  // const Record = [
-  //   {
-  //     User: 'Nguyễn Quỳnh Hoa',
-  //     Time: '1PM at 2/24/2024',
-  //     Name: 'Buổi học ngày 24/2/2024',
-  //   },
-  //   {
-  //     User: 'Nguyễn Thị Thy',
-  //     Time: '1PM at 3/24/2024',
-  //     Name: 'Buổi học ngày 24/3/2024',
-  //   },
-  // ];
   const [records, setRecords] = useState(null);
   const getRecords = async ()=>{
     const data = await Api.getRecordings("0VA2PZf3PVGlbWlF9EiV");
@@ -280,20 +247,7 @@ const TeamRoom = ({navigation, route}) => {
     getRecords()
   }, []);
   const [fileandfolder, setFileandFolder] = useState([])
-  // const fileandfolder = [
-  //   {
-  //     User: 'Nguyễn Quỳnh Hoa',
-  //     Time: '1PM at 2/24/2024',
-  //     Name: 'Tài liệu các đề thi 2023',
-  //     sign: 'folder',
-  //   },
-  //   {
-  //     User: 'Nguyễn Thị Thy',
-  //     Time: '1PM at 3/24/2024',
-  //     Name: 'Buổi học ngày 24/3/2024',
-  //     sign: 'file',
-  //   },
-  // ];
+
   const sendFileToNodejs = async(dataFile, type)=>{
     let title = ''
     let url = uploadfile.upImage
@@ -337,19 +291,9 @@ const TeamRoom = ({navigation, route}) => {
             },
             data : formData
           };
-          
-          // const response = await fetch(url, {
-          //   method: 'POST',
-          //   body: formData,
-          //   headers: {
-          //     'Content-Type': 'multipart/form-data'
-          //   }
-          // });
       
           const response = await  axios(config)
-          // console.log(response)
-          // console.log(response.json())
-          // return 'jjj'
+
           if(dataFile.sign == 'filePDF' )
             {
               return response.data.filepdf
@@ -560,11 +504,7 @@ const getTime=()=>{
     const documentRef = firestore()
     .collection('Class')
     .doc(classId);
-    // MeetingHistory:firestore.FieldValue.arrayUnion({
-    //   userName: teacherInfo?.name,
-    //   postTime: '1PM at 2/24/2024',
-    //   sign:'Meeting'
-    // })
+
     const currentDate = new Date()
     const currentDay = currentDate.getDate(); 
     const currentMonth = currentDate.getMonth() + 1; 
@@ -572,7 +512,7 @@ const getTime=()=>{
     const currentHours = currentDate.getHours(); 
     const currentMinutes = currentDate.getMinutes();
     const time = currentDay+'/'+currentMonth+'/'+currentYear+' at '+currentHours+':'+currentMinutes
-    const date = 5+'/'+currentMonth+'/'+currentYear
+    const date = currentDay+'/'+currentMonth+'/'+currentYear
     const classData = (await documentRef.get()).data()
     const data = {
       userName: teacherInfo?.name,
@@ -580,7 +520,7 @@ const getTime=()=>{
       postTime: time,
       sign:'Meeting',
       Date:date,
-      replies:classData.replies,
+      replies:classData.replies||[],
       likes:0,
     }
       const postRef = await firestore().collection('PostInTeam').add(data);
@@ -602,11 +542,18 @@ const getTime=()=>{
   function MeetingRoomtemp() {
     const {leave, toggleWebcam, toggleMic,toggleScreenShare,presenterId, participants,startRecording, stopRecording } = useMeeting({
       onPresenterChanged,
-      onRecordingStateChanged
+      onRecordingStateChanged,
+      onMeetingJoined, 
     });
     const [idPersonRecord, setIsIdPersonRecord] = useState(null)
     const [count_Record, setcount_Record] = useState(0)
-
+    const [presentName, setPresentName] = ('Linh')
+    function onMeetingJoined() {
+      console.log("onMeetingJoined");
+      JoinMeeting();
+      setMyIdMeeting(participantsArrId[participantsArrId.length - 1])
+    }
+  
    function onRecordingStateChanged(data) {
       const { status, id} = data;
     console.log(data)
@@ -664,39 +611,12 @@ const getTime=()=>{
     const [isRedording, setIsRecording] = useState(false)
     const [isRedording1, setIsRecording1] = useState(false)
 
-    useEffect(() => {
-      // const participantsArrId = [...participants.keys()];
-      console.log('oncam')
+    // useEffect(() => {
+    //    if(realJoin==false){console.log('huhu');JoinMeeting();setMyIdMeeting(participantsArrId[participantsArrId.length - 1])}
+    // }, []);
 
-       if(realJoin==false){console.log('huhu');JoinMeeting();setMyIdMeeting(participantsArrId[participantsArrId.length - 1])}
-      //  else {
-      //   joinAgain()
-      //  }
-    }, []);
-    // const joinAgain = async()=>{
-    //   try {
-    //     const documentRef = firestore().collection('Class').doc('0VA2PZf3PVGlbWlF9EiV');
-    //     const doc = await documentRef.get();
-    //     if (doc.exists) {
-    //       let Participants = doc.data().Participants;
-    //       for(let i = 0; i < Participants.length; i++){
-    //       if (Participants[i].System_userId==profileData?.id) {
-    //         console.log('joinagain')
-    //         Participants[i].id= participantsArrId[participantsArrId.length - 1]
-    //       } 
-    //       }
-    //       await documentRef.update({ Participants: Participants });
-    //     } else {
-    //       console.error('Document does not exist.');
-    //     }
-    //   } catch (error) {
-    //     console.error('Error updating Participants:', error);
-    //   }
-    // }
     const JoinMeeting = async () => {
       const participantsArrId = [...participants.keys()];
-      const e = [...participants]
-      console.log(e)
       console.log(realJoin)
       const documentRef = firestore()
         .collection('Class')
@@ -711,10 +631,10 @@ const getTime=()=>{
           }),
         })
         .then(() => {
-          console.log(profileData?.id);
           setRealJoin(true)
         });
     };
+
     // useEffect(() => {
     //   const interval = setInterval(() => {
     //     setSeconds(seconds => seconds + 1);
@@ -763,6 +683,8 @@ const getTime=()=>{
   function onPresenterChanged(presenterId) {
     if(presenterId){
       console.log(presenterId, "started screen share");
+      const foundItem = listAttendee.find(item => item.id === presenterId);
+      setPresentName(foundItem.name)
     }else{
       console.log("someone stopped screen share");
     }
@@ -810,7 +732,7 @@ const getTime=()=>{
                 fontSize: 18,
                 marginLeft: 15,
               }}>
-              {"00:00"+' '+listAttendee?.length} attendees
+              {listAttendee?.length} attendees
             </Text>
             <View style={{flex: 1}} />
           <TouchableOpacity style={{}}
@@ -885,41 +807,10 @@ const getTime=()=>{
             marginVertical:5
           }}
         />
-        <Text style={{color:"white", alignSelf:'center'}}>{profileData?.name} is sharing! </Text>
+        <Text style={{color:"white", alignSelf:'center'}}>{presentName} is sharing! </Text>
           </>
-       
-          
-          // <View
-          //   style={{
-          //     height: 400,
-          //     alignSelf: 'center',
-          //     justifyContent: 'center',
-          //     alignItems: 'center',
-          //   }}>
-          //   <View
-          //     style={{
-          //       width: width * 0.95,
-          //       height: 300,
-          //       backgroundColor: 'black',
-          //     }}></View>
-          // </View>
         )}
          <View style={{flex: 1}} />
-        {/*{Share &&(
-          <View style={{marginBottom: 5}}>
-            <FlatList
-              horizontal
-              data={participantsArrId}
-              renderItem={({item, index}) => (
-                <AttendeeCard
-                  key={index}
-                  person={item}
-                  color={getRandomColor()}
-                />
-              )}
-            />
-          </View>
-        )} */}
         <View
           style={{
             height: 50,
@@ -958,7 +849,7 @@ const getTime=()=>{
   const [seconds, setSeconds] = useState(0);
   const [formattedTime, setFormattedTime] = useState('00:00');
   function MeetingView() {
-    // Get `participants` from useMeeting Hook
+   
     const {
       leave,
       toggleWebcam,
@@ -966,6 +857,7 @@ const getTime=()=>{
       disableWebcam,
       toggleMic,
       participants,
+      join
     } = useMeeting({});
 
   
@@ -1005,7 +897,8 @@ const getTime=()=>{
     //   });
     // }
 
-    const {join} = useMeeting({});
+    // const {join} = useMeeting({onParticipantJoined});
+    
 
     //Getting the leave and end method from hook and assigning event callbacks
     const {end} = useMeeting({
@@ -1134,7 +1027,10 @@ const getTime=()=>{
       );
   };
 
-  return meetingId == null ? (
+  return isLoading ? 
+    <ActivityIndicator size="large" color="#0000ff" />
+   :
+    meetingId == null ? (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
         <TouchableOpacity
@@ -1163,7 +1059,13 @@ const getTime=()=>{
           <Icon name={'video'} color="white" size={20} />
         </TouchableOpacity>}
       </View>
-      <View       style={{height:40}}>
+      {isLimit&&<View style={{flex: 1, padding: 10}}>
+        <View style={styles.paymentContainer}>
+          <Text style={{textAlign:'center'}}>You have completed 2 days of free lessons. If you want to continue, please pay by clicking the button below</Text>
+        </View>
+          <FormButton title={'Pay Fee'} onPress={()=>navigation.push('RegisterCourse',{course:classInfo, from:'TeamRoom'})} />
+        </View>}
+      {!isLimit&&<View style={{height:40}}>
       <ScrollView
       horizontal={true}>
         <View 
@@ -1251,26 +1153,10 @@ const getTime=()=>{
             More
           </Text>
         </TouchableOpacity>
-       
-        {/* <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => {
-            setSelectedTab(4);
-            navigation.navigate('AsignmentScreen');
-          }}>
-          <Text
-            style={[
-              AppStyle.button.buttonText,
-              {color: selectedTab == 4 ? PRIMARY_COLOR : 'black'},
-            ]}>
-            Asignments
-          </Text>
-        </TouchableOpacity> */}
-
           </View>
       </ScrollView>
-      </View>
-      {selectedTab == 1 && (
+      </View>}
+      {selectedTab == 1 && !isLimit&& (
         <View>
              {
             rangeDate!=null&&<FlatList
@@ -1353,7 +1239,7 @@ const getTime=()=>{
         meetingId,
         micEnabled: isMicMuted,
         webcamEnabled: isCamMuted,
-        name: 'Test User',
+        name: profileData.name,
       }}
       token={token}>
       {isJoin ? (
@@ -1642,14 +1528,13 @@ const styles = StyleSheet.create({
     height: 65,
     textAlign: 'center',
   },
-  // popupitem: {
-  //   borderBottomColor: 'black',
-  //   alignItems: 'center',
-  //   width: 60,
-  //   alignSelf: 'center',
-  //   paddingVertical: 5,
-  //   textAlign:'center'
-  // },
+  paymentContainer: {
+    backgroundColor: card_color,
+    borderRadius: 12,
+    padding: 15,
+    marginHorizontal: 10,
+    marginBottom: 5,
+  },
   buttonmain: {
     height: 90,
     borderRadius: 20,

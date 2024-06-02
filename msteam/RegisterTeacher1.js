@@ -196,48 +196,48 @@ const RegisterTeacher1 = ({navigation}) => {
   };
 
   const onNext = () => {
-    if (
-      name === '' ||
-      birthdate === '' ||
-      phone === '' ||
-      university === '' ||
-      score === '' ||
-      skills.length === 0
-    ) {
-      Alert.alert(
-        'Input cannot be blank!',
-        'Please enter complete information',
-      );
-      return;
-    } else if (toeicImage === '') {
-      Alert.alert(
-        'Input cannot be blank!',
-        'Please upload your TOEIC Certificate',
-      );
-      return;
-    } else if (otherCertificates.length !== 0 && otherImages.length === 0) {
-      Alert.alert(
-        'Input cannot be blank!',
-        'If you have other certificates, please upload images of them',
-      );
-      return;
-    } else if (otherCertificates.length === 0 && otherImages.length !== 0) {
-      Alert.alert(
-        'Input cannot be blank!',
-        'If you have other certificates, please enter them',
-      );
-      return;
-    } else if (score < 880 || score > 990) {
-      Alert.alert(
-        'Invalid score',
-        'Your TOEIC score must be higher than 880 and less than 990',
-      );
-      return;
-    }
-    else if (frontImage === '' || backImage === '') {
-      Alert.alert('Input cannot be blank!', 'Please upload your ID card fully');
-      return;
-    }
+    // if (
+    //   name === '' ||
+    //   birthdate === '' ||
+    //   phone === '' ||
+    //   university === '' ||
+    //   score === '' ||
+    //   skills.length === 0
+    // ) {
+    //   Alert.alert(
+    //     'Input cannot be blank!',
+    //     'Please enter complete information',
+    //   );
+    //   return;
+    // } else if (toeicImage === '') {
+    //   Alert.alert(
+    //     'Input cannot be blank!',
+    //     'Please upload your TOEIC Certificate',
+    //   );
+    //   return;
+    // } else if (otherCertificates.length !== 0 && otherImages.length === 0) {
+    //   Alert.alert(
+    //     'Input cannot be blank!',
+    //     'If you have other certificates, please upload images of them',
+    //   );
+    //   return;
+    // } else if (otherCertificates.length === 0 && otherImages.length !== 0) {
+    //   Alert.alert(
+    //     'Input cannot be blank!',
+    //     'If you have other certificates, please enter them',
+    //   );
+    //   return;
+    // } else if (score < 880 || score > 990) {
+    //   Alert.alert(
+    //     'Invalid score',
+    //     'Your TOEIC score must be higher than 880 and less than 990',
+    //   );
+    //   return;
+    // }
+    // else if (frontImage === '' || backImage === '') {
+    //   Alert.alert('Input cannot be blank!', 'Please upload your ID card fully');
+    //   return;
+    // }
 
     navigation.push('RegisterTeacher2', {
       name: name,
