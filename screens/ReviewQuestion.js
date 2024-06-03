@@ -10,8 +10,9 @@ import {
   Animated,
   Alert,
   Modal,
+  TextInput,
 } from 'react-native';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Slider from '@react-native-community/slider';
 import AppStyle from '../theme';
@@ -32,28 +33,38 @@ import WriteP1QuestionForm from '../components/WriteP1QuestionForm';
 import WriteP23QuestionForm from '../components/WriteP23QuestionForm';
 import dings from '../assets/Part1No1.mp3';
 import LottieView from 'lottie-react-native';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 import {useNavigation, StackActions} from '@react-navigation/native';
 import Api from '../api/Api';
+import {AuthContext} from '../navigation/AuthProvider';
+import eventEmitter from '../utils/EventEmitter';
 
 Sound.setCategory('Playback');
 const {width} = Dimensions.get('window');
 const ReviewQuestion = ({navigation, route}) => {
+  const {isTeacher} = useContext(AuthContext);
   const scrollX = useRef(new Animated.Value(0)).current;
-  const {questionList, indication, History, part, isMiniTest, isTest, from} =
-    route.params;
+  const {
+    questionList,
+    indication,
+    History,
+    part,
+    isMiniTest,
+    isTest,
+    from,
+    reviews,
+  } = route.params;
   const [soundL, setsoundL] = useState(null);
   const [ItemIndex, setItemIndex] = useState(0);
-  // const [oldIndex, setoldIndex] = useState(0);
   const [OpenModal, setOpenModal] = useState(false);
   const [ExplainButton, setExplainButton] = useState('1');
   const [loading, setloading] = useState(false);
   const flatListRef = useRef();
   const [isSaved, setIsSaved] = useState(false);
   const [SavedQ, setSavedQ] = useState([]);
-  // const [Click, setClick] = useState(false);
-  // const navigation1 = useNavigation();
-  // const [Score, setScore] = useState(0);
-  // const [history, setHistory] = useState([]);
+  const [teacherModal, setTeacherModal] = useState(false);
+  const [teacherInputs, setTeacherInputs] = useState(reviews);
+
   const saveQuestion = async id => {
     const data = await Api.getSavedQuestion();
     if (data != '-1') {
@@ -167,10 +178,20 @@ const ReviewQuestion = ({navigation, route}) => {
       flatListRef.current.scrollToIndex({index: indication, animated: true});
     }
   }, [loading]);
+
   useEffect(() => {
     if (soundL == '-1')
       flatListRef.current.scrollToIndex({index: indication, animated: true});
   }, []);
+
+  const onBack = () => {
+    if (isTeacher && teacherInputs.length !== 0) {
+      eventEmitter.emit('addReviewByTeacher', teacherInputs);
+    }
+    navigation.goBack(),
+      soundL != '-1' && ItemIndex < soundL.length && soundL[ItemIndex].stop();
+  };
+
   function RenderModal() {
     return (
       <Modal visible={OpenModal} animationType="slide" transparent={true}>
@@ -291,10 +312,10 @@ const ReviewQuestion = ({navigation, route}) => {
               </Text>
             </View>
           )}
-          {ExplainButton == '3' && from === 'assginment' && (
+          {ExplainButton == '3' && from === 'assignment' && (
             <View style={{marginLeft: 5, marginTop: 10}}>
               <Text style={styles.answertext2}>
-                {History[ItemIndex] && History[ItemIndex].Review}
+                {History[ItemIndex] && History[ItemIndex].review}
               </Text>
             </View>
           )}
@@ -302,17 +323,69 @@ const ReviewQuestion = ({navigation, route}) => {
       </Modal>
     );
   }
+
+  function TeacherModal() {
+    return (
+      <Modal animationType="slide" transparent={true} visible={teacherModal}>
+        <View
+          style={[styles.container, {backgroundColor: 'rgba(0, 0, 0, 0.3)'}]}>
+          <View style={{flex: 1}} />
+          <View style={{height: 420, backgroundColor: '#E8E8E8'}}>
+            <View style={styles.panel}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  borderColor: '#DDD',
+                  borderBottomWidth: 1,
+                  marginBottom: 25,
+                }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setTeacherModal(false);
+                    const newTeacherInput = [...teacherInputs];
+                    newTeacherInput[ItemIndex] = '';
+                    setTeacherInputs(newTeacherInput);
+                  }}>
+                  <IonIcon name="close-outline" color={'#444'} size={25} />
+                </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.panelSubtitle,
+                    {color: '#222', flex: 1, textAlign: 'center'},
+                  ]}>
+                  {'Write your review'}
+                </Text>
+                <TouchableOpacity onPress={() => setTeacherModal(false)}>
+                  <IonIcon name="checkmark-outline" color={'#444'} size={25} />
+                </TouchableOpacity>
+              </View>
+              <TextInput
+                multiline={true}
+                style={{
+                  fontSize: 16,
+                  marginLeft: 3,
+                  color: 'black',
+                  borderRadius: 15,
+                }}
+                value={teacherInputs[ItemIndex]}
+                placeholder="Type here..."
+                placeholderTextColor={'rgba(0,0,0,0.8)'}
+                onChangeText={text => {
+                  const newTeacherInput = [...teacherInputs];
+                  newTeacherInput[ItemIndex] = text;
+                  setTeacherInputs(newTeacherInput);
+                }}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
-        <TouchableOpacity
-          style={{marginLeft: '2%'}}
-          onPress={() => {
-            navigation.goBack(),
-              soundL != '-1' &&
-                ItemIndex < soundL.length &&
-                soundL[ItemIndex].stop();
-          }}>
+        <TouchableOpacity style={{marginLeft: '2%'}} onPress={onBack}>
           <FontAwesome name="chevron-left" color="white" size={20} />
         </TouchableOpacity>
         <Text
@@ -343,7 +416,12 @@ const ReviewQuestion = ({navigation, route}) => {
           />
         </TouchableOpacity>
         <View style={{flex: 1}} />
-        <TouchableOpacity onPress={() => setOpenModal(true)}>
+        <TouchableOpacity
+          onPress={() => {
+            if (isTeacher) {
+              setTeacherModal(true);
+            } else setOpenModal(true);
+          }}>
           <Text
             style={{
               textAlign: 'left',
@@ -352,32 +430,39 @@ const ReviewQuestion = ({navigation, route}) => {
               marginRight: '5%',
               textDecorationLine: 'underline',
             }}>
-            Explain
+            {isTeacher ? 'Add Review' : 'Explain'}
           </Text>
         </TouchableOpacity>
-        {part != 'L1' && 'L2' && 'L3' && 'L4' && 'R1' && 'R2' && 'R3' && (
-          <TouchableOpacity
-            style={{padding: 5}}
-            onPress={() =>
-              navigation.push('AddPost', {
-                sign: 'ReviewQuestion',
-                Answer: History[ItemIndex],
-                part: part,
-                item: questionList[ItemIndex],
-              })
-            }>
-            <Icon
-              name={'share'}
-              style={{
-                color: 'white',
-                fontSize: 20,
-                alignSelf: 'center',
-                marginLeft: 2,
-                marginRight: 5,
-              }}
-            />
-          </TouchableOpacity>
-        )}
+        {!isTeacher &&
+          part != 'L1' &&
+          'L2' &&
+          'L3' &&
+          'L4' &&
+          'R1' &&
+          'R2' &&
+          'R3' && (
+            <TouchableOpacity
+              style={{padding: 5}}
+              onPress={() =>
+                navigation.push('AddPost', {
+                  sign: 'ReviewQuestion',
+                  Answer: History[ItemIndex],
+                  part: part,
+                  item: questionList[ItemIndex],
+                })
+              }>
+              <Icon
+                name={'share'}
+                style={{
+                  color: 'white',
+                  fontSize: 20,
+                  alignSelf: 'center',
+                  marginLeft: 2,
+                  marginRight: 5,
+                }}
+              />
+            </TouchableOpacity>
+          )}
       </View>
       <View style={{flex: 1}}>
         {soundL == '-1' ? (
@@ -576,6 +661,7 @@ const ReviewQuestion = ({navigation, route}) => {
       </View>
 
       {RenderModal()}
+      {TeacherModal()}
     </View>
   );
 };
@@ -665,6 +751,18 @@ const styles = StyleSheet.create({
   answertext2: {
     color: 'black',
     fontSize: 17,
+  },
+  panelSubtitle: {
+    fontSize: 18,
+    color: '#555',
+    height: 30,
+    marginBottom: 10,
+  },
+  panel: {
+    padding: 20,
+    backgroundColor: '#E8E8E8',
+    width: '100%',
+    position: 'absolute',
   },
 });
 export default ReviewQuestion;

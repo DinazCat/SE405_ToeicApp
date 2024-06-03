@@ -218,9 +218,20 @@ const AsignmentDetail = ({navigation, route}) => {
           <Text style={styles.headerText2}>Asignment</Text>
         </View>
         <View style={{flex: 1}} />
-        {!isPastDue && (
+        {!isTeacher && !isPastDue && (
           <Text style={styles.SubmitText} onPress={onSubmit}>
             {isSubmitted ? 'Update' : 'Submit'}
+          </Text>
+        )}
+        <View style={{flex: 1}} />
+        {isTeacher && (
+          <Text
+            onPress={() => navigation.navigate('CreateAsignment', {assignment})}
+            style={[
+              styles.SubmitText,
+              {textDecorationLine: 'underline', marginRight: 10},
+            ]}>
+            Edit
           </Text>
         )}
       </View>
@@ -249,55 +260,58 @@ const AsignmentDetail = ({navigation, route}) => {
             }
           }}
         />
-        <View
-          style={{
-            backgroundColor: isSubmitted ? '#DCFFA7' : '#FFFBC4',
-            marginVertical: 10,
-            padding: 5,
-          }}>
-          <Text style={styles.KeyText}>Submisstion Status: </Text>
-          <Text style={styles.ContentText}>
-            {isSubmitted ? 'Already submitted' : `Haven't submitted`}
-          </Text>
-        </View>
+        {!isTeacher && (
+          <>
+            <View
+              style={{
+                backgroundColor: isSubmitted ? '#DCFFA7' : '#FFFBC4',
+                marginVertical: 10,
+                padding: 5,
+              }}>
+              <Text style={styles.KeyText}>Submisstion Status: </Text>
+              <Text style={styles.ContentText}>
+                {isSubmitted ? 'Already submitted' : `Haven't submitted`}
+              </Text>
+            </View>
+            <Text style={styles.KeyText}>Your work: </Text>
+            <TouchableOpacity onPress={pickFile}>
+              <View style={{flexDirection: 'row'}}>
+                <IonIcon name="attach-outline" color={'blue'} size={22} />
+                <Text style={[styles.UnderlineText]}>Attach files</Text>
+              </View>
+            </TouchableOpacity>
 
-        <Text style={styles.KeyText}>Your work: </Text>
-        <TouchableOpacity onPress={pickFile}>
-          <View style={{flexDirection: 'row'}}>
-            <IonIcon name="attach-outline" color={'blue'} size={22} />
-            <Text style={[styles.UnderlineText]}>Attach files</Text>
-          </View>
-        </TouchableOpacity>
-
-        <FlatList
-          data={submissionFiles}
-          renderItem={({item, index}) => {
-            if (
-              item.sign == 'fileImage' ||
-              item.sign == 'fileMp4' ||
-              item.sign == 'filePPT' ||
-              item.sign == 'fileWord' ||
-              item.sign == 'filePDF'
-            ) {
-              return (
-                <View style={{paddingBottom: 5}}>
-                  <FileCard record={item} navigation={navigation} />
-                </View>
-              );
-            } else
-              return (
-                <FileItem
-                  item={item}
-                  onDelete={() => {
-                    const updatedFiles = submissionFiles.filter(
-                      file => file != item,
-                    );
-                    setSubmissionFiles(updatedFiles);
-                  }}
-                />
-              );
-          }}
-        />
+            <FlatList
+              data={submissionFiles}
+              renderItem={({item, index}) => {
+                if (
+                  item.sign == 'fileImage' ||
+                  item.sign == 'fileMp4' ||
+                  item.sign == 'filePPT' ||
+                  item.sign == 'fileWord' ||
+                  item.sign == 'filePDF'
+                ) {
+                  return (
+                    <View style={{paddingBottom: 5}}>
+                      <FileCard record={item} navigation={navigation} />
+                    </View>
+                  );
+                } else
+                  return (
+                    <FileItem
+                      item={item}
+                      onDelete={() => {
+                        const updatedFiles = submissionFiles.filter(
+                          file => file != item,
+                        );
+                        setSubmissionFiles(updatedFiles);
+                      }}
+                    />
+                  );
+              }}
+            />
+          </>
+        )}
 
         <Text style={styles.KeyText}>Points: </Text>
         <Text style={styles.ContentText}>

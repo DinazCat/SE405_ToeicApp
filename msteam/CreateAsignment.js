@@ -21,15 +21,30 @@ import uploadfile from '../api/uploadfile';
 import axios from 'axios';
 
 const CreateAsignment = ({navigation, route}) => {
-  const [title, setTitle] = useState();
-  const [instruction, setInstruction] = useState();
-  const [point, setPoint] = useState();
-  const [resourceFiles, setResourceFiles] = useState([]);
-  const [dueDate, setDueDate] = useState();
-  const [dueTime, setDueTime] = useState();
-  const [checked, setCheck] = useState(false);
-  const [date, setDate] = useState(new Date());
-  const [time, setTime] = useState(new Date());
+  const {assignment} = route.params;
+  const [title, setTitle] = useState(assignment && assignment.title);
+  const [instruction, setInstruction] = useState(
+    assignment && assignment.instruction,
+  );
+  const [point, setPoint] = useState(assignment && assignment.point);
+  const [resourceFiles, setResourceFiles] = useState(
+    (assignment && assignment.resourceFiles) || [],
+  );
+  const [dueDate, setDueDate] = useState(
+    assignment && formatDate(assignment.dueDate),
+  );
+  const [dueTime, setDueTime] = useState(
+    assignment && formatTime(assignment.dueTime),
+  );
+  const [checked, setCheck] = useState(
+    (assignment && assignment.lateAllow) || false,
+  );
+  const [date, setDate] = useState(
+    (assignment && assignment.dueDate) || new Date(),
+  );
+  const [time, setTime] = useState(
+    (assignment && assignment.dueTime) || new Date(),
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [assignToItems, setAsignToItems] = useState([
@@ -70,28 +85,36 @@ const CreateAsignment = ({navigation, route}) => {
     const currentDate = selectedDate || date;
     setShowDatePicker(Platform.OS === 'ios');
     setDate(currentDate);
-
-    const dateObject = new Date(currentDate);
-    const formattedDate = `${dateObject.getDate()}/${
-      dateObject.getMonth() + 1
-    }/${dateObject.getFullYear()}`;
-    setDueDate(formattedDate);
+    setDueDate(formatDate(currentDate));
   };
 
   const onTimePickerChange = (event, selectedTime) => {
     const currentTime = selectedTime || time;
     setShowTimePicker(Platform.OS === 'ios');
     setTime(currentTime);
+    setDueTime(formatTime(currentTime));
+  };
 
-    const dateObject = new Date(currentTime);
+  function formatDate(date) {
+    if (!date) return;
+    const dateObject = new Date(date);
+    const formattedDate = `${dateObject.getDate()}/${
+      dateObject.getMonth() + 1
+    }/${dateObject.getFullYear()}`;
+    return formattedDate;
+  }
+
+  function formatTime(time) {
+    if (!time) return;
+    const dateObject = new Date(time);
     const formattedTime = `${dateObject.getHours()}:${String(
       dateObject.getMinutes(),
     ).padStart(2, '0')}`;
-    setDueTime(formattedTime);
-  };
+    return formattedTime;
+  }
 
   const onSaveAsignment = async () => {
-    console.log(resourceFiles);
+    if (assignment) return;
 
     let files = [];
 
@@ -208,7 +231,9 @@ const CreateAsignment = ({navigation, route}) => {
           <FontAwesome name="chevron-left" color="white" size={20} />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerText}>Create New Asignment</Text>
+          <Text style={styles.headerText}>
+            {assignment ? 'Update Assignment' : 'Create New Assignment'}
+          </Text>
         </View>
         <View style={{flex: 1}} />
         <Text style={styles.SaveText} onPress={onSaveAsignment}>

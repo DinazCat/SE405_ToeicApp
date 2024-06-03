@@ -4,6 +4,7 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 import AppStyle from '../theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -20,22 +21,39 @@ const AsignmentDetail2 = ({navigation, route}) => {
   const [isPastDue, setPastDue] = useState(route.params?.isPastDue);
   const [isSubmitted, setSubmitted] = useState(route.params?.isSubmitted);
   const [submissions, setSubmissions] = useState(route.params.submissions);
+  const [selectedReview, setSelectedReview] = useState();
+
+  const getCurrentUser = async () => {
+    const data = await Api.getUserData(user.uid);
+    setCurrentUser(data);
+  };
+  const getMemberSubmissions = () => {
+    if (assignment.submissions) {
+      const allSubmissions = assignment.submissions.flatMap(user =>
+        user.submissions.map((submission, index) => ({
+          index: index,
+          userId: user.userId,
+          userImg: user.userImg,
+          userName: user.userName,
+          ...submission,
+        })),
+      );
+
+      allSubmissions.sort((a, b) => new Date(b.Time) - new Date(a.Time));
+
+      setSubmissions(allSubmissions);
+    }
+  };
 
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const data = await Api.getUserData(user.uid);
-      setCurrentUser(data);
-    };
-
     getCurrentUser();
+    if (isTeacher) getMemberSubmissions();
   }, []);
 
   useEffect(() => {
     const listener = async data => {
       const submissions = assignment.submissions || [];
-      console.log(submissions);
       const index = submissions.findIndex(sub => sub.userId === user.uid);
-      console.log(index);
 
       if (index !== -1) {
         submissions[index].submissions = [
@@ -53,22 +71,43 @@ const AsignmentDetail2 = ({navigation, route}) => {
         };
         submissions.push(submission);
 
-        console.log([data]);
-
         setSubmissions([data]);
       }
-
-      console.log(submissions);
-
       await Api.updateAsignment({submissions}, assignment.id);
 
       setSubmitted(true);
     };
 
+    const reviewAddedListener = async data => {
+      const submissions = assignment.submissions || [];
+      const index = submissions.findIndex(
+        sub => sub.userId === selectedReview.userId,
+      );
+
+      if (index !== -1) {
+        for (
+          let i = 0;
+          i <
+          submissions[index].submissions[selectedReview.index].result.length;
+          i++
+        ) {
+          if (i < data.length) {
+            submissions[index].submissions[selectedReview.index].result[
+              i
+            ].review = data[i] || '';
+          }
+        }
+      }
+
+      await Api.updateAsignment({submissions}, assignment.id);
+    };
+
     eventEmitter.on('completeAssignment', listener);
+    eventEmitter.on('addReviewByTeacher', reviewAddedListener);
 
     return () => {
       eventEmitter.removeListener('completeAssignment', listener);
+      eventEmitter.removeListener('addReviewByTeacher', reviewAddedListener);
     };
   }, []);
 
@@ -112,6 +151,7 @@ const AsignmentDetail2 = ({navigation, route}) => {
   };
 
   const onReviewPress = async item => {
+    setSelectedReview({userId: item.userId, index: item.index});
     if (
       item.Part == 'L1' ||
       item.Part == 'L2' ||
@@ -172,6 +212,8 @@ const AsignmentDetail2 = ({navigation, route}) => {
         }
       }
 
+      const reviews = item.History.map(item => item.review);
+
       navigation.push('ResultTable', {
         History: item.History,
         questionList: reviewList,
@@ -179,6 +221,7 @@ const AsignmentDetail2 = ({navigation, route}) => {
         score: score,
         quantity: quantity,
         from: 'assignment',
+        reviews: reviews,
       });
     } else {
       const listId = [];
@@ -211,7 +254,7 @@ const AsignmentDetail2 = ({navigation, route}) => {
         listQ: listId,
       });
 
-      console.log(reviewList);
+      const reviews = item.result.map(item => item.review);
 
       navigation.push('ReviewQuestion', {
         questionList: reviewList,
@@ -219,6 +262,7 @@ const AsignmentDetail2 = ({navigation, route}) => {
         History: item.result,
         part: item.Part,
         from: 'assignment',
+        reviews: reviews || [],
       });
     }
   };
@@ -226,8 +270,21 @@ const AsignmentDetail2 = ({navigation, route}) => {
   const TableRow = ({item}) => {
     return (
       <View style={styles.row}>
+        {isTeacher && (
+          <View style={styles.cell}>
+            <Image
+              style={styles.UserImage}
+              source={{
+                uri: item.userImg
+                  ? item.userImg
+                  : 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png',
+              }}
+            />
+            <Text style={{color: '#444', fontSize: 15}}>{item.userName}</Text>
+          </View>
+        )}
         <Text style={styles.cell}>
-          Done, {getTime(item.Time)} {getDate(item.Time)}
+          {!isTeacher && 'Done,'} {getTime(item.Time)} {getDate(item.Time)}
         </Text>
         <Text style={[styles.cell, {flex: 0.5}]}>
           {assignment.point ? item.Score + '/' + assignment.point : 'None'}
@@ -256,6 +313,19 @@ const AsignmentDetail2 = ({navigation, route}) => {
           <Text style={styles.headerText}>{assignment.className}</Text>
           <Text style={styles.headerText2}>Asignment</Text>
         </View>
+        <View style={{flex: 1}} />
+        {isTeacher && (
+          <Text
+            onPress={() =>
+              navigation.navigate('CreateAsignment2', {assignment})
+            }
+            style={[
+              styles.headerText,
+              {textDecorationLine: 'underline', marginRight: 10, fontSize: 18},
+            ]}>
+            Edit
+          </Text>
+        )}
       </View>
       <ScrollView style={styles.ContentContainer}>
         <Text style={styles.ATitleText}>{assignment.title}</Text>
@@ -268,17 +338,19 @@ const AsignmentDetail2 = ({navigation, route}) => {
         </Text>
         <Text style={[styles.KeyText, {marginTop: 10}]}>Instructions: </Text>
         <Text style={styles.ContentText}>{assignment.instruction}</Text>
-        <View
-          style={{
-            backgroundColor: isSubmitted ? '#DCFFA7' : '#FFFBC4',
-            marginVertical: 10,
-            padding: 5,
-          }}>
-          <Text style={styles.KeyText}>Submisstion Status: </Text>
-          <Text style={styles.ContentText}>
-            {isSubmitted ? 'Already submitted' : `Haven't submitted`}
-          </Text>
-        </View>
+        {!isTeacher && (
+          <View
+            style={{
+              backgroundColor: isSubmitted ? '#DCFFA7' : '#FFFBC4',
+              marginVertical: 10,
+              padding: 5,
+            }}>
+            <Text style={styles.KeyText}>Submisstion Status: </Text>
+            <Text style={styles.ContentText}>
+              {isSubmitted ? 'Already submitted' : `Haven't submitted`}
+            </Text>
+          </View>
+        )}
 
         <View style={styles.TestInfoContainer}>
           <View style={{flexDirection: 'row'}}>
@@ -312,38 +384,64 @@ const AsignmentDetail2 = ({navigation, route}) => {
         </Text>
 
         <Text style={[styles.KeyText, {marginVertical: 10}]}>
-          Submission History:{' '}
+          {isTeacher ? 'Submissions:' : 'Submission History:'}
         </Text>
 
-        <View>
-          <View style={styles.headerRow}>
-            <Text style={[styles.cell, {fontWeight: 'bold'}]}>State</Text>
-            <Text style={[styles.cell, {flex: 0.5, fontWeight: 'bold'}]}>
-              Points
-            </Text>
-            <Text style={[styles.cell, {flex: 0.5, fontWeight: 'bold'}]}>
-              Review
-            </Text>
+        {!isTeacher && (
+          <View>
+            <View style={styles.headerRow}>
+              <Text style={[styles.cell, {fontWeight: 'bold'}]}>State</Text>
+              <Text style={[styles.cell, {flex: 0.5, fontWeight: 'bold'}]}>
+                Points
+              </Text>
+              <Text style={[styles.cell, {flex: 0.5, fontWeight: 'bold'}]}>
+                Review
+              </Text>
+            </View>
+
+            <FlatList
+              data={submissions}
+              renderItem={({item, index}) => <TableRow item={item} />}
+            />
           </View>
-
-          <FlatList
-            data={submissions}
-            renderItem={({item, index}) => <TableRow item={item} />}
-          />
-        </View>
-
-        {!isPastDue && submissions.length < assignment.attemptsAllow && (
-          <TouchableOpacity
-            onPress={onStartTest}
-            style={[
-              AppStyle.button.button2,
-              {borderRadius: 7, marginVertical: 20},
-            ]}>
-            <Text style={[AppStyle.button.button1_Text, {fontWeight: '500'}]}>
-              {submissions.length === 0 ? 'Do test' : 'Do again'}
-            </Text>
-          </TouchableOpacity>
         )}
+
+        {isTeacher && (
+          <View>
+            <View style={styles.headerRow}>
+              <Text style={[styles.cell, {fontWeight: 'bold'}]}>Member</Text>
+              <Text style={[styles.cell, {fontWeight: 'bold'}]}>
+                Submit Time
+              </Text>
+              <Text style={[styles.cell, {flex: 0.5, fontWeight: 'bold'}]}>
+                Points
+              </Text>
+              <Text style={[styles.cell, {flex: 0.5, fontWeight: 'bold'}]}>
+                Review
+              </Text>
+            </View>
+
+            <FlatList
+              data={submissions}
+              renderItem={({item, index}) => <TableRow item={item} />}
+            />
+          </View>
+        )}
+
+        {!isTeacher &&
+          !isPastDue &&
+          submissions.length < assignment.attemptsAllow && (
+            <TouchableOpacity
+              onPress={onStartTest}
+              style={[
+                AppStyle.button.button2,
+                {borderRadius: 7, marginVertical: 20},
+              ]}>
+              <Text style={[AppStyle.button.button1_Text, {fontWeight: '500'}]}>
+                {submissions.length === 0 ? 'Do test' : 'Do again'}
+              </Text>
+            </TouchableOpacity>
+          )}
       </ScrollView>
     </View>
   );
@@ -401,6 +499,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 2,
     padding: 5,
+    marginTop: 5,
   },
   headerRow: {
     flexDirection: 'row',
@@ -417,5 +516,10 @@ const styles = StyleSheet.create({
     padding: 5,
     color: '#444',
     fontSize: 15,
+  },
+  UserImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
   },
 });

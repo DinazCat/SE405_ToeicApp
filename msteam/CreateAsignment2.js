@@ -25,24 +25,47 @@ import axios from 'axios';
 import eventEmitter from '../utils/EventEmitter';
 
 const CreateAsignment2 = ({navigation, route}) => {
-  const [title, setTitle] = useState();
-  const [instruction, setInstruction] = useState();
-  const [point, setPoint] = useState();
-  const [startDate, setStartDate] = useState();
-  const [startTime, setStartTime] = useState();
-  const [dueDate, setDueDate] = useState();
-  const [dueTime, setDueTime] = useState();
-  const [date1, setDate1] = useState(new Date());
-  const [time1, setTime1] = useState(new Date());
-  const [date2, setDate2] = useState(new Date());
-  const [time2, setTime2] = useState(new Date());
+  const {assignment} = route.params;
+  const [title, setTitle] = useState(assignment && assignment.title);
+  const [instruction, setInstruction] = useState(
+    assignment && assignment.instruction,
+  );
+  const [point, setPoint] = useState(assignment && assignment.point);
+  const [startDate, setStartDate] = useState(
+    assignment && formatDate(assignment.startDate),
+  );
+  const [startTime, setStartTime] = useState(
+    assignment && formatTime(assignment.startTime),
+  );
+  const [dueDate, setDueDate] = useState(
+    assignment && formatDate(assignment.dueDate),
+  );
+  const [dueTime, setDueTime] = useState(
+    assignment && formatTime(assignment.dueTime),
+  );
+  const [date1, setDate1] = useState(
+    (assignment && assignment.startDate) || new Date(),
+  );
+  const [time1, setTime1] = useState(
+    (assignment && assignment.startTime) || new Date(),
+  );
+  const [date2, setDate2] = useState(
+    (assignment && assignment.dueDate) || new Date(),
+  );
+  const [time2, setTime2] = useState(
+    (assignment && assignment.dueTime) || new Date(),
+  );
   const [showDatePicker1, setShowDatePicker1] = useState(false);
   const [showTimePicker1, setShowTimePicker1] = useState(false);
   const [showDatePicker2, setShowDatePicker2] = useState(false);
   const [showTimePicker2, setShowTimePicker2] = useState(false);
   const [task, setTask] = useState();
-  const [taskTime, setTaskTime] = useState();
-  const [numberOfAttemps, setNumberOfAttemps] = useState();
+  const [taskTime, setTaskTime] = useState(
+    assignment && assignment.test.time / 60,
+  );
+  const [numberOfAttemps, setNumberOfAttemps] = useState(
+    assignment && assignment.attemptsAllow,
+  );
   const [assignToItems, setAsignToItems] = useState([
     {label: 'All members', value: 'all'},
   ]);
@@ -51,8 +74,10 @@ const CreateAsignment2 = ({navigation, route}) => {
   );
   const [openAssignPicker, setOpenAssignPicker] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
-  const [selectedQList, setSelectedQList] = useState([]);
-  const [partName, setPartName] = useState();
+  const [selectedQList, setSelectedQList] = useState(
+    (assignment && assignment.test.questions) || [],
+  );
+  const [partName, setPartName] = useState(assignment && assignment.test.part);
 
   useEffect(() => {
     const listener = data => {
@@ -72,24 +97,12 @@ const CreateAsignment2 = ({navigation, route}) => {
       const currentDate = selectedDate || date1;
       setShowDatePicker1(Platform.OS === 'ios');
       setDate1(currentDate);
-
-      const dateObject = new Date(currentDate);
-
-      const formattedDate = `${dateObject.getDate()}/${
-        dateObject.getMonth() + 1
-      }/${dateObject.getFullYear()}`;
-
-      setStartDate(formattedDate);
+      setStartDate(formatDate(currentDate));
     } else if (type === 2) {
       const currentDate = selectedDate || date2;
       setShowDatePicker2(Platform.OS === 'ios');
       setDate2(currentDate);
-
-      const dateObject = new Date(currentDate);
-      const formattedDate = `${dateObject.getDate()}/${
-        dateObject.getMonth() + 1
-      }/${dateObject.getFullYear()}`;
-      setDueDate(formattedDate);
+      setDueDate(formatDate(currentDate));
     }
   };
 
@@ -98,26 +111,35 @@ const CreateAsignment2 = ({navigation, route}) => {
       const currentTime = selectedTime || time1;
       setShowTimePicker1(Platform.OS === 'ios');
       setTime1(currentTime);
-
-      const dateObject = new Date(currentTime);
-      const formattedTime = `${dateObject.getHours()}:${String(
-        dateObject.getMinutes(),
-      ).padStart(2, '0')}`;
-      setStartTime(formattedTime);
+      setStartTime(formatTime(currentTime));
     } else if (type === 2) {
       const currentTime = selectedTime || time2;
       setShowTimePicker2(Platform.OS === 'ios');
       setTime2(currentTime);
-
-      const dateObject = new Date(currentTime);
-      const formattedTime = `${dateObject.getHours()}:${String(
-        dateObject.getMinutes(),
-      ).padStart(2, '0')}`;
-      setDueTime(formattedTime);
+      setDueTime(formatTime(currentTime));
     }
   };
 
+  function formatDate(date) {
+    if (!date) return;
+    const dateObject = new Date(date);
+    const formattedDate = `${dateObject.getDate()}/${
+      dateObject.getMonth() + 1
+    }/${dateObject.getFullYear()}`;
+    return formattedDate;
+  }
+
+  function formatTime(time) {
+    if (!time) return;
+    const dateObject = new Date(time);
+    const formattedTime = `${dateObject.getHours()}:${String(
+      dateObject.getMinutes(),
+    ).padStart(2, '0')}`;
+    return formattedTime;
+  }
+
   const onSaveAsignment = async () => {
+    if (assignment) return;
     console.log(selectedQList);
     const asignment = {
       classId: route.params.classId,
@@ -246,7 +268,9 @@ const CreateAsignment2 = ({navigation, route}) => {
           <FontAwesome name="chevron-left" color="white" size={20} />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerText}>Create New Asignment</Text>
+          <Text style={styles.headerText}>
+            {assignment ? 'Update Assignment' : 'Create New Assignment'}
+          </Text>
         </View>
         <View style={{flex: 1}} />
         <Text style={styles.SaveText} onPress={onSaveAsignment}>

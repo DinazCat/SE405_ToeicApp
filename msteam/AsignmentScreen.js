@@ -15,7 +15,7 @@ import Api from '../api/Api';
 import socketServices from '../api/socketService';
 
 const AsignmentScreen = ({navigation}) => {
-  const {user} = useContext(AuthContext);
+  const {user, isTeacher} = useContext(AuthContext);
   const [selectedTab, setSelectedTab] = useState(0);
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
@@ -120,6 +120,7 @@ const AsignmentScreen = ({navigation}) => {
       const userSubmission = item.submissions?.find(
         submission => submission.userId === user.uid,
       );
+      console.log(userSubmission);
       navigation.navigate('AsignmentDetail', {
         assignment: item,
         isPastDue: !compareDateTime(item.dueDate, item.dueTime),
@@ -175,16 +176,18 @@ const AsignmentScreen = ({navigation}) => {
           onPress={() => setSelectedTab(1)}>
           <Text style={styles.tabFont}>Past due</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.tabItem,
-            {
-              backgroundColor: selectedTab == 2 ? '#9CD8FF' : '#f0f0f0',
-            },
-          ]}
-          onPress={() => setSelectedTab(2)}>
-          <Text style={styles.tabFont}>Completed</Text>
-        </TouchableOpacity>
+        {!isTeacher && (
+          <TouchableOpacity
+            style={[
+              styles.tabItem,
+              {
+                backgroundColor: selectedTab == 2 ? '#9CD8FF' : '#f0f0f0',
+              },
+            ]}
+            onPress={() => setSelectedTab(2)}>
+            <Text style={styles.tabFont}>Completed</Text>
+          </TouchableOpacity>
+        )}
       </View>
       <View style={styles.devider} />
       {selectedTab == 0 && (
@@ -237,7 +240,7 @@ const AsignmentScreen = ({navigation}) => {
           })}
         </>
       )}
-      {selectedTab == 2 && (
+      {!isTeacher && selectedTab == 2 && (
         <>
           {completedAssignments.map((item, key) => {
             const showDate = !previousCompletedDates[formatDate(item.dueDate)];
@@ -262,7 +265,7 @@ const AsignmentScreen = ({navigation}) => {
           })}
         </>
       )}
-      {true && (
+      {isTeacher && (
         <TouchableOpacity
           style={{
             position: 'absolute',

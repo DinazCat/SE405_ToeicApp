@@ -5,21 +5,23 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 
 const FileItem = ({item, onDelete}) => {
   function truncateText(fileName, maxLength) {
-    if (fileName.length <= maxLength) {
-      return fileName;
+    if (fileName) {
+      if (fileName.length <= maxLength) {
+        return fileName;
+      }
+
+      const extension = fileName.split('.').pop();
+      const nameWithoutExtension = fileName.substring(
+        0,
+        fileName.lastIndexOf('.'),
+      );
+      const truncatedName = nameWithoutExtension.substring(
+        0,
+        maxLength - extension.length - 4,
+      );
+
+      return `${truncatedName}... .${extension}`;
     }
-
-    const extension = fileName.split('.').pop();
-    const nameWithoutExtension = fileName.substring(
-      0,
-      fileName.lastIndexOf('.'),
-    );
-    const truncatedName = nameWithoutExtension.substring(
-      0,
-      maxLength - extension.length - 4,
-    );
-
-    return `${truncatedName}... .${extension}`;
   }
 
   return (
@@ -31,7 +33,9 @@ const FileItem = ({item, onDelete}) => {
           }}
           style={styles.fileImage}
         />
-        <Text style={styles.fileName}>{truncateText(item.name, 30)}</Text>
+        <Text style={styles.fileName}>
+          {truncateText(item.name || item.Name, 30)}
+        </Text>
         <View style={{flex: 1}} />
         <TouchableOpacity onPress={onDelete}>
           <IonIcon name="close-outline" color={'#444'} size={22} />
