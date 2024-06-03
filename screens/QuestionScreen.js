@@ -222,7 +222,8 @@ const QuestionScreen = ({navigation, route}) => {
         };
 
         if (route.params.from === 'assignment') {
-          eventEmitter.emit('completeAsignment', data);
+          data.Time = new Date();
+          eventEmitter.emit('completeAssignment', data);
         } else Api.pushPracticeHistory(data, sign);
 
         navigation.navigate('CompleteCard2', {
@@ -293,7 +294,10 @@ const QuestionScreen = ({navigation, route}) => {
       };
       //console.log(practiceHistoryData);
 
-      Api.pushPracticeHistory(data, sign);
+      if (route.params.from === 'assignment') {
+        data.Time = new Date();
+        eventEmitter.emit('completeAssignment', data);
+      } else Api.pushPracticeHistory(data, sign);
 
       navigation.navigate('CompleteCard2', {
         quantity: questionList.length,
@@ -323,9 +327,11 @@ const QuestionScreen = ({navigation, route}) => {
         DetailQty: 0,
         Score: 0,
       };
-      //console.log(practiceHistoryData);
 
-      Api.pushPracticeHistory(data, sign);
+      if (route.params.from === 'assignment') {
+        data.Time = new Date();
+        eventEmitter.emit('completeAssignment', data);
+      } else Api.pushPracticeHistory(data, sign);
 
       navigation.navigate('CompleteCard2', {
         quantity: questionList.length,
@@ -356,7 +362,10 @@ const QuestionScreen = ({navigation, route}) => {
         DetailQty: questionList.length,
         userId: user.uid,
       };
-      Api.pushPracticeHistory(data, sign);
+      if (route.params.from === 'assignment') {
+        data.Time = new Date();
+        eventEmitter.emit('completeAssignment', data);
+      } else Api.pushPracticeHistory(data, sign);
       navigation.navigate('CompleteCard', {
         quantity: questionList.length,
         answer: history,
@@ -391,7 +400,10 @@ const QuestionScreen = ({navigation, route}) => {
         Score: score,
         userId: user.uid,
       };
-      Api.pushPracticeHistory(data, sign);
+      if (route.params.from === 'assignment') {
+        data.Time = new Date();
+        eventEmitter.emit('completeAssignment', data);
+      } else Api.pushPracticeHistory(data, sign);
       navigation.navigate('CompleteCard', {
         quantity: questionList.length,
         answer: history,
@@ -420,7 +432,10 @@ const QuestionScreen = ({navigation, route}) => {
         DetailQty: questionList.length,
         userId: user.uid,
       };
-      Api.pushPracticeHistory(data, sign);
+      if (route.params.from === 'assignment') {
+        data.Time = new Date();
+        eventEmitter.emit('completeAssignment', data);
+      } else Api.pushPracticeHistory(data, sign);
       navigation.navigate('CompleteCard', {
         quantity: questionList.length,
         answer: history,
@@ -453,7 +468,10 @@ const QuestionScreen = ({navigation, route}) => {
         Score: score,
         userId: user.uid,
       };
-      Api.pushPracticeHistory(data, sign);
+      if (route.params.from === 'assignment') {
+        data.Time = new Date();
+        eventEmitter.emit('completeAssignment', data);
+      } else Api.pushPracticeHistory(data, sign);
       navigation.navigate('CompleteCard', {
         quantity: questionList.length,
         answer: history,
@@ -468,71 +486,72 @@ const QuestionScreen = ({navigation, route}) => {
     }
 
     //Update Practice Plan
-    const result = await Api.getPracticePlan(user.uid);
-    if (result != null) {
-      const practicephases = result.PracticePhases;
-      const currentphase = practicephases[result.CurrentPhase.PhaseIndex];
-      if (currentphase.Content == partName) {
-        const days = currentphase.Days;
-        const index = days.findIndex(
-          item => item.Day == result.CurrentPhase.CurrentDay,
-        );
+    if (route.params.from !== 'assignment') {
+      const result = await Api.getPracticePlan(user.uid);
+      if (result != null) {
+        const practicephases = result.PracticePhases;
+        const currentphase = practicephases[result.CurrentPhase.PhaseIndex];
+        if (currentphase.Content == partName) {
+          const days = currentphase.Days;
+          const index = days.findIndex(
+            item => item.Day == result.CurrentPhase.CurrentDay,
+          );
 
-        if (route.params?.isAssessment) {
-          let data;
-          let score = 0;
-          for (let i = 0; i < history.length; i++) {
-            if (history[i].Default == history[i].Select) {
-              score = score + 1;
+          if (route.params?.isAssessment) {
+            let data;
+            let score = 0;
+            for (let i = 0; i < history.length; i++) {
+              if (history[i].Default == history[i].Select) {
+                score = score + 1;
+              }
             }
-          }
-          practicephases[result.CurrentPhase.PhaseIndex].AssessmentScore =
-            score;
-          if (score >= currentphase.Target) {
-            if (index !== days.length - 1) {
-              data = {
-                PracticePhases: practicephases,
-                CurrentPhase: {
-                  CurrentDay: days[index].Day + 1,
-                  PhaseIndex: result.CurrentPhase.PhaseIndex,
-                },
-              };
+            practicephases[result.CurrentPhase.PhaseIndex].AssessmentScore =
+              score;
+            if (score >= currentphase.Target) {
+              if (index !== days.length - 1) {
+                data = {
+                  PracticePhases: practicephases,
+                  CurrentPhase: {
+                    CurrentDay: days[index].Day + 1,
+                    PhaseIndex: result.CurrentPhase.PhaseIndex,
+                  },
+                };
+              } else {
+                data = {
+                  PracticePhases: practicephases,
+                  CurrentPhase: {
+                    CurrentDay: days[index].Day + 1,
+                    PhaseIndex: result.CurrentPhase.PhaseIndex + 1,
+                  },
+                };
+              }
             } else {
               data = {
                 PracticePhases: practicephases,
-                CurrentPhase: {
-                  CurrentDay: days[index].Day + 1,
-                  PhaseIndex: result.CurrentPhase.PhaseIndex + 1,
-                },
               };
             }
+            await Api.updatePracticePlan(data).catch(error =>
+              console.error(error),
+            );
           } else {
-            data = {
+            if (
+              numberofQuestion + days[index].CompletedQuestion <
+              days[index].NumberofQuestions
+            ) {
+              days[index].CompletedQuestion =
+                numberofQuestion + days[index].CompletedQuestion;
+            } else {
+              days[index].CompletedQuestion = days[index].NumberofQuestions;
+            }
+            practicephases[result.CurrentPhase.PhaseIndex].Days = days;
+            const data = {
               PracticePhases: practicephases,
             };
-          }
-          console.log(data);
-          await Api.updatePracticePlan(data).catch(error =>
-            console.error(error),
-          );
-        } else {
-          if (
-            numberofQuestion + days[index].CompletedQuestion <
-            days[index].NumberofQuestions
-          ) {
-            days[index].CompletedQuestion =
-              numberofQuestion + days[index].CompletedQuestion;
-          } else {
-            days[index].CompletedQuestion = days[index].NumberofQuestions;
-          }
-          practicephases[result.CurrentPhase.PhaseIndex].Days = days;
-          const data = {
-            PracticePhases: practicephases,
-          };
 
-          await Api.updatePracticePlan(data).catch(error =>
-            console.error(error),
-          );
+            await Api.updatePracticePlan(data).catch(error =>
+              console.error(error),
+            );
+          }
         }
       }
     }

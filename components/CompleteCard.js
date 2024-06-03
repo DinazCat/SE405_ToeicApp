@@ -179,10 +179,9 @@ const CompleteCard = ({navigation, route}) => {
           onPress={() => {
             if (isFromPL) {
               navigation.navigate('PartPracticePlan');
-            } else if (skill != null)
+            } else if (from === 'assignment') navigation.pop(2);
+            else if (skill != null)
               navigation.navigate('PartFormat', {skill: skill});
-            else if (from === 'assignment')
-              navigation.navigate('AsignmentScreen');
             else {
               navigation.goBack();
             }
@@ -291,14 +290,16 @@ const CompleteCard = ({navigation, route}) => {
             <TouchableOpacity
               style={[AppStyle.button.button2]}
               onPress={async () => {
-                await continuePractice().then(list => {
-                  navigation.push('QuestionScreen', {
-                    questionList: list,
-                    part: part,
-                    partName: partName,
-                    sign: 'Max',
+                if (from !== 'assignment') {
+                  await continuePractice().then(list => {
+                    navigation.push('QuestionScreen', {
+                      questionList: list,
+                      part: part,
+                      partName: partName,
+                      sign: 'Max',
+                    });
                   });
-                });
+                } else navigation.navigate('AsignmentScreen');
               }}>
               <Text style={AppStyle.button.button2_Text}>Continue</Text>
             </TouchableOpacity>

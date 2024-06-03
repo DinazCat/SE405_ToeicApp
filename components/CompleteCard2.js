@@ -13,7 +13,8 @@ import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import Api from '../api/Api';
 
 const CompleteCard2 = ({navigation, route}) => {
-  const {quantity, sign, part, questionL, partName, isFromPL} = route.params;
+  const {quantity, sign, part, questionL, partName, isFromPL, from} =
+    route.params;
   const [questionList, setQuestionList] = useState(null);
   const [reviewList, setReviewList] = useState(null);
   const [skill, setSkill] = useState();
@@ -22,7 +23,6 @@ const CompleteCard2 = ({navigation, route}) => {
   const setReview = async () => {
     const listId = [];
     let changePart = '';
-    console.log(questionL.length);
     for (let i = 0; i < questionL.length; i++) {
       listId.push(questionL[i].Qid);
     }
@@ -44,10 +44,10 @@ const CompleteCard2 = ({navigation, route}) => {
     } else if (part == 'W1') {
       changePart = 'WritePart1';
       setSkillText('Writting');
-    } else if (part == 'R2') {
+    } else if (part == 'W2') {
       changePart = 'WritePart2';
       setSkillText('Writting');
-    } else if (part == 'R3') {
+    } else if (part == 'W3') {
       changePart = 'WritePart3';
       setSkillText('Writting');
     }
@@ -108,10 +108,11 @@ const CompleteCard2 = ({navigation, route}) => {
           onPress={() => {
             if (isFromPL) {
               navigation.navigate('PartPracticePlan');
+            } else if (from === 'assignment') {
+              navigation.pop(2);
+              //navigation.navigate('Asignment');
             } else if (skill != null)
               navigation.navigate('PartFormat', {skill: skill});
-            else if (from === 'assignment')
-              navigation.navigate('AsignmentScreen');
             else {
               navigation.goBack();
             }
@@ -163,6 +164,7 @@ const CompleteCard2 = ({navigation, route}) => {
             }>
             <Text style={AppStyle.button.button2_Text}>Review</Text>
           </TouchableOpacity>
+
           {sign == 'Home' ? (
             <TouchableOpacity
               style={[AppStyle.button.button2]}
@@ -179,14 +181,16 @@ const CompleteCard2 = ({navigation, route}) => {
           ) : (
             <TouchableOpacity
               style={[AppStyle.button.button2]}
-              onPress={() =>
-                navigation.navigate('QuestionScreen', {
-                  questionList: questionList,
-                  part: part,
-                  partName: partName,
-                  sign: 'Max',
-                })
-              }>
+              onPress={() => {
+                if (from !== 'assignment') {
+                  navigation.navigate('QuestionScreen', {
+                    questionList: questionList,
+                    part: part,
+                    partName: partName,
+                    sign: 'Max',
+                  });
+                } else navigation.navigate('AsignmentScreen');
+              }}>
               <Text style={AppStyle.button.button2_Text}>Continue</Text>
             </TouchableOpacity>
           )}

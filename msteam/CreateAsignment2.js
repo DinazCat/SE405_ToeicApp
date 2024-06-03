@@ -124,7 +124,7 @@ const CreateAsignment2 = ({navigation, route}) => {
       className: route.params.className,
       title: title,
       instruction: instruction,
-      //point: point,
+      point: point,
       startDate: date1,
       startTime: time1,
       dueDate: date2,
@@ -141,10 +141,10 @@ const CreateAsignment2 = ({navigation, route}) => {
     };
     console.log(asignment);
 
-    // const res = await Api.addAsignment(asignment);
-    // if (res) {
-    //   navigation.replace('AsignmentScreen');
-    // }
+    const res = await Api.addAsignment(asignment);
+    if (res) {
+      navigation.replace('Asignment');
+    }
   };
 
   const toggleModal = () => {
@@ -280,14 +280,15 @@ const CreateAsignment2 = ({navigation, route}) => {
             </Text>
           </View>
         </TouchableOpacity>
-        {/* <Text style={[styles.KeyText, {marginTop: 10}]}>Points: </Text>
+        <Text style={[styles.KeyText, {marginTop: 10}]}>Points: </Text>
         <TextInput
           style={[styles.Input]}
           placeholderTextColor={'#555'}
           width={'96%'}
           value={point}
           onChangeText={txt => setPoint(txt)}
-        /> */}
+          keyboardType="numeric"
+        />
         <Text style={[styles.KeyText, {marginTop: 10}]}>Assign To: </Text>
         <DropDownPicker
           open={openAssignPicker}
@@ -421,7 +422,7 @@ const CreateAsignment2 = ({navigation, route}) => {
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Ionicons name={'time-outline'} style={styles.iconStyle} />
                 <Text style={styles.QuestionsInfoText}>
-                  Time: {taskTime ? taskTime : 'Unlimited'}
+                  Time: {taskTime ? taskTime + ' minutes' : 'Unlimited'}
                 </Text>
               </View>
             </View>

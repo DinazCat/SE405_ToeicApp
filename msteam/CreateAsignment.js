@@ -145,7 +145,7 @@ const CreateAsignment = ({navigation, route}) => {
 
     const res = await Api.addAsignment(asignment);
     if (res) {
-      navigation.replace('AsignmentScreen');
+      navigation.replace('Asignment');
     }
   };
 

@@ -11,20 +11,8 @@ import React, {useState, useEffect, useContext} from 'react';
 import {AuthContext} from '../navigation/AuthProvider';
 import Api from '../api/Api';
 import eventEmitter from '../utils/EventEmitter';
+import {FlatList} from 'react-native-gesture-handler';
 
-const tableRow = item => {
-  <View style={styles.row}>
-    <Text style={styles.cell}>{item.state}</Text>
-    <Text style={[styles.cell, {flex: 0.5}]}>{item.points}</Text>
-    <Text
-      style={[
-        styles.cell,
-        {color: 'blue', textDecorationLine: 'underline', flex: 0.5},
-      ]}>
-      Review
-    </Text>
-  </View>;
-};
 const AsignmentDetail2 = ({navigation, route}) => {
   const {user, isTeacher} = useContext(AuthContext);
   const [currentUser, setCurrentUser] = useState();
@@ -43,17 +31,19 @@ const AsignmentDetail2 = ({navigation, route}) => {
   }, []);
 
   useEffect(() => {
-    const listener = data => {
-      console.log(data);
-
+    const listener = async data => {
       const submissions = assignment.submissions || [];
+      console.log(submissions);
       const index = submissions.findIndex(sub => sub.userId === user.uid);
+      console.log(index);
 
       if (index !== -1) {
         submissions[index].submissions = [
           ...submissions[index].submissions,
           data,
         ];
+
+        setSubmissions(submissions[index].submissions);
       } else {
         const submission = {
           userId: user.uid,
@@ -62,17 +52,23 @@ const AsignmentDetail2 = ({navigation, route}) => {
           submissions: [data],
         };
         submissions.push(submission);
+
+        console.log([data]);
+
+        setSubmissions([data]);
       }
 
-      Api.updateAsignment(submissions, assignment.id);
+      console.log(submissions);
+
+      await Api.updateAsignment({submissions}, assignment.id);
 
       setSubmitted(true);
     };
 
-    eventEmitter.on('completeAsignment', listener);
+    eventEmitter.on('completeAssignment', listener);
 
     return () => {
-      eventEmitter.removeListener('completeAsignment', listener);
+      eventEmitter.removeListener('completeAssignment', listener);
     };
   }, []);
 
@@ -115,6 +111,139 @@ const AsignmentDetail2 = ({navigation, route}) => {
     });
   };
 
+  const onReviewPress = async item => {
+    if (
+      item.Part == 'L1' ||
+      item.Part == 'L2' ||
+      item.Part == 'L3' ||
+      item.Part == 'L4' ||
+      item.Part == 'R1' ||
+      item.Part == 'R2' ||
+      item.Part == 'R3'
+    ) {
+      const listId = [];
+      let changePart = '';
+      for (let i = 0; i < item.History.length; i++) {
+        listId.push(item.History[i].Qid);
+      }
+      if (item.Part == 'L1') {
+        changePart = 'ListenPart1';
+      } else if (item.Part == 'L2') {
+        changePart = 'ListenPart2';
+      } else if (item.Part == 'L3') {
+        changePart = 'ListenPart3';
+      } else if (item.Part == 'L4') {
+        changePart = 'ListenPart4';
+      } else if (item.Part == 'R1') {
+        changePart = 'ReadPart1';
+      } else if (item.Part == 'R2') {
+        changePart = 'ReadPart2';
+      } else if (item.Part == 'R3') {
+        changePart = 'ReadPart3';
+      }
+
+      const reviewList = await Api.getReviewQuestion({
+        Part: changePart,
+        listQ: listId,
+      });
+
+      let quantity = item.Quantity;
+      if (item.Part == 'L3' || item.Part == 'L4') {
+        quantity = quantity * 3;
+      }
+      if (item.Part == 'R2' || item.Part == 'R3') {
+        quantity = item.DetailQty;
+      }
+
+      let score = 0;
+      if (item.Part == 'L1' || item.Part == 'L2' || item.Part == 'R1') {
+        for (let i = 0; i < item.History.length; i++) {
+          if (item.History[i].Select == item.History[i].Default) {
+            score = score + 1;
+          }
+        }
+      } else {
+        for (let i = 0; i < item.History.length; i++) {
+          for (let j = 0; j < item.History[i].Default.length; j++) {
+            if (item.History[i].Select[j] == item.History[i].Default[j]) {
+              score = score + 1;
+            }
+          }
+        }
+      }
+
+      navigation.push('ResultTable', {
+        History: item.History,
+        questionList: reviewList,
+        part: item.Part,
+        score: score,
+        quantity: quantity,
+        from: 'assignment',
+      });
+    } else {
+      const listId = [];
+      let changePart = '';
+
+      for (let i = 0; i < item.result.length; i++) {
+        listId.push(item.result[i].Qid);
+      }
+
+      if (item.Part == 'S1') {
+        changePart = 'SpeakPart1';
+      } else if (item.Part == 'S2') {
+        changePart = 'SpeakPart2';
+      } else if (item.Part == 'S3') {
+        changePart = 'SpeakPart3';
+      } else if (item.Part == 'S4') {
+        changePart = 'SpeakPart4';
+      } else if (item.Part == 'S5') {
+        changePart = 'SpeakPart5';
+      } else if (item.Part == 'W1') {
+        changePart = 'WritePart1';
+      } else if (item.Part == 'W2') {
+        changePart = 'WritePart2';
+      } else if (item.Part == 'W3') {
+        changePart = 'WritePart3';
+      }
+
+      const reviewList = await Api.getReviewQuestion({
+        Part: changePart,
+        listQ: listId,
+      });
+
+      console.log(reviewList);
+
+      navigation.push('ReviewQuestion', {
+        questionList: reviewList,
+        indication: 0,
+        History: item.result,
+        part: item.Part,
+        from: 'assignment',
+      });
+    }
+  };
+
+  const TableRow = ({item}) => {
+    return (
+      <View style={styles.row}>
+        <Text style={styles.cell}>
+          Done, {getTime(item.Time)} {getDate(item.Time)}
+        </Text>
+        <Text style={[styles.cell, {flex: 0.5}]}>
+          {assignment.point ? item.Score + '/' + assignment.point : 'None'}
+        </Text>
+        <Text
+          onPress={() => onReviewPress(item)}
+          style={[
+            styles.cell,
+            {color: 'blue', textDecorationLine: 'underline', flex: 0.5},
+          ]}>
+          Review
+        </Text>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -154,7 +283,9 @@ const AsignmentDetail2 = ({navigation, route}) => {
         <View style={styles.TestInfoContainer}>
           <View style={{flexDirection: 'row'}}>
             <Text style={styles.KeyText}>Points: </Text>
-            <Text style={styles.ContentText}>_/150</Text>
+            <Text style={styles.ContentText}>
+              {assignment.point ? '_/' + assignment.point : 'None'}
+            </Text>
           </View>
 
           <View style={{flexDirection: 'row', marginTop: 10}}>
@@ -171,7 +302,7 @@ const AsignmentDetail2 = ({navigation, route}) => {
 
           <View style={{flexDirection: 'row', marginTop: 10}}>
             <Text style={styles.KeyText}>Duration: </Text>
-            <Text style={styles.ContentText}>{assignment.test.time}m</Text>
+            <Text style={styles.ContentText}>{assignment.test.time / 60}m</Text>
           </View>
         </View>
 
@@ -194,50 +325,11 @@ const AsignmentDetail2 = ({navigation, route}) => {
               Review
             </Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.cell}>Done, 12:00 21 March 2024</Text>
-            <Text style={[styles.cell, {flex: 0.5}]}>60/120</Text>
-            <Text
-              style={[
-                styles.cell,
-                {color: 'blue', textDecorationLine: 'underline', flex: 0.5},
-              ]}>
-              Review
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.cell}>Done, 12:31 21 March 2024</Text>
-            <Text style={[styles.cell, {flex: 0.5}]}>100/120</Text>
-            <Text
-              style={[
-                styles.cell,
-                {color: 'blue', textDecorationLine: 'underline', flex: 0.5},
-              ]}>
-              Review
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.cell}>Done, 12:31 21 March 2024</Text>
-            <Text style={[styles.cell, {flex: 0.5}]}>100/120</Text>
-            <Text
-              style={[
-                styles.cell,
-                {color: 'blue', textDecorationLine: 'underline', flex: 0.5},
-              ]}>
-              Review
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.cell}>Done, 12:31 21 March 2024</Text>
-            <Text style={[styles.cell, {flex: 0.5}]}>100/120</Text>
-            <Text
-              style={[
-                styles.cell,
-                {color: 'blue', textDecorationLine: 'underline', flex: 0.5},
-              ]}>
-              Review
-            </Text>
-          </View>
+
+          <FlatList
+            data={submissions}
+            renderItem={({item, index}) => <TableRow item={item} />}
+          />
         </View>
 
         {!isPastDue && submissions.length < assignment.attemptsAllow && (

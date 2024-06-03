@@ -340,8 +340,8 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   itemImg: {
-    height: 80,
-    width: 80,
+    height: 70,
+    width: 70,
     resizeMode: 'contain',
     marginLeft: 20,
     marginRight: 10,
