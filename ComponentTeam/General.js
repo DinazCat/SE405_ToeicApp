@@ -17,80 +17,37 @@ import {PRIMARY_COLOR, card_color} from '../assets/colors/color'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import TextCard from './TextCard';
 import PostinTeam from './PostinTeam';
-import FileCard from './FileCard';
-import FolderCard from './FolderCard';
 import RecordingCard from './RecordingCard';
 import {useNavigation} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import moment from 'moment';
 const {width, height} = Dimensions.get('window');
-  const DateItem = ({item, files}) => {
+  const General = ({calendar, classId, start, finish}) => {
     const navigation = useNavigation();
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
     const [isDrop, setIsDop] = useState(false)
-    const [content, setContent] = useState(item.Content)
+    const [content, setContent] = useState()
     const RealTimePost = ()=>{
       const collectionRef = firestore().collection("PostInTeam");
       collectionRef.onSnapshot({ 
           includeQueryMetadataChanges: false,
           includeDocumentMetadataChanges: false
         }, (querySnapshot) => {
-          let list = content
-          list= list.filter(item => item.type !== "Post");
-          list= list.filter(item => item.type !== "Meeting");
+          let list = []
           querySnapshot.forEach((doc) => {
             const newDocumentData = doc.data();
-              if(newDocumentData.classId==item.classId&&moment(newDocumentData.Date,"DD/MM/YYYY").isSame(moment(item.Date,"DD/MM/YYYY"))){
-                if(newDocumentData.sign=='Meeting'){
-                  list.push({...newDocumentData,type:'Meeting'})
-                }
-                  else {
-                    list.push({...newDocumentData,type:'Post'})
-                }
-    
-              }
-            
-            
+             if(newDocumentData.classId==classId&&newDocumentData.sign!="Meeting"){
+                list.push({...newDocumentData,type:'Post'})
+             }         
           });
           setContent(list)
         });
   
     }
-    const getfile = () =>{
-      let list = content
-      for(let i = 0; i < files.length; i++){
-        const dateString = files[i].Time.split(' at ')[0]
-        if(moment(dateString,"DD/MM/YYYY").isSame(moment(item.Date,"DD/MM/YYYY"))){
-        list.push(files[i])
-        }
-      }
-      setContent(list)
-    }
     useEffect(() => {
       RealTimePost();
-      getfile()
     }, []);
-    const postData = [
-        {
-          userName: 'Nguyễn Quỳnh Hoa',
-          postTime: '1PM at 2/24/2024',
-          text: 'Lịch học tuần này đã thay đổi, các bạn chú ý theo dõi nhé.',
-          sign: 'topic',
-        },
-        {
-          userName: 'Nguyễn Quỳnh Hoa',
-          postTime: '1PM at 2/24/2024',
-          sign: 'meeting',
-        },
-      ];
-      const temp = [
-        {
-            userName: 'Nguyễn Quỳnh Hoa',
-            postTime: '1PM at 2/24/2024',
-            text: 'Lịch học tuần này đã thay đổi, các bạn chú ý theo dõi nhé.',
-            sign: 'topic',
-          },
-      ]
+
   useEffect(() => {
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
@@ -98,17 +55,14 @@ const {width, height} = Dimensions.get('window');
 
     Dimensions.addEventListener('change', updateScreenWidth);
 
-    // return () => {
-    //   Dimensions.removeEventListener('change', updateScreenWidth);
-    // };
   }, []);
 
     return (  
-        <View style={{width:screenWidth*0.9, alignSelf:'center', marginTop:10,}}>
+        <View style={{width:screenWidth*0.95, alignSelf:'center', marginTop:10,}}>
             <View style={{ flexDirection:'row', height:30, alignItems:'center'}}>
             
             <TouchableOpacity
-            // style={{marginLeft: 350, padding: 5}}
+            style={{marginLeft: 10}}
             onPress={() => {setIsDop(!isDrop)}}>
             {!isDrop&&<Icon
               name={'chevron-right'}
@@ -121,31 +75,35 @@ const {width, height} = Dimensions.get('window');
               />
             }
                       </TouchableOpacity>
-            <Text style={{color:'black', fontWeight:'600', fontSize:20, marginLeft:10}}>{item.Date}</Text>
+            <Text style={{color:'black', fontWeight:'600', fontSize:20, marginLeft:10}}>General</Text>
       </View>
-      {isDrop&&<FlatList
+      {isDrop&&
+      <View style={{width:'96%', alignSelf:'center'}}>
+        <Text style={{fontWeight:600, color:PRIMARY_COLOR, fontSize:16, marginTop:5}}>Schedule: {start+'-'+finish}</Text>
+        <FlatList
+               data={calendar}
+               style={{marginTop:5}}
+               renderItem={({item, index}) => {
+                        return (
+                           <View style={{height:50, alignSelf:'center', flexDirection:'row', justifyContent:'space-evenly', alignItems:'center', backgroundColor:card_color, width:350}}>
+                            <Text style={{color:'black', fontWeight:500}}>{item.Date}</Text>
+                            <Text style={{color:'black', fontWeight:500}}>{item.Time_start+ ' -> '+item.Time_finish}</Text>
+                           </View>
+                        )
+               }}
+             />
+       <Text style={{fontWeight:600, color:PRIMARY_COLOR, fontSize:16,marginTop:5}}>Notifications:</Text>
+       <FlatList
                data={content}
                renderItem={({item, index}) => {
-                if (item.type == 'Record') {
-                    return (
-                        <RecordingCard record={item} 
-                        show = {()=>{navigation.push("ShowRecord",{url:item.File, name: item.Name})}}
-                        />
-                    )
-                    }
-                    else if (item.type == 'Post'||item.type == 'Meeting') {
                         return (
                             <PostinTeam item={item} 
                             />
                         )
-                        }
-                       else if (item.sign == 'fileImage' || item.sign == 'fileMp4' || item.sign == 'filePPT' || item.sign == 'fileWord' || item.sign == 'filePDF') {
-                          return <FileCard record={item} />;
-                        } else if (item.sign == 'folder') {
-                          return <FolderCard record={item} />;
-                        }
                }}
-             />}
+             />
+      </View>
+     }
         </View>
         
     );
@@ -202,5 +160,5 @@ const {width, height} = Dimensions.get('window');
   
   
   });
-  export default DateItem ;
+  export default General ;
   

@@ -8,13 +8,14 @@ import {
   Modal,
   Alert,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-crop-picker';
 import FormInput from '../components/FormInput';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import DropDownPicker from 'react-native-dropdown-picker';
+import Api from '../api/Api';
 const bankList = [
   {
     label: `BIDV`,
@@ -58,26 +59,42 @@ const RegisterTeacher2 = ({navigation, route}) => {
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [test, setTest] = useState([]);
+  useEffect(() => {
+    const getTest = async () => {
+      const data = await Api.getTestTeacher()
+      console.log(data[0])
+      setTest(data)
+    };
 
-
+    getTest();
+  }, []);
 
   const onNext = async () => {
-    if (bank === '' || accountNumber === '' || accountName === '') {
-      Alert.alert(
-        'Input cannot be blank!',
-        'Please enter complete information',
-      );
-      return;
-    } 
-
-    navigation.push('RegisterTeacher3', {
+    // if (bank === '' || accountNumber === '' || accountName === '') {
+    //   Alert.alert(
+    //     'Input cannot be blank!',
+    //     'Please enter complete information',
+    //   );
+    //   return;
+    // } 
+    navigation.navigate('TestQuestions',{questionList:test, isFromPL:false, isMiniTest:true, testName:'Become Teacher', InfoTeacher:{
       ...route.params,
       bankInformation: {
         bankName: bank,
         accountNumber: accountNumber,
         accountName: accountName,
       },
-    });
+    }})
+
+    // navigation.push('RegisterTeacher3', {
+    //   ...route.params,
+    //   bankInformation: {
+    //     bankName: bank,
+    //     accountNumber: accountNumber,
+    //     accountName: accountName,
+    //   },
+    // });
   };
 
   
@@ -167,15 +184,16 @@ const RegisterTeacher2 = ({navigation, route}) => {
           autoCapitalize="none"
           autoCorrect={false}
         />
+         <View style={styles.paymentContainer}>
+          <Text style={{textAlign:'center'}}>You will have to take a small test to check whether you can become a teacher or not. The test includes 14 listening and reading questions. If you answer 80% correctly, you can become a teacher.</Text>
+        </View>
 
-
-
-        <TouchableOpacity
+        {test.length>0&&<TouchableOpacity
           onPress={onNext}
           //  disabled={!frontImage ? true : false}
         >
-          <Text style={[styles.button]}>Next</Text>
-        </TouchableOpacity>
+          <Text style={[styles.button]}>Take a test</Text>
+        </TouchableOpacity>}
         <View style={{height: 20}} />
       </ScrollView>
     </View>
@@ -328,6 +346,14 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#555',
     marginTop: 5,
+  },
+  paymentContainer: {
+    backgroundColor: card_color,
+    borderRadius: 12,
+    padding: 15,
+    marginHorizontal: 10,
+    marginBottom: 5,
+    marginTop:15
   },
 });
 

@@ -11,6 +11,8 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import RegisterTeacher1 from '../msteam/RegisterTeacher1';
 import RegisterTeacher2 from '../msteam/RegisterTeacher2';
 import RegisterTeacher3 from '../msteam/RegisterTeacher3';
+import TestQuestions from '../screens/TestQuestions';
+import CompleteTestCard from '../components/CompleteTestCard';
 
 
 const Stack = createNativeStackNavigator();
@@ -80,6 +82,16 @@ const AuthStack = () => {
         <Stack.Screen
         name="RegisterTeacher3"
         component={RegisterTeacher3}
+        options={{header: () => null}}
+        />
+          <Stack.Screen
+        name="TestQuestions"
+        component={TestQuestions}
+        options={{header: () => null}}
+        />
+           <Stack.Screen
+        name="CompleteTestCard"
+        component={CompleteTestCard}
         options={{header: () => null}}
         />
     </Stack.Navigator>

@@ -68,7 +68,7 @@ const NewPost = ({navigation, route}) => {
         currentHours +
         ':' +
         currentMinutes;
-      const date = 13 + '/' + currentMonth + '/' + currentYear;
+      const date = currentDay + '/' + currentMonth + '/' + currentYear;
       const data = {
         userName: userInfo.name,
         userImg: userInfo.userImg,
@@ -77,6 +77,7 @@ const NewPost = ({navigation, route}) => {
         Date: date,
         replies: [],
         likes: 0,
+        classId: classId,
       };
       try {
         const postRef = await firestore().collection('PostInTeam').add(data);

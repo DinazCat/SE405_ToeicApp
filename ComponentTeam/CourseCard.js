@@ -41,7 +41,7 @@ const CourseCard = ({navigation, item}) => {
           {item.MaximumStudents} students
         </Text>
       </View>
-      <Text style={styles.text}>
+      {item.PaymentPlan!='Total free'&&<Text style={styles.text}>
         {'Tuition: '}
         <Text style={[styles.bold]}>
           {item.Tuition?.toLocaleString('it-IT', {
@@ -49,13 +49,17 @@ const CourseCard = ({navigation, item}) => {
             currency: 'VND',
           })}
         </Text>
-      </Text>
+      </Text>}
       <Text style={styles.text}>
         {'Duration: '}
         <Text style={styles.bold}>{item.Start_Date}</Text>
         {' - '}
         <Text style={styles.bold}>{item.Finish_Date}</Text>
       </Text>
+
+      <Text style={[styles.text,{color:'blue'}]}>
+        {">> "+item.PaymentPlan}
+        </Text>
 
       <View style={styles.buttonWrapper}>
         <TouchableOpacity
@@ -66,7 +70,9 @@ const CourseCard = ({navigation, item}) => {
         <TouchableOpacity
           style={isRegister ? styles.disabledButton : styles.button}
           disabled={isRegister}
-          onPress={() => navigation.push('RegisterCourse', {course: item})}>
+          onPress={() => {
+
+            navigation.push('RegisterCourse', {course: item, from:'CourseCard'})}}>
           <Text style={isRegister ? styles.disabledText : styles.buttonText}>
             Register course
           </Text>

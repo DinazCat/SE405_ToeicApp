@@ -9,6 +9,7 @@ import {
   FlatList,
   Modal,
   SafeAreaView,
+  ActivityIndicator,
   TextInput,
   Alert,
 } from 'react-native';
@@ -50,6 +51,8 @@ import moment from 'moment';
 import uploadfile from '../api/uploadfile';
 import CreateFolder from '../ComponentTeam/CreateFolder';
 const {width, height} = Dimensions.get('window');
+import FormButton from '../components/FormButton';
+import General from '../ComponentTeam/General';
 const TeamRoom = ({navigation, route}) => {
   const {user, isTeacher} = useContext(AuthContext);
   const {classId} = route.params;
@@ -62,24 +65,56 @@ const TeamRoom = ({navigation, route}) => {
     '#ff00ff',
     '#00ffff',
   ];
-  const [classInfo, setClassInfo] = useState(null);
-  const [teacherInfo, setTeacherInfo] = useState(null);
-  const [rangeDate, setRangeDate] = useState(null);
-  const [createFolder, setCreateFolder] = useState(false);
-
-  const getInFoClass = async () => {
-    const classtemp = await firestore().collection('Class').doc(classId).get();
-    setClassInfo(classtemp.data());
+  const [classInfo, setClassInfo] = useState(null)
+  const [teacherInfo, setTeacherInfo] = useState(null)
+  const [rangeDate, setRangeDate] = useState(null)
+  const [createFolder, setCreateFolder] = useState(false)
+  const [isLimit, setIsLimit] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+ 
+  const getInFoClass = async()=>{
+    const classtemp = await firestore()
+    .collection('Class')
+    .doc(classId)
+    .get();
+    setClassInfo(classtemp.data())
     getTeacher(classtemp.data().userId);
-    if (classtemp.data().Schedule?.length > 0) {
-      const content = await Api.getRangeDate(classId);
-      setRangeDate(content);
-    }
-    // RealTimePost(content)
-  };
+    if(classtemp.data().Schedule?.length>0){
+      const content = await Api.getRangeDate(classId)
+      setRangeDate(content)
+      if(classtemp.data().PaymentPlan=='Free 2 days'&&!isTeacher){
+        const currentDate = new Date()
+        const currentDay = currentDate.getDate(); 
+        const currentMonth = currentDate.getMonth() + 1; 
+        const currentYear = currentDate.getFullYear(); 
+        let list = content[1].Date.split('/')
+        console.log(content[1].Date)
+        let due = false
+        if(currentYear > list[2]) {
+          due = true;
+        }
+        else if(currentYear == list[2]){
+          if(currentMonth>list[1]){
+            due = true
+          }
+          else if(currentDay > list[0]){
+            due = true
+          }
+        }
+        if(due==true){
+          let pay = await Api.checkTransaction(user.uid,classId)
+          setIsLimit(!pay)
+        }
+        setIsLoading(false)
+      }
+      else setIsLoading(false)
+    }  
+    setIsLoading(false)
+  }
 
   useEffect(() => {
     getInFoClass();
+
   }, []);
   const [isModalVisible, setModalVisible] = useState(false);
   const toggleModal = () => {
@@ -176,29 +211,21 @@ const TeamRoom = ({navigation, route}) => {
         setMeetingId(data.MeetingId);
       }
     });
-  };
-  const sendMeetingId = async data => {
-    // console.log("send ")
-    // socketServices.emit('MeetingId', data);
-    const documentRef = firestore().collection('Class').doc(classId);
-    await documentRef.update({
-      MeetingId: data,
-    });
-  };
-
+  }
+  const sendMeetingId = async(data)=>{
+    const documentRef = firestore()
+    .collection('Class')
+    .doc(classId);
+  await documentRef
+    .update({
+      MeetingId:data
+    })
+  }
+  
   const getMeetingId = async id => {
-    console.log('idatgetMeetingId' + id);
     const meetingId = id == null ? await createMeeting({token}) : id;
     console.log(meetingId);
-    //sau này thêm tên class
-    sendMeetingId(meetingId);
-    //  const documentRef = firestore()
-    //     .collection('Class')
-    //     .doc('0VA2PZf3PVGlbWlF9EiV');
-    //   await documentRef
-    //     .update({
-    //       MeetingId:meetingId
-    //     })
+    sendMeetingId(meetingId)
     setMeetingId(meetingId);
   };
   const [screenWidth, setScreenWidth] = useState(
@@ -209,35 +236,7 @@ const TeamRoom = ({navigation, route}) => {
   );
   const [isJoin, setIsJoin] = useState(false);
   const [realJoin, setRealJoin] = useState(false);
-  // const checkAgain=async()=>{
-  //   const docRef = await firestore().collection('Class').doc('0VA2PZf3PVGlbWlF9EiV');
 
-  //   docRef.onSnapshot((documentSnapshot) => {
-  //     if (documentSnapshot.exists) {
-  //       // Dữ liệu tài liệu đã được cập nhật
-  //       // setMeetingId(documentSnapshot.data().MeetingId)
-  //       let c = false;
-  //       for(let i = 0; i < documentSnapshot.data().Participants.length; i++){
-  //         if(documentSnapshot.data().Participants[i].System_userId==auth().currentUser.uid){
-  //           c = true;break;
-  //         }
-  //       }
-  //       if(c==true){
-  //         console.log("hhh")
-  //         setRealJoin(true);
-  //       }
-  //       else {
-  //         setRealJoin(false);
-  //       }
-  //     } else {
-  //       // Tài liệu không tồn tại
-  //       console.log('Document does not exist!');
-  //     }
-  //   });
-  // }
-  // useEffect(() => {
-  //  checkAgain()
-  // }, []);
   useEffect(() => {
     const updateScreenWidth = () => {
       setScreenWidth(Dimensions.get('window').width);
@@ -247,31 +246,6 @@ const TeamRoom = ({navigation, route}) => {
     Dimensions.addEventListener('change', updateScreenWidth);
   }, []);
   const [selectedTab, setSelectedTab] = useState(1);
-  // const postData = [
-  //   {
-  //     userName: 'Nguyễn Quỳnh Hoa',
-  //     postTime: '1PM at 2/24/2024',
-  //     text: 'Lịch học tuần này đã thay đổi, các bạn chú ý theo dõi nhé.',
-  //     sign: 'topic',
-  //   },
-  //   {
-  //     userName: 'Nguyễn Quỳnh Hoa',
-  //     postTime: '1PM at 2/24/2024',
-  //     sign: 'meeting',
-  //   },
-  // ];
-  // const Record = [
-  //   {
-  //     User: 'Nguyễn Quỳnh Hoa',
-  //     Time: '1PM at 2/24/2024',
-  //     Name: 'Buổi học ngày 24/2/2024',
-  //   },
-  //   {
-  //     User: 'Nguyễn Thị Thy',
-  //     Time: '1PM at 3/24/2024',
-  //     Name: 'Buổi học ngày 24/3/2024',
-  //   },
-  // ];
   const [records, setRecords] = useState(null);
   const getRecords = async () => {
     const data = await Api.getRecordings('0VA2PZf3PVGlbWlF9EiV');
@@ -280,80 +254,75 @@ const TeamRoom = ({navigation, route}) => {
   useEffect(() => {
     getRecords();
   }, []);
-  const [fileandfolder, setFileandFolder] = useState([]);
-  // const fileandfolder = [
-  //   {
-  //     User: 'Nguyễn Quỳnh Hoa',
-  //     Time: '1PM at 2/24/2024',
-  //     Name: 'Tài liệu các đề thi 2023',
-  //     sign: 'folder',
-  //   },
-  //   {
-  //     User: 'Nguyễn Thị Thy',
-  //     Time: '1PM at 3/24/2024',
-  //     Name: 'Buổi học ngày 24/3/2024',
-  //     sign: 'file',
-  //   },
-  // ];
-  const sendFileToNodejs = async (dataFile, type) => {
-    let title = '';
-    let url = uploadfile.upImage;
-    if (dataFile.sign == 'filePDF') {
-      title = 'pdf';
-      url = uploadfile.upPdf;
-    } else if (dataFile.sign == 'fileWord') {
-      title = 'doc';
-      url = uploadfile.updoc;
-    } else if (dataFile.sign == 'filePPT') {
-      title = 'ppt';
-      url = uploadfile.upslide;
-    } else if (dataFile.sign == 'fileImage') {
-      title = 'image';
-      url = uploadfile.upImage;
-    } else if (dataFile.sign == 'fileMp4') {
-      title = 'video';
-      url = uploadfile.upVideo;
-    }
+  const [fileandfolder, setFileandFolder] = useState([])
+
+  const sendFileToNodejs = async(dataFile, type)=>{
+    let title = ''
+    let url = uploadfile.upImage
+    if(dataFile.sign == 'filePDF' )
+      {
+        title = 'pdf';
+        url = uploadfile.upPdf
+      }
+      else if(dataFile.sign == 'fileWord' )
+        {
+          title = 'doc'
+          url = uploadfile.updoc
+        }
+        else if(dataFile.sign == 'filePPT' )
+          {
+            title = 'ppt'
+            url = uploadfile.upslide
+          }
+          else if(dataFile.sign == 'fileImage' )
+            {
+              title = 'image';
+              url = uploadfile.upImage
+            }
+            else if(dataFile.sign == "fileMp4" )
+              {
+                title = 'video';
+                url = uploadfile.upVideo
+              }
     const formData = new FormData();
-    formData.append(title, {
-      uri: dataFile.Link,
-      name: dataFile.Name,
-      type: type,
-    });
-    console.log(url);
-    const config = {
-      method: 'post',
-      url: url,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      data: formData,
-    };
+          formData.append(title, {
+            uri: dataFile.Link,
+            name: dataFile.Name,
+            type: type,
+          });
+          console.log(url)
+          const config = {
+            method: 'post',
+            url: url,
+            headers: { 
+              'Content-Type': 'multipart/form-data'
+            },
+            data : formData
+          };
+      
+          const response = await  axios(config)
 
-    // const response = await fetch(url, {
-    //   method: 'POST',
-    //   body: formData,
-    //   headers: {
-    //     'Content-Type': 'multipart/form-data'
-    //   }
-    // });
-
-    const response = await axios(config);
-    // console.log(response)
-    // console.log(response.json())
-    // return 'jjj'
-    if (dataFile.sign == 'filePDF') {
-      return response.data.filepdf;
-    } else if (dataFile.sign == 'fileWord') {
-      return response.data.filedoc;
-    } else if (dataFile.sign == 'filePPT') {
-      return response.data.fileppt;
-    } else if (dataFile.sign == 'fileImage') {
-      return response.data.photo;
-    } else if (dataFile.sign == 'fileMp4') {
-      return response.data.video;
-    }
-  };
+          if(dataFile.sign == 'filePDF' )
+            {
+              return response.data.filepdf
+            }
+            else if(dataFile.sign == 'fileWord' )
+              {
+                return response.data.filedoc
+              }
+              else if(dataFile.sign == 'filePPT' )
+                {
+                  return response.data.fileppt
+                }
+                else if(dataFile.sign == 'fileImage' )
+                  {
+                    return response.data.photo
+                  }
+                  else if(dataFile.sign == "fileMp4" )
+                    {
+                      return response.data.video
+                    }
+  }
   const [visible, setvisible] = useState(false);
   const handleFilePicker = async () => {
     try {
@@ -567,42 +536,32 @@ const TeamRoom = ({navigation, route}) => {
     setIsJoin(false);
     setRealJoin(false);
     setMeetingId(null);
-    sendMeetingId(null);
-    const documentRef = firestore().collection('Class').doc(classId);
-    // MeetingHistory:firestore.FieldValue.arrayUnion({
-    //   userName: teacherInfo?.name,
-    //   postTime: '1PM at 2/24/2024',
-    //   sign:'Meeting'
-    // })
-    const currentDate = new Date();
-    const currentDay = currentDate.getDate();
-    const currentMonth = currentDate.getMonth() + 1;
-    const currentYear = currentDate.getFullYear();
-    const currentHours = currentDate.getHours();
+    sendMeetingId(null)
+    const documentRef = firestore()
+    .collection('Class')
+    .doc(classId);
+
+    const currentDate = new Date()
+    const currentDay = currentDate.getDate(); 
+    const currentMonth = currentDate.getMonth() + 1; 
+    const currentYear = currentDate.getFullYear(); 
+    const currentHours = currentDate.getHours(); 
     const currentMinutes = currentDate.getMinutes();
-    const time =
-      currentDay +
-      '/' +
-      currentMonth +
-      '/' +
-      currentYear +
-      ' at ' +
-      currentHours +
-      ':' +
-      currentMinutes;
-    const date = 5 + '/' + currentMonth + '/' + currentYear;
-    const classData = (await documentRef.get()).data();
+    const time = currentDay+'/'+currentMonth+'/'+currentYear+' at '+currentHours+':'+currentMinutes
+    const date = currentDay+'/'+currentMonth+'/'+currentYear
+    const classData = (await documentRef.get()).data()
     const data = {
       userName: teacherInfo?.name,
       className: classInfo?.ClassName,
       postTime: time,
-      sign: 'Meeting',
-      Date: date,
-      replies: classData.replies,
-      likes: 0,
-    };
-    const postRef = await firestore().collection('PostInTeam').add(data);
-    const postId = postRef.id;
+      sign:'Meeting',
+      Date:date,
+      replies:classData.replies||[],
+      likes:0,
+      classId:classId,
+    }
+      const postRef = await firestore().collection('PostInTeam').add(data);
+      const postId = postRef.id;
 
     await firestore().collection('PostInTeam').doc(postId).update({
       id: postId,
@@ -632,15 +591,22 @@ const TeamRoom = ({navigation, route}) => {
     } = useMeeting({
       onPresenterChanged,
       onRecordingStateChanged,
+      onMeetingJoined, 
     });
-    const [idPersonRecord, setIsIdPersonRecord] = useState(null);
-    const [count_Record, setcount_Record] = useState(0);
-
-    function onRecordingStateChanged(data) {
-      const {status, id} = data;
-      console.log(data);
-      setIsIdPersonRecord(id);
-      if (status === 'RECORDING_STARTING') {
+    const [idPersonRecord, setIsIdPersonRecord] = useState(null)
+    const [count_Record, setcount_Record] = useState(0)
+    const [presentName, setPresentName] = ('Linh')
+    function onMeetingJoined() {
+      console.log("onMeetingJoined");
+      JoinMeeting();
+      setMyIdMeeting(participantsArrId[participantsArrId.length - 1])
+    }
+  
+   function onRecordingStateChanged(data) {
+      const { status, id} = data;
+    console.log(data)
+    setIsIdPersonRecord(id)
+      if (status === "RECORDING_STARTING") {
         setIsRecording(true);
         console.log('Meeting recording is starting');
       } else if (status === 'RECORDING_STOPPED') {
@@ -690,45 +656,16 @@ const TeamRoom = ({navigation, route}) => {
     const [isRedording, setIsRecording] = useState(false);
     const [isRedording1, setIsRecording1] = useState(false);
 
-    useEffect(() => {
-      // const participantsArrId = [...participants.keys()];
-      console.log('oncam');
+    // useEffect(() => {
+    //    if(realJoin==false){console.log('huhu');JoinMeeting();setMyIdMeeting(participantsArrId[participantsArrId.length - 1])}
+    // }, []);
 
-      if (realJoin == false) {
-        console.log('huhu');
-        JoinMeeting();
-        setMyIdMeeting(participantsArrId[participantsArrId.length - 1]);
-      }
-      //  else {
-      //   joinAgain()
-      //  }
-    }, []);
-    // const joinAgain = async()=>{
-    //   try {
-    //     const documentRef = firestore().collection('Class').doc('0VA2PZf3PVGlbWlF9EiV');
-    //     const doc = await documentRef.get();
-    //     if (doc.exists) {
-    //       let Participants = doc.data().Participants;
-    //       for(let i = 0; i < Participants.length; i++){
-    //       if (Participants[i].System_userId==profileData?.id) {
-    //         console.log('joinagain')
-    //         Participants[i].id= participantsArrId[participantsArrId.length - 1]
-    //       }
-    //       }
-    //       await documentRef.update({ Participants: Participants });
-    //     } else {
-    //       console.error('Document does not exist.');
-    //     }
-    //   } catch (error) {
-    //     console.error('Error updating Participants:', error);
-    //   }
-    // }
     const JoinMeeting = async () => {
       const participantsArrId = [...participants.keys()];
-      const e = [...participants];
-      console.log(e);
-      console.log(realJoin);
-      const documentRef = firestore().collection('Class').doc(classId);
+      console.log(realJoin)
+      const documentRef = firestore()
+        .collection('Class')
+        .doc(classId);
       await documentRef
         .update({
           Participants: firestore.FieldValue.arrayUnion({
@@ -739,10 +676,10 @@ const TeamRoom = ({navigation, route}) => {
           }),
         })
         .then(() => {
-          console.log(profileData?.id);
-          setRealJoin(true);
+          setRealJoin(true)
         });
     };
+
     // useEffect(() => {
     //   const interval = setInterval(() => {
     //     setSeconds(seconds => seconds + 1);
@@ -787,13 +724,14 @@ const TeamRoom = ({navigation, route}) => {
     //   });
 
     // }
-    //Callback for when the presenter changes
-    function onPresenterChanged(presenterId) {
-      if (presenterId) {
-        console.log(presenterId, 'started screen share');
-      } else {
-        console.log('someone stopped screen share');
-      }
+     //Callback for when the presenter changes
+  function onPresenterChanged(presenterId) {
+    if(presenterId){
+      console.log(presenterId, "started screen share");
+      const foundItem = listAttendee.find(item => item.id === presenterId);
+      setPresentName(foundItem.name)
+    }else{
+      console.log("someone stopped screen share");
     }
 
     const participantsArrId = [...participants.keys()];
@@ -830,59 +768,56 @@ const TeamRoom = ({navigation, route}) => {
                 fontSize: 20,
                 marginLeft: 15,
               }}>
-              Buổi học ngày {moment().format('DD/MM/YYYY')}
+              Today is {moment().format('DD/MM/YYYY')}
             </Text>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text
-                style={{
-                  textAlign: 'left',
-                  color: 'white',
-                  fontSize: 18,
-                  marginLeft: 15,
-                }}>
-                {'00:00' + ' ' + listAttendee?.length} attendees
-              </Text>
-              <View style={{flex: 1}} />
-              <TouchableOpacity
-                style={{}}
-                onPress={() => {
-                  if (isRedording1) {
-                    handleStopRecording();
-                  } else {
-                    setIsRecording1(true);
-                    handleStartRecording();
-                  }
-                }}>
-                {isRedording == false ? (
-                  <Icon name="record-vinyl" color="gray" size={20} />
-                ) : (
-                  <Icon name="record-vinyl" color="#8B0016" size={20} />
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{marginLeft: 10}}
-                onPress={() => {
-                  handleMicToggle();
-                }}>
-                {isMicMuted == false ? (
-                  <FontAwesome name="microphone-slash" color="gray" size={20} />
-                ) : (
-                  <FontAwesome name="microphone" color="black" size={20} />
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{marginLeft: 10}}
-                onPress={() => {
-                  handleCamToggle();
-                }}>
-                {isCamMuted == false ? (
-                  <Icon name="video-slash" color="gray" size={20} />
-                ) : (
-                  <Icon name="video" color="gray" size={20} />
-                )}
-              </TouchableOpacity>
-              <View style={{width: 35}} />
-            </View>
+            <View style={{flexDirection:'row', alignItems:'center'}}>
+          <Text
+              style={{
+                textAlign: 'left',
+                color: 'white',
+                fontSize: 18,
+                marginLeft: 15,
+              }}>
+              {listAttendee?.length} attendees
+            </Text>
+            <View style={{flex: 1}} />
+          <TouchableOpacity style={{}}
+            onPress={() => {
+              if(isRedording1){
+                handleStopRecording();
+              }
+              else {
+                setIsRecording1(true);
+                handleStartRecording();
+              }
+            }}>
+            {isRedording == false ? (
+              <Icon name="record-vinyl" color="gray" size={20} />
+            ) : (
+              <Icon name="record-vinyl" color="#8B0016" size={20} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={{marginLeft:10}}
+            onPress={() => {
+              handleMicToggle();
+            }}>
+            {isMicMuted == false ? (
+              <FontAwesome name="microphone-slash" color="gray" size={20} />
+            ) : (
+              <FontAwesome name="microphone" color="black" size={20} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={{marginLeft:10}}
+            onPress={() => {
+              handleCamToggle();
+            }}>
+            {isCamMuted == false ? (
+              <Icon name="video-slash" color="gray" size={20} />
+            ) : (
+              <Icon name="video" color="gray" size={20} />
+            )}
+          </TouchableOpacity>
+          <View style={{width:35}}/>
           </View>
         </View>
         {!screenShareOn && listAttendee?.length > 0 && (
@@ -903,52 +838,20 @@ const TeamRoom = ({navigation, route}) => {
         )}
         {screenShareOn && screenShareStream && (
           <>
-            <RTCView
-              streamURL={new MediaStream([screenShareStream.track]).toURL()}
-              objectFit={'contain'}
-              style={{
-                height: height * 0.75,
-                width: width * 0.95,
-                alignSelf: 'center',
-                marginVertical: 5,
-              }}
-            />
-            <Text style={{color: 'white', alignSelf: 'center'}}>
-              {profileData?.name} is sharing!{' '}
-            </Text>
+             <RTCView
+          streamURL={new MediaStream([screenShareStream.track]).toURL()}
+          objectFit={"contain"}
+          style={{
+            height: height*0.75,
+            width:width*0.95,
+            alignSelf:'center',
+            marginVertical:5
+          }}
+        />
+        <Text style={{color:"white", alignSelf:'center'}}>{presentName} is sharing! </Text>
           </>
-
-          // <View
-          //   style={{
-          //     height: 400,
-          //     alignSelf: 'center',
-          //     justifyContent: 'center',
-          //     alignItems: 'center',
-          //   }}>
-          //   <View
-          //     style={{
-          //       width: width * 0.95,
-          //       height: 300,
-          //       backgroundColor: 'black',
-          //     }}></View>
-          // </View>
         )}
-        <View style={{flex: 1}} />
-        {/*{Share &&(
-          <View style={{marginBottom: 5}}>
-            <FlatList
-              horizontal
-              data={participantsArrId}
-              renderItem={({item, index}) => (
-                <AttendeeCard
-                  key={index}
-                  person={item}
-                  color={getRandomColor()}
-                />
-              )}
-            />
-          </View>
-        )} */}
+         <View style={{flex: 1}} />
         <View
           style={{
             height: 50,
@@ -1008,7 +911,7 @@ const TeamRoom = ({navigation, route}) => {
   const [seconds, setSeconds] = useState(0);
   const [formattedTime, setFormattedTime] = useState('00:00');
   function MeetingView() {
-    // Get `participants` from useMeeting Hook
+   
     const {
       leave,
       toggleWebcam,
@@ -1016,6 +919,7 @@ const TeamRoom = ({navigation, route}) => {
       disableWebcam,
       toggleMic,
       participants,
+      join
     } = useMeeting({});
 
     // useEffect(() => {
@@ -1054,7 +958,8 @@ const TeamRoom = ({navigation, route}) => {
     //   });
     // }
 
-    const {join} = useMeeting({});
+    // const {join} = useMeeting({onParticipantJoined});
+    
 
     //Getting the leave and end method from hook and assigning event callbacks
     const {end} = useMeeting({});
@@ -1190,7 +1095,10 @@ const TeamRoom = ({navigation, route}) => {
       );
   };
 
-  return meetingId == null ? (
+  return isLoading ? 
+    <ActivityIndicator size="large" color="#0000ff" />
+   :
+    meetingId == null ? (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
         <TouchableOpacity
@@ -1205,133 +1113,125 @@ const TeamRoom = ({navigation, route}) => {
             fontSize: 20,
             marginLeft: 15,
           }}>
-          Lớp luyện SW Toeic 150+
+          {classInfo?.ClassName}
         </Text>
         <View style={{flex: 1}} />
-        {isTeacher && (
-          <TouchableOpacity
-            style={{marginRight: '5%'}}
-            onPress={() => {
-              setIsCreate(true);
-              getMeetingId();
-            }}
-            // onPress={()=>navigation.push('MeetingRoom')}
-          >
-            <Icon name={'video'} color="white" size={20} />
-          </TouchableOpacity>
-        )}
+        {isTeacher&&<TouchableOpacity
+          style={{marginRight: '5%'}}
+          onPress={() => {
+            setIsCreate(true);
+            getMeetingId();
+          }}
+          // onPress={()=>navigation.push('MeetingRoom')}
+        >
+          <Icon name={'video'} color="white" size={20} />
+        </TouchableOpacity>}
       </View>
-      <View style={{height: 40}}>
-        <ScrollView horizontal={true}>
-          <View
-            style={{
-              alignItems: 'center',
-              alignSelf: 'center',
-              height: 40,
-              flexDirection: 'row',
-            }}>
-            <TouchableOpacity
-              style={[styles.historyButton]}
-              onPress={() => {
-                setSelectedTab(1);
-              }}>
-              <Text
-                style={[
-                  AppStyle.button.buttonText,
-                  {color: selectedTab == 1 ? PRIMARY_COLOR : '#333'},
-                ]}>
-                Posts
-              </Text>
-            </TouchableOpacity>
-            <View
-              style={{
-                width: 1,
-                height: 30,
-                backgroundColor: 'black',
-                marginHorizontal: 10,
-              }}
-            />
-            <TouchableOpacity
-              style={styles.historyButton}
-              onPress={() => {
-                setSelectedTab(2);
-              }}>
-              <Text
-                style={[
-                  AppStyle.button.buttonText,
-                  {color: selectedTab == 2 ? PRIMARY_COLOR : 'black'},
-                ]}>
-                Files
-              </Text>
-            </TouchableOpacity>
-
-            <View
-              style={{
-                width: 1,
-                height: 30,
-                backgroundColor: 'black',
-                marginHorizontal: 10,
-              }}
-            />
-            <TouchableOpacity
-              style={styles.historyButton}
-              onPress={() => {
-                setSelectedTab(3);
-              }}>
-              <Text
-                style={[
-                  AppStyle.button.buttonText,
-                  {color: selectedTab == 3 ? PRIMARY_COLOR : 'black'},
-                ]}>
-                Recordings
-              </Text>
-            </TouchableOpacity>
-            <View
-              style={{
-                width: 1,
-                height: 30,
-                backgroundColor: 'black',
-                marginHorizontal: 10,
-              }}
-            />
-            <TouchableOpacity
-              style={styles.historyButton}
-              onPress={() => {
-                toggleModal();
-              }}>
-              <Text
-                style={[
-                  AppStyle.button.buttonText,
-                  {color: selectedTab == 4 ? PRIMARY_COLOR : 'black'},
-                ]}>
-                More
-              </Text>
-            </TouchableOpacity>
-
-            {/* <TouchableOpacity
+      {isLimit&&<View style={{flex: 1, padding: 10}}>
+        <View style={styles.paymentContainer}>
+          <Text style={{textAlign:'center'}}>You have completed 2 days of free lessons. If you want to continue, please pay by clicking the button below</Text>
+        </View>
+          <FormButton title={'Pay Fee'} onPress={()=>navigation.push('RegisterCourse',{course:classInfo, from:'TeamRoom'})} />
+        </View>}
+      {!isLimit&&<View style={{height:40}}>
+      <ScrollView
+      horizontal={true}>
+        <View 
+           style={{
+        alignItems: 'center',
+        alignSelf: 'center',
+        height:40,
+        flexDirection:'row'
+          }}
+          >
+          <TouchableOpacity
+          style={[styles.historyButton]}
+          onPress={() => {
+            setSelectedTab(1);
+          }}>
+          <Text
+            style={[
+              AppStyle.button.buttonText,
+              {color: selectedTab == 1 ? PRIMARY_COLOR : '#333'},
+            ]}>
+            Posts
+          </Text>
+        </TouchableOpacity>
+        <View
+          style={{
+            width: 1,
+            height: 30,
+            backgroundColor: 'black',
+            marginHorizontal: 10,
+          }}
+        />
+        <TouchableOpacity
           style={styles.historyButton}
           onPress={() => {
-            setSelectedTab(4);
-            navigation.navigate('AsignmentScreen');
+            setSelectedTab(2);
+          }}>
+          <Text
+            style={[
+              AppStyle.button.buttonText,
+              {color: selectedTab == 2 ? PRIMARY_COLOR : 'black'},
+            ]}>
+            Files
+          </Text>
+        </TouchableOpacity>
+        
+        <View
+          style={{
+            width: 1,
+            height: 30,
+            backgroundColor: 'black',
+            marginHorizontal: 10,
+          }}
+        />
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => {
+            setSelectedTab(3);
+          }}>
+          <Text
+            style={[
+              AppStyle.button.buttonText,
+              {color: selectedTab == 3 ? PRIMARY_COLOR : 'black'},
+            ]}>
+            Recordings
+          </Text>
+        </TouchableOpacity>
+        <View
+          style={{
+            width: 1,
+            height: 30,
+            backgroundColor: 'black',
+            marginHorizontal: 10,
+          }}
+        />
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => {
+            toggleModal();
           }}>
           <Text
             style={[
               AppStyle.button.buttonText,
               {color: selectedTab == 4 ? PRIMARY_COLOR : 'black'},
             ]}>
-            Asignments
+            More
           </Text>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
           </View>
-        </ScrollView>
-      </View>
-      {selectedTab == 1 && (
+      </ScrollView>
+      </View>}
+      {selectedTab == 1 && !isLimit&& (
         <View>
-          {rangeDate != null && (
-            <FlatList
+          {classInfo!=null&&<General calendar={[...classInfo.Schedule]} classId={classId} start={classInfo?.Start_Date} finish={classInfo?.Finish_Date}/>}
+             {
+            rangeDate!=null&&<FlatList
               data={rangeDate}
               renderItem={({item, index}) => (
-                <DateItem item={item} key={index} />
+                <DateItem item={item} key={index} files={fileandfolder}/>
               )}
             />
           )}
@@ -1440,7 +1340,7 @@ const TeamRoom = ({navigation, route}) => {
         meetingId,
         micEnabled: isMicMuted,
         webcamEnabled: isCamMuted,
-        name: 'Test User',
+        name: profileData.name,
       }}
       token={token}>
       {isJoin ? (
@@ -1486,7 +1386,7 @@ const TeamRoom = ({navigation, route}) => {
                 fontSize: 20,
                 marginLeft: 15,
               }}>
-              Lớp luyện SW Toeic 150+
+              {classInfo?.ClassName}
             </Text>
             <View style={{flex: 1}} />
             {isTeacher && (
@@ -1770,14 +1670,13 @@ const styles = StyleSheet.create({
     height: 65,
     textAlign: 'center',
   },
-  // popupitem: {
-  //   borderBottomColor: 'black',
-  //   alignItems: 'center',
-  //   width: 60,
-  //   alignSelf: 'center',
-  //   paddingVertical: 5,
-  //   textAlign:'center'
-  // },
+  paymentContainer: {
+    backgroundColor: card_color,
+    borderRadius: 12,
+    padding: 15,
+    marginHorizontal: 10,
+    marginBottom: 5,
+  },
   buttonmain: {
     height: 90,
     borderRadius: 20,

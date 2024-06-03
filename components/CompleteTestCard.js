@@ -13,12 +13,21 @@ import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 import Api from '../api/Api';
 
 const CompleteTestCard = ({navigation, route}) => {
-  const {answer, sign, questionL, isFromPL, isMiniTest, testHistory} =
-    route.params;
+  const {
+    answer,
+    sign,
+    questionL,
+    isFromPL,
+    isMiniTest,
+    testHistory,
+    TestName,
+    InfoTeacher,
+  } = route.params;
   const [reviewList, setReviewList] = useState(null);
   const [score, setScore] = useState(0);
   const [quantity, setQuantity] = useState(route.params.quantity);
   const [message, setMessage] = useState('');
+  const [isPass, setIsPass] = useState(false);
 
   const SetScore = () => {
     if (isMiniTest) {
@@ -42,6 +51,12 @@ const CompleteTestCard = ({navigation, route}) => {
             sum++;
           }
         }
+      }
+      const rate = parseInt((score * 100) / quantity);
+      if (rate < 80) {
+        setIsPass(true);
+      } else if (rate >= 80) {
+        setIsPass(false);
       }
       setScore(score);
       setQuantity(sum);
@@ -109,6 +124,15 @@ const CompleteTestCard = ({navigation, route}) => {
       });
     }
   };
+  const checkMess1 = () => {
+    const rate = parseInt((score * 100) / quantity);
+    if (rate < 80) {
+      return "Unfortunately! You don't have enough points to become a teacher.";
+    } else if (rate >= 80) {
+      return 'Congratulations! You have passed our test. Please continue with your registration process.';
+    }
+    return "Unfortunately! You don't have enough points to become a teacher.";
+  };
   const checkMess = () => {
     const rate = parseInt((score * 100) / quantity);
     if (rate < 50) {
@@ -156,7 +180,7 @@ const CompleteTestCard = ({navigation, route}) => {
               textAlign: 'center',
               marginBottom: 5,
             }}>
-            {checkMess()}
+            {TestName == 'Become Teacher' ? checkMess1() : checkMess()}
           </Text>
           <Text style={[styles.TextFont, {fontWeight: '400', fontSize: 20}]}>
             You have completed the test
@@ -166,7 +190,7 @@ const CompleteTestCard = ({navigation, route}) => {
               styles.TextFont,
               {fontWeight: 'bold', color: PRIMARY_COLOR},
             ]}>
-            {testHistory?.TestName}
+            {isMiniTest ? TestName : testHistory.TestName}
           </Text>
         </View>
         <Text
@@ -196,38 +220,68 @@ const CompleteTestCard = ({navigation, route}) => {
             color={PRIMARY_COLOR}
           />
         </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-evenly',
-            marginTop: '10%',
-          }}>
-          <TouchableOpacity
-            style={[AppStyle.button.button2]}
-            onPress={onShowAnswer}>
-            <Text style={AppStyle.button.button2_Text}>Show answer</Text>
-          </TouchableOpacity>
-          {sign == 'Home' ? (
+        {TestName == 'Become Teacher' && (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              marginTop: '10%',
+            }}>
+            {isPass ? (
+              <TouchableOpacity
+                style={[AppStyle.button.button2]}
+                onPress={() => {
+                  navigation.navigate('RegisterTeacher3', {
+                    ...InfoTeacher,
+                  });
+                }}>
+                <Text style={AppStyle.button.button2_Text}>Next</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[AppStyle.button.button2]}
+                onPress={() => {
+                  navigation.navigate('Login');
+                }}>
+                <Text style={AppStyle.button.button2_Text}>Exit</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+        {TestName != 'Become Teacher' && (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-evenly',
+              marginTop: '10%',
+            }}>
             <TouchableOpacity
               style={[AppStyle.button.button2]}
-              onPress={() =>
-                navigation.push('QuestionScreen', {
-                  questionList: reviewList,
-                  sign: 'noMax',
-                })
-              }>
-              <Text style={AppStyle.button.button2_Text}>Do again</Text>
+              onPress={onShowAnswer}>
+              <Text style={AppStyle.button.button2_Text}>Show answer</Text>
             </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={[AppStyle.button.button2]}
-              onPress={onContinue}>
-              <Text style={AppStyle.button.button2_Text}>
-                {isMiniTest ? 'Continue' : 'Go Back'}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+            {sign == 'Home' ? (
+              <TouchableOpacity
+                style={[AppStyle.button.button2]}
+                onPress={() =>
+                  navigation.push('QuestionScreen', {
+                    questionList: reviewList,
+                    sign: 'noMax',
+                  })
+                }>
+                <Text style={AppStyle.button.button2_Text}>Do again</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[AppStyle.button.button2]}
+                onPress={onContinue}>
+                <Text style={AppStyle.button.button2_Text}>
+                  {isMiniTest ? 'Continue' : 'Go Back'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </ImageBackground>
     </View>
   );

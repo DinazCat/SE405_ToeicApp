@@ -19,6 +19,7 @@ import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 import DateItem from '../ComponentTeam/DateItem';
 import FileViewScreen from '../msteam/FileViewScreen'
 import OpenFolder from '../msteam/OpenFolder';
+import RegisterCourse from '../msteam/RegisterCourse';
 
 const Stack = createNativeStackNavigator();
 export default function TeamStack({navigation, route}) {
@@ -118,6 +119,11 @@ export default function TeamStack({navigation, route}) {
       <Stack.Screen
         name="OpenFolder"
         component={OpenFolder}
+        options={{header: () => null}}
+      />
+        <Stack.Screen
+        name="RegisterCourse"
+        component={RegisterCourse}
         options={{header: () => null}}
       />
     </Stack.Navigator>

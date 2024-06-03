@@ -31,7 +31,7 @@ const {width} = Dimensions.get('window');
 const TestQuestions = ({navigation, route}) => {
   const {user} = useContext(AuthContext);
   const scrollX = useRef(new Animated.Value(0)).current;
-  const {questionList, isFromPL, isMiniTest, testName} = route.params;
+  const {questionList, isFromPL, isMiniTest, testName, InfoTeacher} = route.params;
   const [soundL, setsoundL] = useState(null);
   const [ItemIndex, setItemIndex] = useState(0);
   const [OpenModal, setOpenModal] = useState(false);
@@ -52,6 +52,9 @@ const TestQuestions = ({navigation, route}) => {
           } else {
             if (isMiniTest) {
               if (i == 4) {
+                setloading(true);
+              }
+              else if (i == 7) {
                 setloading(true);
               }
             } else {
@@ -111,9 +114,9 @@ const TestQuestions = ({navigation, route}) => {
       part: questionList[index].part,
     }));
 
-    // console.log(answers);
-
     if (isMiniTest)
+  {
+    console.log('hihi');
       navigation.navigate('CompleteTestCard', {
         quantity: questionList.length,
         answer: answers,
@@ -122,7 +125,10 @@ const TestQuestions = ({navigation, route}) => {
         isMiniTest: route.params.isMiniTest,
         questionL: questionList,
         targetLevel: route.params.targetLevel,
+        TestName:testName,
+        InfoTeacher:InfoTeacher
       });
+    }
     else {
       const date = getDate();
       let completiontime = timeFormat(7200 - timeRemaining);

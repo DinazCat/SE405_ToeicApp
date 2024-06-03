@@ -36,6 +36,21 @@ const tuitionList = [
     value: 3000000,
   },
 ];
+const optionList = [
+  {
+    label: `Total free`,
+    value: `Total free`,
+  },
+  {
+    label: 'Free 2 days',
+    value: 'Free 2 days',
+  },
+  {
+    label: 'Pay charge',
+    value: 'Pay charge',
+  },
+];
+
 
 const NewTeam = ({navigation, route}) => {
   const [className, setClassName] = useState('');
@@ -51,8 +66,10 @@ const NewTeam = ({navigation, route}) => {
   });
 
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [openDropdown1, setOpenDropdown1] = useState(false);
   const [openDate1, setOpenDate1] = useState(false);
   const [openDate2, setOpenDate2] = useState(false);
+  const [state, setState] = useState('')
   const {user} = useContext(AuthContext);
 
   const onSave = async () => {
@@ -110,7 +127,8 @@ const NewTeam = ({navigation, route}) => {
       Level: level,
       Tuition: tuition,
       Description: description,
-      TeacherName:auth().currentUser.displayName
+      TeacherName:auth().currentUser.displayName,
+      PaymentPlan:state,
     })
       .then(() => {
         navigation.navigate('Teams');
@@ -159,7 +177,23 @@ const NewTeam = ({navigation, route}) => {
           keyboardType="numeric"
         />
         <Text style={styles.note}>Ex: Level 550+</Text>
-
+        <Text style={styles.title}>Payment Plans:</Text>
+        <DropDownPicker
+          placeholder="Select a payment plan"
+          items={optionList}
+          open={openDropdown1}
+          setOpen={() => setOpenDropdown1(!openDropdown1)}
+          value={state}
+          setValue={item => setState(item)}
+          maxHeight={160}
+          style={[styles.input, {zIndex: 1}]}
+          placeholderStyle={{fontSize: 16, color: '#555'}}
+          labelStyle={{fontSize: 16, color: '#333'}}
+          listItemContainer={{height: 40}}
+          listItemLabelStyle={{fontSize: 16, color: '#333'}}
+          dropDownContainerStyle={{backgroundColor: '#fafafa'}}
+        />
+        {state=='Pay charge'&&<View>
         <Text style={styles.title}>Tuition: </Text>
         <DropDownPicker
           placeholder="Select a tuition"
@@ -176,6 +210,8 @@ const NewTeam = ({navigation, route}) => {
           listItemLabelStyle={{fontSize: 16, color: '#333'}}
           dropDownContainerStyle={{backgroundColor: '#fafafa'}}
         />
+        </View>}
+       
 
         <View style={{flexDirection: 'row'}}>
           <View style={{flex: 1}}>
