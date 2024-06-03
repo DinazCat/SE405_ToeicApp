@@ -53,7 +53,7 @@ const handlePostComment =async() => {
     const currentHours = currentDate.getHours(); 
     const currentMinutes = currentDate.getMinutes();
     const time = currentDay+'/'+currentMonth+'/'+currentYear+' at '+currentHours+':'+currentMinutes
-    const date = 5+'/'+currentMonth+'/'+currentYear
+    const date = currentDay+'/'+currentMonth+'/'+currentYear
     const data = {
       userName:userInfo.name,
       userImg:userInfo.userImg,
@@ -62,6 +62,7 @@ const handlePostComment =async() => {
       Date:date,
       replies:[],
       likes:0,
+      classId:classId,
     }
     try {
       const postRef = await firestore().collection('PostInTeam').add(data);

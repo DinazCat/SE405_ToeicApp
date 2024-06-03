@@ -47,6 +47,7 @@ import uploadfile from '../api/uploadfile';
 import CreateFolder from '../ComponentTeam/CreateFolder';
 const {width, height} = Dimensions.get('window');
 import FormButton from '../components/FormButton';
+import General from '../ComponentTeam/General';
 const TeamRoom = ({navigation, route}) => {
   const {user, isTeacher} = useContext(AuthContext);
   const {classId} = route.params
@@ -522,6 +523,7 @@ const getTime=()=>{
       Date:date,
       replies:classData.replies||[],
       likes:0,
+      classId:classId,
     }
       const postRef = await firestore().collection('PostInTeam').add(data);
       const postId = postRef.id;
@@ -722,7 +724,7 @@ const getTime=()=>{
                 fontSize: 20,
                 marginLeft: 15,
               }}>
-              Buổi học ngày {moment().format('DD/MM/YYYY')}
+              Today is {moment().format('DD/MM/YYYY')}
             </Text>
             <View style={{flexDirection:'row', alignItems:'center'}}>
           <Text
@@ -1045,7 +1047,7 @@ const getTime=()=>{
             fontSize: 20,
             marginLeft: 15,
           }}>
-          Lớp luyện SW Toeic 150+
+          {classInfo?.ClassName}
         </Text>
         <View style={{flex: 1}} />
         {isTeacher&&<TouchableOpacity
@@ -1158,11 +1160,12 @@ const getTime=()=>{
       </View>}
       {selectedTab == 1 && !isLimit&& (
         <View>
+          {classInfo!=null&&<General calendar={[...classInfo.Schedule]} classId={classId} start={classInfo?.Start_Date} finish={classInfo?.Finish_Date}/>}
              {
             rangeDate!=null&&<FlatList
               data={rangeDate}
               renderItem={({item, index}) => (
-                <DateItem item={item} key={index}/>
+                <DateItem item={item} key={index} files={fileandfolder}/>
               )}
             />
           }
@@ -1282,7 +1285,7 @@ const getTime=()=>{
                 fontSize: 20,
                 marginLeft: 15,
               }}>
-              Lớp luyện SW Toeic 150+
+              {classInfo?.ClassName}
             </Text>
             <View style={{flex: 1}} />
             {isTeacher&&<TouchableOpacity
