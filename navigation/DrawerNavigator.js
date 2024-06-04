@@ -1,5 +1,13 @@
-import {View, Text, SafeAreaView, Image, StatusBar} from 'react-native';
-import React, {useState, useEffect} from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  SafeAreaView,
+  Image,
+  StatusBar,
+  TouchableOpacity,
+} from 'react-native';
+import React, {useState, useContext} from 'react';
 import {DrawerItemList, createDrawerNavigator} from '@react-navigation/drawer';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import SettingScreen from '../screens/SettingScreen';
@@ -18,6 +26,8 @@ import AnalysisStack from './AnalysisStack';
 import {NavigationContainter} from '@react-navigation/native';
 import BottomTab from './BottomTab';
 import ExploreStack from './ExploreStack';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {AuthContext} from '../navigation/AuthProvider';
 
 const Drawer = createDrawerNavigator();
 const SideMenu = () => {
@@ -26,6 +36,7 @@ const SideMenu = () => {
   </SafeAreaView>;
 };
 function DrawerNavigator() {
+  const {logout} = useContext(AuthContext);
   return (
     <Drawer.Navigator
       screenOptions={{
@@ -38,9 +49,16 @@ function DrawerNavigator() {
       }}
       drawerContent={props => {
         return (
-          <SafeAreaView>
+          <View>
             <DrawerItemList {...props} />
-          </SafeAreaView>
+            <View style={{flex: 1}} />
+            <TouchableOpacity
+              style={styles.btnContainer}
+              onPress={() => logout()}>
+              <Ionicons name="log-out-outline" size={27} color={'#222'} />
+              <Text style={[styles.btnText, {color: '#222'}]}>{'Log Out'}</Text>
+            </TouchableOpacity>
+          </View>
         );
       }}>
       <Drawer.Screen
@@ -140,3 +158,22 @@ function DrawerNavigator() {
   );
 }
 export default DrawerNavigator;
+
+const styles = StyleSheet.create({
+  btnContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    height: 50,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  btnText: {
+    fontSize: 18,
+    marginLeft: 10,
+    fontWeight: '500',
+    color: '#222',
+    marginLeft: 30,
+  },
+});

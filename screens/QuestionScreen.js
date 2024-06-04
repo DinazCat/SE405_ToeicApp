@@ -372,6 +372,8 @@ const QuestionScreen = ({navigation, route}) => {
         sign: 'QuestionScreen',
         part: part,
         isFromPL: route.params.isFromPL,
+        isAssessment: route.params.isAssessment,
+        isSkipLevelTest: route.params.isSkipLevelTest,
         questionL: history,
         from: route.params.from,
       });
@@ -411,6 +413,7 @@ const QuestionScreen = ({navigation, route}) => {
         part: part,
         isFromPL: route.params.isFromPL,
         isAssessment: route.params.isAssessment,
+        isSkipLevelTest: route.params.isSkipLevelTest,
         questionL: history,
         from: route.params.from,
       });
@@ -443,6 +446,7 @@ const QuestionScreen = ({navigation, route}) => {
         part: part,
         isFromPL: route.params.isFromPL,
         isAssessment: route.params.isAssessment,
+        isSkipLevelTest: route.params.isSkipLevelTest,
         questionL: history,
         from: route.params.from,
       });
@@ -479,6 +483,7 @@ const QuestionScreen = ({navigation, route}) => {
         part: part,
         isFromPL: route.params.isFromPL,
         isAssessment: route.params.isAssessment,
+        isSkipLevelTest: route.params.isSkipLevelTest,
         questionL: history,
         DetailQty: qty,
         from: route.params.from,
@@ -507,6 +512,9 @@ const QuestionScreen = ({navigation, route}) => {
             }
             practicephases[result.CurrentPhase.PhaseIndex].AssessmentScore =
               score;
+
+            if (route.params?.isSkipLevelTest) score = score / 2;
+
             if (score >= currentphase.Target) {
               if (index !== days.length - 1) {
                 data = {

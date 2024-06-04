@@ -337,6 +337,49 @@ const PartPracticePlan = ({navigation, route}) => {
               <Ionicons name="lock-open-outline" size={20} color={'#222'} />
             )}
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.AssessmentCardWrapper}
+            onPress={async () => {
+              if (item.CompletedQuestion < item.NumberofQuestions) return;
+              const questionList = await Api.getQuestion(12, 'ListenPart1');
+              navigation.push('QuestionScreen', {
+                questionList: questionList,
+                part: 'L1',
+                partName: 'Photographs',
+                sign: 'Max',
+                numberofQuestion: 12,
+                isFromPL: true,
+                isAssessment: true,
+                isSkipLevelTest: true,
+              });
+            }}>
+            <View style={styles.TestIconWrapper}>
+              <Image
+                source={require('../assets/test2.png')}
+                style={styles.TestIcon}
+              />
+            </View>
+            <View style={{marginLeft: 10}}>
+              <Text
+                style={[
+                  styles.TextStyle,
+                  {textAlign: 'left', fontWeight: '600'},
+                ]}>
+                Skip Level Test
+              </Text>
+              <View style={{flexDirection: 'row'}}>
+                <Text
+                  style={[styles.TextStyle, {textAlign: 'left', fontSize: 16}]}>
+                  {currentTarget} questions -{' '}
+                </Text>
+                <Ionicons name="time-outline" size={20} color={'#222'} />
+                <Text
+                  style={[styles.TextStyle, {textAlign: 'left', fontSize: 16}]}>
+                  {' 6'} minutes
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
         </>
       );
   }

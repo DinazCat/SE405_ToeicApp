@@ -21,6 +21,7 @@ const CompleteCard = ({navigation, route}) => {
     questionL,
     partName,
     isFromPL,
+    isAssessment,
     DetailQty,
     from,
   } = route.params;
@@ -203,7 +204,9 @@ const CompleteCard = ({navigation, route}) => {
               fontSize: 20,
               marginLeft: 5,
             }}>
-            You have complete the practice section!
+            {isAssessment
+              ? 'You have complete the test!'
+              : 'You have complete the practice section!'}
           </Text>
           <Text style={[styles.TextFont, {fontWeight: '500'}]}>
             {skillText + ': '}
