@@ -65,56 +65,49 @@ const TeamRoom = ({navigation, route}) => {
     '#ff00ff',
     '#00ffff',
   ];
-  const [classInfo, setClassInfo] = useState(null)
-  const [teacherInfo, setTeacherInfo] = useState(null)
-  const [rangeDate, setRangeDate] = useState(null)
-  const [createFolder, setCreateFolder] = useState(false)
-  const [isLimit, setIsLimit] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
- 
-  const getInFoClass = async()=>{
-    const classtemp = await firestore()
-    .collection('Class')
-    .doc(classId)
-    .get();
-    setClassInfo(classtemp.data())
+  const [classInfo, setClassInfo] = useState(null);
+  const [teacherInfo, setTeacherInfo] = useState(null);
+  const [rangeDate, setRangeDate] = useState(null);
+  const [createFolder, setCreateFolder] = useState(false);
+  const [isLimit, setIsLimit] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const getInFoClass = async () => {
+    const classtemp = await firestore().collection('Class').doc(classId).get();
+    setClassInfo(classtemp.data());
     getTeacher(classtemp.data().userId);
-    if(classtemp.data().Schedule?.length>0){
-      const content = await Api.getRangeDate(classId)
-      setRangeDate(content)
-      if(classtemp.data().PaymentPlan=='Free 2 days'&&!isTeacher){
-        const currentDate = new Date()
-        const currentDay = currentDate.getDate(); 
-        const currentMonth = currentDate.getMonth() + 1; 
-        const currentYear = currentDate.getFullYear(); 
-        let list = content[1].Date.split('/')
-        console.log(content[1].Date)
-        let due = false
-        if(currentYear > list[2]) {
+    if (classtemp.data().Schedule?.length > 0) {
+      const content = await Api.getRangeDate(classId);
+      setRangeDate(content);
+      if (classtemp.data().PaymentPlan == 'Free 2 days' && !isTeacher) {
+        const currentDate = new Date();
+        const currentDay = currentDate.getDate();
+        const currentMonth = currentDate.getMonth() + 1;
+        const currentYear = currentDate.getFullYear();
+        let list = content[1].Date.split('/');
+        console.log(content[1].Date);
+        let due = false;
+        if (currentYear > list[2]) {
           due = true;
-        }
-        else if(currentYear == list[2]){
-          if(currentMonth>list[1]){
-            due = true
-          }
-          else if(currentDay > list[0]){
-            due = true
+        } else if (currentYear == list[2]) {
+          if (currentMonth > list[1]) {
+            due = true;
+          } else if (currentDay > list[0]) {
+            due = true;
           }
         }
-        if(due==true){
-          let pay = await Api.checkTransaction(user.uid,classId)
-          setIsLimit(!pay)
+        if (due == true) {
+          let pay = await Api.checkTransaction(user.uid, classId);
+          setIsLimit(!pay);
         }
-        setIsLoading(false)
-      }
-      else setIsLoading(false)
-    }  
-    setIsLoading(false)
-  }
+        setIsLoading(false);
+      } else setIsLoading(false);
+    }
+    setIsLoading(false);
+  };
 
   useEffect(() => {
     getInFoClass();
-
   }, []);
   const [isModalVisible, setModalVisible] = useState(false);
   const toggleModal = () => {
@@ -211,21 +204,18 @@ const TeamRoom = ({navigation, route}) => {
         setMeetingId(data.MeetingId);
       }
     });
-  }
-  const sendMeetingId = async(data)=>{
-    const documentRef = firestore()
-    .collection('Class')
-    .doc(classId);
-  await documentRef
-    .update({
-      MeetingId:data
-    })
-  }
-  
+  };
+  const sendMeetingId = async data => {
+    const documentRef = firestore().collection('Class').doc(classId);
+    await documentRef.update({
+      MeetingId: data,
+    });
+  };
+
   const getMeetingId = async id => {
     const meetingId = id == null ? await createMeeting({token}) : id;
     console.log(meetingId);
-    sendMeetingId(meetingId)
+    sendMeetingId(meetingId);
     setMeetingId(meetingId);
   };
   const [screenWidth, setScreenWidth] = useState(
@@ -254,75 +244,57 @@ const TeamRoom = ({navigation, route}) => {
   useEffect(() => {
     getRecords();
   }, []);
-  const [fileandfolder, setFileandFolder] = useState([])
+  const [fileandfolder, setFileandFolder] = useState([]);
 
-  const sendFileToNodejs = async(dataFile, type)=>{
-    let title = ''
-    let url = uploadfile.upImage
-    if(dataFile.sign == 'filePDF' )
-      {
-        title = 'pdf';
-        url = uploadfile.upPdf
-      }
-      else if(dataFile.sign == 'fileWord' )
-        {
-          title = 'doc'
-          url = uploadfile.updoc
-        }
-        else if(dataFile.sign == 'filePPT' )
-          {
-            title = 'ppt'
-            url = uploadfile.upslide
-          }
-          else if(dataFile.sign == 'fileImage' )
-            {
-              title = 'image';
-              url = uploadfile.upImage
-            }
-            else if(dataFile.sign == "fileMp4" )
-              {
-                title = 'video';
-                url = uploadfile.upVideo
-              }
+  const sendFileToNodejs = async (dataFile, type) => {
+    let title = '';
+    let url = uploadfile.upImage;
+    if (dataFile.sign == 'filePDF') {
+      title = 'pdf';
+      url = uploadfile.upPdf;
+    } else if (dataFile.sign == 'fileWord') {
+      title = 'doc';
+      url = uploadfile.updoc;
+    } else if (dataFile.sign == 'filePPT') {
+      title = 'ppt';
+      url = uploadfile.upslide;
+    } else if (dataFile.sign == 'fileImage') {
+      title = 'image';
+      url = uploadfile.upImage;
+    } else if (dataFile.sign == 'fileMp4') {
+      title = 'video';
+      url = uploadfile.upVideo;
+    }
     const formData = new FormData();
-          formData.append(title, {
-            uri: dataFile.Link,
-            name: dataFile.Name,
-            type: type,
-          });
-          console.log(url)
-          const config = {
-            method: 'post',
-            url: url,
-            headers: { 
-              'Content-Type': 'multipart/form-data'
-            },
-            data : formData
-          };
-      
-          const response = await  axios(config)
+    formData.append(title, {
+      uri: dataFile.Link,
+      name: dataFile.Name,
+      type: type,
+    });
+    console.log(url);
+    const config = {
+      method: 'post',
+      url: url,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      data: formData,
+    };
 
-          if(dataFile.sign == 'filePDF' )
-            {
-              return response.data.filepdf
-            }
-            else if(dataFile.sign == 'fileWord' )
-              {
-                return response.data.filedoc
-              }
-              else if(dataFile.sign == 'filePPT' )
-                {
-                  return response.data.fileppt
-                }
-                else if(dataFile.sign == 'fileImage' )
-                  {
-                    return response.data.photo
-                  }
-                  else if(dataFile.sign == "fileMp4" )
-                    {
-                      return response.data.video
-                    }
-  }
+    const response = await axios(config);
+
+    if (dataFile.sign == 'filePDF') {
+      return response.data.filepdf;
+    } else if (dataFile.sign == 'fileWord') {
+      return response.data.filedoc;
+    } else if (dataFile.sign == 'filePPT') {
+      return response.data.fileppt;
+    } else if (dataFile.sign == 'fileImage') {
+      return response.data.photo;
+    } else if (dataFile.sign == 'fileMp4') {
+      return response.data.video;
+    }
+  };
   const [visible, setvisible] = useState(false);
   const handleFilePicker = async () => {
     try {
@@ -536,32 +508,39 @@ const TeamRoom = ({navigation, route}) => {
     setIsJoin(false);
     setRealJoin(false);
     setMeetingId(null);
-    sendMeetingId(null)
-    const documentRef = firestore()
-    .collection('Class')
-    .doc(classId);
+    sendMeetingId(null);
+    const documentRef = firestore().collection('Class').doc(classId);
 
-    const currentDate = new Date()
-    const currentDay = currentDate.getDate(); 
-    const currentMonth = currentDate.getMonth() + 1; 
-    const currentYear = currentDate.getFullYear(); 
-    const currentHours = currentDate.getHours(); 
+    const currentDate = new Date();
+    const currentDay = currentDate.getDate();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear();
+    const currentHours = currentDate.getHours();
     const currentMinutes = currentDate.getMinutes();
-    const time = currentDay+'/'+currentMonth+'/'+currentYear+' at '+currentHours+':'+currentMinutes
-    const date = currentDay+'/'+currentMonth+'/'+currentYear
-    const classData = (await documentRef.get()).data()
+    const time =
+      currentDay +
+      '/' +
+      currentMonth +
+      '/' +
+      currentYear +
+      ' at ' +
+      currentHours +
+      ':' +
+      currentMinutes;
+    const date = currentDay + '/' + currentMonth + '/' + currentYear;
+    const classData = (await documentRef.get()).data();
     const data = {
       userName: teacherInfo?.name,
       className: classInfo?.ClassName,
       postTime: time,
-      sign:'Meeting',
-      Date:date,
-      replies:classData.replies||[],
-      likes:0,
-      classId:classId,
-    }
-      const postRef = await firestore().collection('PostInTeam').add(data);
-      const postId = postRef.id;
+      sign: 'Meeting',
+      Date: date,
+      replies: classData.replies || [],
+      likes: 0,
+      classId: classId,
+    };
+    const postRef = await firestore().collection('PostInTeam').add(data);
+    const postId = postRef.id;
 
     await firestore().collection('PostInTeam').doc(postId).update({
       id: postId,
@@ -591,22 +570,22 @@ const TeamRoom = ({navigation, route}) => {
     } = useMeeting({
       onPresenterChanged,
       onRecordingStateChanged,
-      onMeetingJoined, 
+      onMeetingJoined,
     });
-    const [idPersonRecord, setIsIdPersonRecord] = useState(null)
-    const [count_Record, setcount_Record] = useState(0)
-    const [presentName, setPresentName] = ('Linh')
+    const [idPersonRecord, setIsIdPersonRecord] = useState(null);
+    const [count_Record, setcount_Record] = useState(0);
+    const [presentName, setPresentName] = 'Linh';
     function onMeetingJoined() {
-      console.log("onMeetingJoined");
+      console.log('onMeetingJoined');
       JoinMeeting();
-      setMyIdMeeting(participantsArrId[participantsArrId.length - 1])
+      setMyIdMeeting(participantsArrId[participantsArrId.length - 1]);
     }
-  
-   function onRecordingStateChanged(data) {
-      const { status, id} = data;
-    console.log(data)
-    setIsIdPersonRecord(id)
-      if (status === "RECORDING_STARTING") {
+
+    function onRecordingStateChanged(data) {
+      const {status, id} = data;
+      console.log(data);
+      setIsIdPersonRecord(id);
+      if (status === 'RECORDING_STARTING') {
         setIsRecording(true);
         console.log('Meeting recording is starting');
       } else if (status === 'RECORDING_STOPPED') {
@@ -662,10 +641,8 @@ const TeamRoom = ({navigation, route}) => {
 
     const JoinMeeting = async () => {
       const participantsArrId = [...participants.keys()];
-      console.log(realJoin)
-      const documentRef = firestore()
-        .collection('Class')
-        .doc(classId);
+      console.log(realJoin);
+      const documentRef = firestore().collection('Class').doc(classId);
       await documentRef
         .update({
           Participants: firestore.FieldValue.arrayUnion({
@@ -676,7 +653,7 @@ const TeamRoom = ({navigation, route}) => {
           }),
         })
         .then(() => {
-          setRealJoin(true)
+          setRealJoin(true);
         });
     };
 
@@ -724,863 +701,896 @@ const TeamRoom = ({navigation, route}) => {
     //   });
 
     // }
-     //Callback for when the presenter changes
-  function onPresenterChanged(presenterId) {
-    if(presenterId){
-      console.log(presenterId, "started screen share");
-      const foundItem = listAttendee.find(item => item.id === presenterId);
-      setPresentName(foundItem.name)
-    }else{
-      console.log("someone stopped screen share");
-    }
+    //Callback for when the presenter changes
+    function onPresenterChanged(presenterId) {
+      if (presenterId) {
+        console.log(presenterId, 'started screen share');
+        const foundItem = listAttendee.find(item => item.id === presenterId);
+        setPresentName(foundItem.name);
+      } else {
+        console.log('someone stopped screen share');
+      }
 
-    const participantsArrId = [...participants.keys()];
-    const [Share, SetShare] = useState(false);
-    const handleMicToggle = () => {
-      toggleMic();
-      setIsMicMuted(!isMicMuted);
-    };
+      const participantsArrId = [...participants.keys()];
+      const [Share, SetShare] = useState(false);
+      const handleMicToggle = () => {
+        toggleMic();
+        setIsMicMuted(!isMicMuted);
+      };
 
-    const handleCamToggle = () => {
-      toggleWebcam();
-      setIsCamMuted(!isCamMuted);
-    };
+      const handleCamToggle = () => {
+        toggleWebcam();
+        setIsCamMuted(!isCamMuted);
+      };
 
-    return (
-      <View style={styles.container2}>
-        <View
-          style={[
-            AppStyle.viewstyle.component_upzone,
-            {backgroundColor: '#363636'},
-          ]}>
-          <TouchableOpacity
-            style={{marginLeft: '2%'}}
-            onPress={() => {
-              setIsJoin(false);
-            }}>
-            <FontAwesome name="chevron-left" color="white" size={20} />
-          </TouchableOpacity>
-          <View style={{width: width}}>
-            <Text
-              style={{
-                textAlign: 'left',
-                color: 'white',
-                fontSize: 20,
-                marginLeft: 15,
-              }}>
-              Today is {moment().format('DD/MM/YYYY')}
-            </Text>
-            <View style={{flexDirection:'row', alignItems:'center'}}>
-          <Text
-              style={{
-                textAlign: 'left',
-                color: 'white',
-                fontSize: 18,
-                marginLeft: 15,
-              }}>
-              {listAttendee?.length} attendees
-            </Text>
-            <View style={{flex: 1}} />
-          <TouchableOpacity style={{}}
-            onPress={() => {
-              if(isRedording1){
-                handleStopRecording();
-              }
-              else {
-                setIsRecording1(true);
-                handleStartRecording();
-              }
-            }}>
-            {isRedording == false ? (
-              <Icon name="record-vinyl" color="gray" size={20} />
-            ) : (
-              <Icon name="record-vinyl" color="#8B0016" size={20} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft:10}}
-            onPress={() => {
-              handleMicToggle();
-            }}>
-            {isMicMuted == false ? (
-              <FontAwesome name="microphone-slash" color="gray" size={20} />
-            ) : (
-              <FontAwesome name="microphone" color="black" size={20} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft:10}}
-            onPress={() => {
-              handleCamToggle();
-            }}>
-            {isCamMuted == false ? (
-              <Icon name="video-slash" color="gray" size={20} />
-            ) : (
-              <Icon name="video" color="gray" size={20} />
-            )}
-          </TouchableOpacity>
-          <View style={{width:35}}/>
-          </View>
-        </View>
-        {!screenShareOn && listAttendee?.length > 0 && (
-          <FlatList
-            style={{alignSelf: 'center', marginTop: 10}}
-            data={listAttendee}
-            renderItem={({item, index}) => (
-              <AttendeeCard
-                key={index}
-                person={item}
-                color={getRandomColor()}
-              />
-            )}
-            numColumns={2}
-            contentContainerStyle={styles.flatListContent}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-          />
-        )}
-        {screenShareOn && screenShareStream && (
-          <>
-             <RTCView
-          streamURL={new MediaStream([screenShareStream.track]).toURL()}
-          objectFit={"contain"}
-          style={{
-            height: height*0.75,
-            width:width*0.95,
-            alignSelf:'center',
-            marginVertical:5
-          }}
-        />
-        <Text style={{color:"white", alignSelf:'center'}}>{presentName} is sharing! </Text>
-          </>
-        )}
-         <View style={{flex: 1}} />
-        <View
-          style={{
-            height: 50,
-            backgroundColor: 'gray',
-            flexDirection: 'row',
-            justifyContent: 'space-evenly',
-            alignItems: 'center',
-          }}>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.push('AttendeeScreen', {list: listAttendee})
-            }>
-            <Icon name="users" color="black" size={20} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.push('ReplyScreen', {
-                postId: classInfo.classId,
-                postName: classInfo.ClassName,
-                sign: 'TeamRoom',
-              })
-            }>
-            <Icon name="rocketchat" color="black" size={20} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              toggleScreenShare();
-            }}>
-            {(!screenShareOn || presenterId != myIdMeeting) && (
-              <Ionicons name={'arrow-up-outline'} size={20} color={'black'} />
-            )}
-            {screenShareOn && presenterId == myIdMeeting && (
-              <Ionicons
-                name={'stop-circle-outline'}
-                size={20}
-                color={'#8B0016'}
-              />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              leave();
-              onParticipantLeft();
-              // setMeetingId(null);
-              setIsJoin(false);
-              setRealJoin(false);
-            }}>
-            <Icon name="phone-slash" color="#8B0016" size={20} />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
-  const [isMicMuted, setIsMicMuted] = useState(false);
-  const [isCamMuted, setIsCamMuted] = useState(false);
-  const [isCreate, setIsCreate] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-  const [formattedTime, setFormattedTime] = useState('00:00');
-  function MeetingView() {
-   
-    const {
-      leave,
-      toggleWebcam,
-      enableWebcam,
-      disableWebcam,
-      toggleMic,
-      participants,
-      join
-    } = useMeeting({});
-
-    // useEffect(() => {
-    //   const interval = setInterval(() => {
-    //     setSeconds(seconds => seconds + 1);
-    //   }, 1000);
-
-    //   return () => clearInterval(interval);
-    // }, []);
-
-    // useEffect(() => {
-    //   const minutes = Math.floor(seconds / 60);
-    //   const remainingSeconds = seconds % 60;
-
-    //   const formattedMinutes = String(minutes).padStart(2, '0');
-    //   const formattedSeconds = String(remainingSeconds).padStart(2, '0');
-
-    //   setFormattedTime(`${formattedMinutes}:${formattedSeconds}`);
-    // }, [seconds]);
-    const {localWebcamOn} = useMeeting();
-    //Event to determine if the meeting has been left
-    // async function onMeetingLeft() {
-    //   console.log('onMeetingLeft');
-    //   setIsJoin(false);
-    //   setRealJoin(false)
-    //   setMeetingId(null);
-    //   sendMeetingId(null)
-    //   const documentRef = firestore()
-    //   .collection('Class')
-    //   .doc('0VA2PZf3PVGlbWlF9EiV');
-    // await documentRef
-    //   .update({
-    //     Participants: []
-    //   })
-    //   .then(() => {
-    //   });
-    // }
-
-    // const {join} = useMeeting({onParticipantJoined});
-    
-
-    //Getting the leave and end method from hook and assigning event callbacks
-    const {end} = useMeeting({});
-
-    //  const participantsArrId = [...participants.keys()];
-    const handleMicToggle = () => {
-      toggleMic();
-      setIsMicMuted(!isMicMuted);
-    };
-
-    const handleCamToggle = () => {
-      console.log('kkkkk');
-      toggleWebcam();
-      console.log('jk' + localWebcamOn);
-      setIsCamMuted(!isCamMuted);
-    };
-
-    // const sendParticipants = async(a)=>{
-    //   console.log('hhhh'+a)
-    //   socketServices.emit('Participants', a);
-    // }
-
-    return (
-      <View
-        style={{
-          borderRadius: 15,
-          backgroundColor: PRIMARY_COLOR,
-          width: screenWidth * 0.9,
-          height: 130,
-          alignSelf: 'center',
-          elevation: 5,
-          marginTop: 10,
-          justifyContent: 'space-evenly',
-          alignItems: 'center',
-        }}>
-        <Text style={{fontSize: 20, color: 'white'}}>Meeting start</Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginHorizontal: 10,
-            width: 120,
-          }}>
-          <TouchableOpacity
-            onPress={() => {
-              handleMicToggle();
-            }}>
-            {isMicMuted == false ? (
-              <FontAwesome name="microphone-slash" color="gray" size={20} />
-            ) : (
-              <FontAwesome name="microphone" color="black" size={20} />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              handleCamToggle();
-            }}>
-            {isCamMuted == false ? (
-              <Icon name="video-slash" color="gray" size={20} />
-            ) : (
-              <Icon name="video" color="gray" size={20} />
-            )}
-          </TouchableOpacity>
-          {isTeacher && (
-            <TouchableOpacity
-              onPress={() => {
-                end();
-                console.log('end');
-                onMeetingLeft();
-              }}>
-              <Text>End</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {!realJoin && (
-          <TouchableOpacity
-            style={{
-              backgroundColor: 'white',
-              width: 50,
-              borderRadius: 20,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            onPress={() => {
-              join();
-              setIsJoin(true);
-            }}>
-            <Text>Join</Text>
-          </TouchableOpacity>
-        )}
-        {realJoin && (
-          <TouchableOpacity
-            style={{
-              backgroundColor: 'white',
-              width: 50,
-              borderRadius: 20,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            onPress={() => {
-              setIsJoin(true);
-            }}>
-            <Text>Join</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    );
-  }
-  const showAlert = () => {
-    const {leave} = useMeeting({});
-    if (realJoin)
-      Alert.alert(
-        'Hey!',
-        'If you leave, you will exit the meeting.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              leave();
-              onParticipantLeft();
-              setIsJoin(false);
-              setRealJoin(false);
-              navigation.goBack();
-            },
-          },
-          {text: 'Cancel', onPress: () => console.log('Cancel pressed')},
-        ],
-        {cancelable: false},
-      );
-  };
-
-  return isLoading ? 
-    <ActivityIndicator size="large" color="#0000ff" />
-   :
-    meetingId == null ? (
-    <View style={styles.container}>
-      <View style={AppStyle.viewstyle.component_upzone}>
-        <TouchableOpacity
-          style={{marginLeft: '2%'}}
-          onPress={() => navigation.goBack()}>
-          <FontAwesome name="chevron-left" color="white" size={20} />
-        </TouchableOpacity>
-        <Text
-          style={{
-            textAlign: 'left',
-            color: 'white',
-            fontSize: 20,
-            marginLeft: 15,
-          }}>
-          {classInfo?.ClassName}
-        </Text>
-        <View style={{flex: 1}} />
-        {isTeacher&&<TouchableOpacity
-          style={{marginRight: '5%'}}
-          onPress={() => {
-            setIsCreate(true);
-            getMeetingId();
-          }}
-          // onPress={()=>navigation.push('MeetingRoom')}
-        >
-          <Icon name={'video'} color="white" size={20} />
-        </TouchableOpacity>}
-      </View>
-      {isLimit&&<View style={{flex: 1, padding: 10}}>
-        <View style={styles.paymentContainer}>
-          <Text style={{textAlign:'center'}}>You have completed 2 days of free lessons. If you want to continue, please pay by clicking the button below</Text>
-        </View>
-          <FormButton title={'Pay Fee'} onPress={()=>navigation.push('RegisterCourse',{course:classInfo, from:'TeamRoom'})} />
-        </View>}
-      {!isLimit&&<View style={{height:40}}>
-      <ScrollView
-      horizontal={true}>
-        <View 
-           style={{
-        alignItems: 'center',
-        alignSelf: 'center',
-        height:40,
-        flexDirection:'row'
-          }}
-          >
-          <TouchableOpacity
-          style={[styles.historyButton]}
-          onPress={() => {
-            setSelectedTab(1);
-          }}>
-          <Text
+      return (
+        <View style={styles.container2}>
+          <View
             style={[
-              AppStyle.button.buttonText,
-              {color: selectedTab == 1 ? PRIMARY_COLOR : '#333'},
+              AppStyle.viewstyle.component_upzone,
+              {backgroundColor: '#363636'},
             ]}>
-            Posts
-          </Text>
-        </TouchableOpacity>
-        <View
-          style={{
-            width: 1,
-            height: 30,
-            backgroundColor: 'black',
-            marginHorizontal: 10,
-          }}
-        />
-        <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => {
-            setSelectedTab(2);
-          }}>
-          <Text
-            style={[
-              AppStyle.button.buttonText,
-              {color: selectedTab == 2 ? PRIMARY_COLOR : 'black'},
-            ]}>
-            Files
-          </Text>
-        </TouchableOpacity>
-        
-        <View
-          style={{
-            width: 1,
-            height: 30,
-            backgroundColor: 'black',
-            marginHorizontal: 10,
-          }}
-        />
-        <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => {
-            setSelectedTab(3);
-          }}>
-          <Text
-            style={[
-              AppStyle.button.buttonText,
-              {color: selectedTab == 3 ? PRIMARY_COLOR : 'black'},
-            ]}>
-            Recordings
-          </Text>
-        </TouchableOpacity>
-        <View
-          style={{
-            width: 1,
-            height: 30,
-            backgroundColor: 'black',
-            marginHorizontal: 10,
-          }}
-        />
-        <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => {
-            toggleModal();
-          }}>
-          <Text
-            style={[
-              AppStyle.button.buttonText,
-              {color: selectedTab == 4 ? PRIMARY_COLOR : 'black'},
-            ]}>
-            More
-          </Text>
-        </TouchableOpacity>
-          </View>
-      </ScrollView>
-      </View>}
-      {selectedTab == 1 && !isLimit&& (
-        <View>
-          {classInfo!=null&&<General calendar={[...classInfo.Schedule]} classId={classId} start={classInfo?.Start_Date} finish={classInfo?.Finish_Date}/>}
-             {
-            rangeDate!=null&&<FlatList
-              data={rangeDate}
-              renderItem={({item, index}) => (
-                <DateItem item={item} key={index} files={fileandfolder}/>
-              )}
-            />
-          )}
-          {rangeDate == null && isTeacher && (
-            <View
-              style={{
-                width: width * 0.9,
-                height: 100,
-                justifyContent: 'space-evenly',
-                alignItems: 'center',
-                alignSelf: 'center',
-              }}>
-              <Text>To begin, let set Schedule for your class</Text>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: PRIMARY_COLOR,
-                  padding: 5,
-                  borderRadius: 15,
-                  height: 40,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                onPress={() => {}}>
-                <Text>Set schedule!</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      )}
-      {selectedTab == 2 && (
-        <ScrollView>
-          <FlatList
-            data={fileandfolder}
-            renderItem={({item, index}) => {
-              if (
-                item.sign == 'fileImage' ||
-                item.sign == 'fileMp4' ||
-                item.sign == 'filePPT' ||
-                item.sign == 'fileWord' ||
-                item.sign == 'filePDF'
-              ) {
-                return <FileCard record={item} />;
-              } else if (item.sign == 'folder') {
-                return <FolderCard record={item} />;
-              }
-            }}
-          />
-          {createFolder && (
-            <CreateFolder
-              close={() => setCreateFolder(false)}
-              teacherName={profileData?.name}
-              classId={classId}
-            />
-          )}
-        </ScrollView>
-      )}
-      {selectedTab == 3 && (
-        <FlatList
-          data={records}
-          renderItem={({item, index}) => (
-            <RecordingCard
-              record={item}
-              show={() => {
-                navigation.push('ShowRecord', {
-                  url: item.File,
-                  name: item.Name,
-                });
-              }}
-            />
-          )}
-        />
-      )}
-      {isTeacher && selectedTab != 3 && (
-        <TouchableOpacity
-          style={{
-            position: 'absolute',
-            marginLeft: screenWidth - 80,
-            marginTop: screenHeight - 120,
-            borderRadius: 25,
-            width: 50,
-            height: 50,
-            backgroundColor: PRIMARY_COLOR,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          onPress={() => {
-            selectedTab == 1
-              ? navigation.push('NewPost', {
-                  classId: classId,
-                  userInfo: profileData,
-                })
-              : setvisible(true);
-          }}>
-          {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
-          {selectedTab == 2 && <PopupMenu />}
-          {/* {selectedTab == 3 && (
-          <Ionicons name={'arrow-up-outline'} size={20} color={'white'} />
-        )} */}
-        </TouchableOpacity>
-      )}
-      {Side()}
-    </View>
-  ) : (
-    <MeetingProvider
-      config={{
-        meetingId,
-        micEnabled: isMicMuted,
-        webcamEnabled: isCamMuted,
-        name: profileData.name,
-      }}
-      token={token}>
-      {isJoin ? (
-        <MeetingRoomtemp />
-      ) : (
-        <View style={styles.container}>
-          <View style={AppStyle.viewstyle.component_upzone}>
             <TouchableOpacity
               style={{marginLeft: '2%'}}
               onPress={() => {
-                // showAlert();
-                // setMeetingId(null);
-                // const {leave} = useMeeting({});
-                if (realJoin)
-                  Alert.alert(
-                    'Hey!',
-                    'If you leave, you will exit the meeting.',
-                    [
-                      {
-                        text: 'OK',
-                        onPress: () => {
-                          // leave();
-                          onParticipantLeft();
-                          setIsJoin(false);
-                          setRealJoin(false);
-                          navigation.goBack();
-                        },
-                      },
-                      {
-                        text: 'Cancel',
-                        onPress: () => console.log('Cancel pressed'),
-                      },
-                    ],
-                    {cancelable: false},
-                  );
+                setIsJoin(false);
               }}>
               <FontAwesome name="chevron-left" color="white" size={20} />
             </TouchableOpacity>
-            <Text
-              style={{
-                textAlign: 'left',
-                color: 'white',
-                fontSize: 20,
-                marginLeft: 15,
-              }}>
-              {classInfo?.ClassName}
-            </Text>
-            <View style={{flex: 1}} />
-            {isTeacher && (
-              <TouchableOpacity
-                style={{marginRight: '5%'}}
-                onPress={() => {
-                  getMeetingId();
-                }}
-                // onPress={()=>navigation.push('MeetingRoom')}
-              >
-                <Icon name={'video'} color="white" size={20} />
-              </TouchableOpacity>
+            <View style={{width: width}}>
+              <Text
+                style={{
+                  textAlign: 'left',
+                  color: 'white',
+                  fontSize: 20,
+                  marginLeft: 15,
+                }}>
+                Today is {moment().format('DD/MM/YYYY')}
+              </Text>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text
+                  style={{
+                    textAlign: 'left',
+                    color: 'white',
+                    fontSize: 18,
+                    marginLeft: 15,
+                  }}>
+                  {listAttendee?.length} attendees
+                </Text>
+                <View style={{flex: 1}} />
+                <TouchableOpacity
+                  style={{}}
+                  onPress={() => {
+                    if (isRedording1) {
+                      handleStopRecording();
+                    } else {
+                      setIsRecording1(true);
+                      handleStartRecording();
+                    }
+                  }}>
+                  {isRedording == false ? (
+                    <Icon name="record-vinyl" color="gray" size={20} />
+                  ) : (
+                    <Icon name="record-vinyl" color="#8B0016" size={20} />
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{marginLeft: 10}}
+                  onPress={() => {
+                    handleMicToggle();
+                  }}>
+                  {isMicMuted == false ? (
+                    <FontAwesome
+                      name="microphone-slash"
+                      color="gray"
+                      size={20}
+                    />
+                  ) : (
+                    <FontAwesome name="microphone" color="black" size={20} />
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{marginLeft: 10}}
+                  onPress={() => {
+                    handleCamToggle();
+                  }}>
+                  {isCamMuted == false ? (
+                    <Icon name="video-slash" color="gray" size={20} />
+                  ) : (
+                    <Icon name="video" color="gray" size={20} />
+                  )}
+                </TouchableOpacity>
+                <View style={{width: 35}} />
+              </View>
+            </View>
+            {!screenShareOn && listAttendee?.length > 0 && (
+              <FlatList
+                style={{alignSelf: 'center', marginTop: 10}}
+                data={listAttendee}
+                renderItem={({item, index}) => (
+                  <AttendeeCard
+                    key={index}
+                    person={item}
+                    color={getRandomColor()}
+                  />
+                )}
+                numColumns={2}
+                contentContainerStyle={styles.flatListContent}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
+              />
             )}
+            {screenShareOn && screenShareStream && (
+              <>
+                <RTCView
+                  streamURL={new MediaStream([screenShareStream.track]).toURL()}
+                  objectFit={'contain'}
+                  style={{
+                    height: height * 0.75,
+                    width: width * 0.95,
+                    alignSelf: 'center',
+                    marginVertical: 5,
+                  }}
+                />
+                <Text style={{color: 'white', alignSelf: 'center'}}>
+                  {presentName} is sharing!{' '}
+                </Text>
+              </>
+            )}
+            <View style={{flex: 1}} />
+            <View
+              style={{
+                height: 50,
+                backgroundColor: 'gray',
+                flexDirection: 'row',
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+              }}>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.push('AttendeeScreen', {list: listAttendee})
+                }>
+                <Icon name="users" color="black" size={20} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.push('ReplyScreen', {
+                    postId: classInfo.classId,
+                    postName: classInfo.ClassName,
+                    sign: 'TeamRoom',
+                  })
+                }>
+                <Icon name="rocketchat" color="black" size={20} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  toggleScreenShare();
+                }}>
+                {(!screenShareOn || presenterId != myIdMeeting) && (
+                  <Ionicons
+                    name={'arrow-up-outline'}
+                    size={20}
+                    color={'black'}
+                  />
+                )}
+                {screenShareOn && presenterId == myIdMeeting && (
+                  <Ionicons
+                    name={'stop-circle-outline'}
+                    size={20}
+                    color={'#8B0016'}
+                  />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  leave();
+                  onParticipantLeft();
+                  // setMeetingId(null);
+                  setIsJoin(false);
+                  setRealJoin(false);
+                }}>
+                <Icon name="phone-slash" color="#8B0016" size={20} />
+              </TouchableOpacity>
+            </View>
           </View>
+        </View>
+      );
+    }
+    const [isMicMuted, setIsMicMuted] = useState(false);
+    const [isCamMuted, setIsCamMuted] = useState(false);
+    const [isCreate, setIsCreate] = useState(false);
+    const [seconds, setSeconds] = useState(0);
+    const [formattedTime, setFormattedTime] = useState('00:00');
+    function MeetingView() {
+      const {
+        leave,
+        toggleWebcam,
+        enableWebcam,
+        disableWebcam,
+        toggleMic,
+        participants,
+        join,
+      } = useMeeting({});
+
+      // useEffect(() => {
+      //   const interval = setInterval(() => {
+      //     setSeconds(seconds => seconds + 1);
+      //   }, 1000);
+
+      //   return () => clearInterval(interval);
+      // }, []);
+
+      // useEffect(() => {
+      //   const minutes = Math.floor(seconds / 60);
+      //   const remainingSeconds = seconds % 60;
+
+      //   const formattedMinutes = String(minutes).padStart(2, '0');
+      //   const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+
+      //   setFormattedTime(`${formattedMinutes}:${formattedSeconds}`);
+      // }, [seconds]);
+      const {localWebcamOn} = useMeeting();
+      //Event to determine if the meeting has been left
+      // async function onMeetingLeft() {
+      //   console.log('onMeetingLeft');
+      //   setIsJoin(false);
+      //   setRealJoin(false)
+      //   setMeetingId(null);
+      //   sendMeetingId(null)
+      //   const documentRef = firestore()
+      //   .collection('Class')
+      //   .doc('0VA2PZf3PVGlbWlF9EiV');
+      // await documentRef
+      //   .update({
+      //     Participants: []
+      //   })
+      //   .then(() => {
+      //   });
+      // }
+
+      // const {join} = useMeeting({onParticipantJoined});
+
+      //Getting the leave and end method from hook and assigning event callbacks
+      const {end} = useMeeting({});
+
+      //  const participantsArrId = [...participants.keys()];
+      const handleMicToggle = () => {
+        toggleMic();
+        setIsMicMuted(!isMicMuted);
+      };
+
+      const handleCamToggle = () => {
+        console.log('kkkkk');
+        toggleWebcam();
+        console.log('jk' + localWebcamOn);
+        setIsCamMuted(!isCamMuted);
+      };
+
+      // const sendParticipants = async(a)=>{
+      //   console.log('hhhh'+a)
+      //   socketServices.emit('Participants', a);
+      // }
+
+      return (
+        <View
+          style={{
+            borderRadius: 15,
+            backgroundColor: PRIMARY_COLOR,
+            width: screenWidth * 0.9,
+            height: 130,
+            alignSelf: 'center',
+            elevation: 5,
+            marginTop: 10,
+            justifyContent: 'space-evenly',
+            alignItems: 'center',
+          }}>
+          <Text style={{fontSize: 20, color: 'white'}}>Meeting start</Text>
           <View
             style={{
-              width: '90%',
-              height: 40,
               flexDirection: 'row',
               justifyContent: 'space-between',
               alignItems: 'center',
-              alignSelf: 'center',
+              marginHorizontal: 10,
+              width: 120,
             }}>
             <TouchableOpacity
-              style={[styles.historyButton]}
               onPress={() => {
-                setSelectedTab(1);
+                handleMicToggle();
               }}>
-              <Text
-                style={[
-                  AppStyle.button.buttonText,
-                  {color: selectedTab == 1 ? PRIMARY_COLOR : '#333'},
-                ]}>
-                Posts
-              </Text>
+              {isMicMuted == false ? (
+                <FontAwesome name="microphone-slash" color="gray" size={20} />
+              ) : (
+                <FontAwesome name="microphone" color="black" size={20} />
+              )}
             </TouchableOpacity>
-            <View
-              style={{
-                width: 1,
-                height: 30,
-                backgroundColor: 'black',
-                marginHorizontal: 10,
-              }}
-            />
             <TouchableOpacity
-              style={styles.historyButton}
               onPress={() => {
-                setSelectedTab(2);
+                handleCamToggle();
               }}>
-              <Text
-                style={[
-                  AppStyle.button.buttonText,
-                  {color: selectedTab == 2 ? PRIMARY_COLOR : 'black'},
-                ]}>
-                Files
-              </Text>
+              {isCamMuted == false ? (
+                <Icon name="video-slash" color="gray" size={20} />
+              ) : (
+                <Icon name="video" color="gray" size={20} />
+              )}
             </TouchableOpacity>
-            <View
-              style={{
-                width: 1,
-                height: 30,
-                backgroundColor: 'black',
-                marginHorizontal: 10,
-              }}
-            />
-            <TouchableOpacity
-              style={styles.historyButton}
-              onPress={() => {
-                setSelectedTab(3);
-              }}>
-              <Text
-                style={[
-                  AppStyle.button.buttonText,
-                  {color: selectedTab == 3 ? PRIMARY_COLOR : 'black'},
-                ]}>
-                Recordings
-              </Text>
-            </TouchableOpacity>
+            {isTeacher && (
+              <TouchableOpacity
+                onPress={() => {
+                  end();
+                  console.log('end');
+                  onMeetingLeft();
+                }}>
+                <Text>End</Text>
+              </TouchableOpacity>
+            )}
           </View>
-          {selectedTab == 1 && (
-            <View>
-              <MeetingView />
-              {rangeDate != null && (
-                <FlatList
-                  data={rangeDate}
-                  renderItem={({item, index}) => (
-                    <DateItem item={item} key={index} />
-                  )}
-                />
-              )}
-              {rangeDate == null && isTeacher && (
-                <View
-                  style={{
-                    width: width * 0.9,
-                    height: 100,
-                    justifyContent: 'space-evenly',
-                    alignItems: 'center',
-                    alignSelf: 'center',
-                  }}>
-                  <Text>To begin, let set Schedule for your class</Text>
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: PRIMARY_COLOR,
-                      padding: 5,
-                      borderRadius: 15,
-                      height: 40,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                    onPress={() => {}}>
-                    <Text>Set schedule!</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          )}
-          {selectedTab == 2 && (
-            <ScrollView>
-              <FlatList
-                data={fileandfolder}
-                renderItem={({item, index}) => {
-                  if (
-                    item.sign == 'fileImage' ||
-                    item.sign == 'fileMp4' ||
-                    item.sign == 'filePPT' ||
-                    item.sign == 'fileWord' ||
-                    item.sign == 'filePDF'
-                  ) {
-                    return <FileCard record={item} />;
-                  } else if (item.sign == 'folder') {
-                    return <FolderCard record={item} />;
-                  }
-                }}
-              />
-              {createFolder && (
-                <CreateFolder
-                  close={() => setCreateFolder(false)}
-                  teacherName={profileData?.name}
-                  classId={classId}
-                />
-              )}
-            </ScrollView>
-          )}
-          {selectedTab == 3 && (
-            <FlatList
-              data={Record}
-              renderItem={({item, index}) => (
-                <RecordingCard
-                  record={item}
-                  show={() => {
-                    navigation.push('ShowRecord', {
-                      url: item.File,
-                      name: item.Name,
-                    });
-                  }}
-                />
-              )}
-            />
-          )}
-          {isTeacher && selectedTab != 3 && (
+
+          {!realJoin && (
             <TouchableOpacity
               style={{
-                position: 'absolute',
-                marginLeft: screenWidth - 80,
-                marginTop: screenHeight - 120,
-                borderRadius: 25,
+                backgroundColor: 'white',
                 width: 50,
-                height: 50,
-                backgroundColor: PRIMARY_COLOR,
+                borderRadius: 20,
+                height: 40,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
               onPress={() => {
-                selectedTab == 1
-                  ? navigation.push('NewPost', {
-                      classId: classId,
-                      userInfo: profileData,
-                    })
-                  : setvisible(true);
+                join();
+                setIsJoin(true);
               }}>
-              {selectedTab == 1 && (
-                <Icon name={'pen'} color="white" size={20} />
-              )}
-              {selectedTab == 2 && <PopupMenu />}
-              {/* {selectedTab == 3 && (
-              <Ionicons name={'arrow-up-outline'} size={20} color={'white'} />
-            )} */}
+              <Text>Join</Text>
             </TouchableOpacity>
           )}
-          {Side()}
+          {realJoin && (
+            <TouchableOpacity
+              style={{
+                backgroundColor: 'white',
+                width: 50,
+                borderRadius: 20,
+                height: 40,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              onPress={() => {
+                setIsJoin(true);
+              }}>
+              <Text>Join</Text>
+            </TouchableOpacity>
+          )}
         </View>
-      )}
-    </MeetingProvider>
-  );
+      );
+    }
+    const showAlert = () => {
+      const {leave} = useMeeting({});
+      if (realJoin)
+        Alert.alert(
+          'Hey!',
+          'If you leave, you will exit the meeting.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                leave();
+                onParticipantLeft();
+                setIsJoin(false);
+                setRealJoin(false);
+                navigation.goBack();
+              },
+            },
+            {text: 'Cancel', onPress: () => console.log('Cancel pressed')},
+          ],
+          {cancelable: false},
+        );
+    };
+
+    return isLoading ? (
+      <ActivityIndicator size="large" color="#0000ff" />
+    ) : meetingId == null ? (
+      <View style={styles.container}>
+        <View style={AppStyle.viewstyle.component_upzone}>
+          <TouchableOpacity
+            style={{marginLeft: '2%'}}
+            onPress={() => navigation.goBack()}>
+            <FontAwesome name="chevron-left" color="white" size={20} />
+          </TouchableOpacity>
+          <Text
+            style={{
+              textAlign: 'left',
+              color: 'white',
+              fontSize: 20,
+              marginLeft: 15,
+            }}>
+            {classInfo?.ClassName}
+          </Text>
+          <View style={{flex: 1}} />
+          {isTeacher && (
+            <TouchableOpacity
+              style={{marginRight: '5%'}}
+              onPress={() => {
+                setIsCreate(true);
+                getMeetingId();
+              }}
+              // onPress={()=>navigation.push('MeetingRoom')}
+            >
+              <Icon name={'video'} color="white" size={20} />
+            </TouchableOpacity>
+          )}
+        </View>
+        {isLimit && (
+          <View style={{flex: 1, padding: 10}}>
+            <View style={styles.paymentContainer}>
+              <Text style={{textAlign: 'center'}}>
+                You have completed 2 days of free lessons. If you want to
+                continue, please pay by clicking the button below
+              </Text>
+            </View>
+            <FormButton
+              title={'Pay Fee'}
+              onPress={() =>
+                navigation.push('RegisterCourse', {
+                  course: classInfo,
+                  from: 'TeamRoom',
+                })
+              }
+            />
+          </View>
+        )}
+        {!isLimit && (
+          <View style={{height: 40}}>
+            <ScrollView horizontal={true}>
+              <View
+                style={{
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                  height: 40,
+                  flexDirection: 'row',
+                }}>
+                <TouchableOpacity
+                  style={[styles.historyButton]}
+                  onPress={() => {
+                    setSelectedTab(1);
+                  }}>
+                  <Text
+                    style={[
+                      AppStyle.button.buttonText,
+                      {color: selectedTab == 1 ? PRIMARY_COLOR : '#333'},
+                    ]}>
+                    Posts
+                  </Text>
+                </TouchableOpacity>
+                <View
+                  style={{
+                    width: 1,
+                    height: 30,
+                    backgroundColor: 'black',
+                    marginHorizontal: 10,
+                  }}
+                />
+                <TouchableOpacity
+                  style={styles.historyButton}
+                  onPress={() => {
+                    setSelectedTab(2);
+                  }}>
+                  <Text
+                    style={[
+                      AppStyle.button.buttonText,
+                      {color: selectedTab == 2 ? PRIMARY_COLOR : 'black'},
+                    ]}>
+                    Files
+                  </Text>
+                </TouchableOpacity>
+
+                <View
+                  style={{
+                    width: 1,
+                    height: 30,
+                    backgroundColor: 'black',
+                    marginHorizontal: 10,
+                  }}
+                />
+                <TouchableOpacity
+                  style={styles.historyButton}
+                  onPress={() => {
+                    setSelectedTab(3);
+                  }}>
+                  <Text
+                    style={[
+                      AppStyle.button.buttonText,
+                      {color: selectedTab == 3 ? PRIMARY_COLOR : 'black'},
+                    ]}>
+                    Recordings
+                  </Text>
+                </TouchableOpacity>
+                <View
+                  style={{
+                    width: 1,
+                    height: 30,
+                    backgroundColor: 'black',
+                    marginHorizontal: 10,
+                  }}
+                />
+                <TouchableOpacity
+                  style={styles.historyButton}
+                  onPress={() => {
+                    toggleModal();
+                  }}>
+                  <Text
+                    style={[
+                      AppStyle.button.buttonText,
+                      {color: selectedTab == 4 ? PRIMARY_COLOR : 'black'},
+                    ]}>
+                    More
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        )}
+        {selectedTab == 1 && !isLimit && (
+          <View>
+            {classInfo != null && (
+              <General
+                calendar={[...classInfo.Schedule]}
+                classId={classId}
+                start={classInfo?.Start_Date}
+                finish={classInfo?.Finish_Date}
+              />
+            )}
+            {rangeDate != null && (
+              <FlatList
+                data={rangeDate}
+                renderItem={({item, index}) => (
+                  <DateItem item={item} key={index} files={fileandfolder} />
+                )}
+              />
+            )}
+            {rangeDate == null && isTeacher && (
+              <View
+                style={{
+                  width: width * 0.9,
+                  height: 100,
+                  justifyContent: 'space-evenly',
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                }}>
+                <Text>To begin, let set Schedule for your class</Text>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: PRIMARY_COLOR,
+                    padding: 5,
+                    borderRadius: 15,
+                    height: 40,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  onPress={() => {}}>
+                  <Text>Set schedule!</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
+        {selectedTab == 2 && (
+          <ScrollView>
+            <FlatList
+              data={fileandfolder}
+              renderItem={({item, index}) => {
+                if (
+                  item.sign == 'fileImage' ||
+                  item.sign == 'fileMp4' ||
+                  item.sign == 'filePPT' ||
+                  item.sign == 'fileWord' ||
+                  item.sign == 'filePDF'
+                ) {
+                  return <FileCard record={item} />;
+                } else if (item.sign == 'folder') {
+                  return <FolderCard record={item} />;
+                }
+              }}
+            />
+            {createFolder && (
+              <CreateFolder
+                close={() => setCreateFolder(false)}
+                teacherName={profileData?.name}
+                classId={classId}
+              />
+            )}
+          </ScrollView>
+        )}
+        {selectedTab == 3 && (
+          <FlatList
+            data={records}
+            renderItem={({item, index}) => (
+              <RecordingCard
+                record={item}
+                show={() => {
+                  navigation.push('ShowRecord', {
+                    url: item.File,
+                    name: item.Name,
+                  });
+                }}
+              />
+            )}
+          />
+        )}
+        {isTeacher && selectedTab != 3 && (
+          <TouchableOpacity
+            style={{
+              position: 'absolute',
+              marginLeft: screenWidth - 80,
+              marginTop: screenHeight - 120,
+              borderRadius: 25,
+              width: 50,
+              height: 50,
+              backgroundColor: PRIMARY_COLOR,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            onPress={() => {
+              selectedTab == 1
+                ? navigation.push('NewPost', {
+                    classId: classId,
+                    userInfo: profileData,
+                  })
+                : setvisible(true);
+            }}>
+            {selectedTab == 1 && <Icon name={'pen'} color="white" size={20} />}
+            {selectedTab == 2 && <PopupMenu />}
+            {/* {selectedTab == 3 && (
+          <Ionicons name={'arrow-up-outline'} size={20} color={'white'} />
+        )} */}
+          </TouchableOpacity>
+        )}
+        {Side()}
+      </View>
+    ) : (
+      <MeetingProvider
+        config={{
+          meetingId,
+          micEnabled: isMicMuted,
+          webcamEnabled: isCamMuted,
+          name: profileData.name,
+        }}
+        token={token}>
+        {isJoin ? (
+          <MeetingRoomtemp />
+        ) : (
+          <View style={styles.container}>
+            <View style={AppStyle.viewstyle.component_upzone}>
+              <TouchableOpacity
+                style={{marginLeft: '2%'}}
+                onPress={() => {
+                  // showAlert();
+                  // setMeetingId(null);
+                  // const {leave} = useMeeting({});
+                  if (realJoin)
+                    Alert.alert(
+                      'Hey!',
+                      'If you leave, you will exit the meeting.',
+                      [
+                        {
+                          text: 'OK',
+                          onPress: () => {
+                            // leave();
+                            onParticipantLeft();
+                            setIsJoin(false);
+                            setRealJoin(false);
+                            navigation.goBack();
+                          },
+                        },
+                        {
+                          text: 'Cancel',
+                          onPress: () => console.log('Cancel pressed'),
+                        },
+                      ],
+                      {cancelable: false},
+                    );
+                }}>
+                <FontAwesome name="chevron-left" color="white" size={20} />
+              </TouchableOpacity>
+              <Text
+                style={{
+                  textAlign: 'left',
+                  color: 'white',
+                  fontSize: 20,
+                  marginLeft: 15,
+                }}>
+                {classInfo?.ClassName}
+              </Text>
+              <View style={{flex: 1}} />
+              {isTeacher && (
+                <TouchableOpacity
+                  style={{marginRight: '5%'}}
+                  onPress={() => {
+                    getMeetingId();
+                  }}
+                  // onPress={()=>navigation.push('MeetingRoom')}
+                >
+                  <Icon name={'video'} color="white" size={20} />
+                </TouchableOpacity>
+              )}
+            </View>
+            <View
+              style={{
+                width: '90%',
+                height: 40,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                alignSelf: 'center',
+              }}>
+              <TouchableOpacity
+                style={[styles.historyButton]}
+                onPress={() => {
+                  setSelectedTab(1);
+                }}>
+                <Text
+                  style={[
+                    AppStyle.button.buttonText,
+                    {color: selectedTab == 1 ? PRIMARY_COLOR : '#333'},
+                  ]}>
+                  Posts
+                </Text>
+              </TouchableOpacity>
+              <View
+                style={{
+                  width: 1,
+                  height: 30,
+                  backgroundColor: 'black',
+                  marginHorizontal: 10,
+                }}
+              />
+              <TouchableOpacity
+                style={styles.historyButton}
+                onPress={() => {
+                  setSelectedTab(2);
+                }}>
+                <Text
+                  style={[
+                    AppStyle.button.buttonText,
+                    {color: selectedTab == 2 ? PRIMARY_COLOR : 'black'},
+                  ]}>
+                  Files
+                </Text>
+              </TouchableOpacity>
+              <View
+                style={{
+                  width: 1,
+                  height: 30,
+                  backgroundColor: 'black',
+                  marginHorizontal: 10,
+                }}
+              />
+              <TouchableOpacity
+                style={styles.historyButton}
+                onPress={() => {
+                  setSelectedTab(3);
+                }}>
+                <Text
+                  style={[
+                    AppStyle.button.buttonText,
+                    {color: selectedTab == 3 ? PRIMARY_COLOR : 'black'},
+                  ]}>
+                  Recordings
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {selectedTab == 1 && (
+              <View>
+                <MeetingView />
+                {rangeDate != null && (
+                  <FlatList
+                    data={rangeDate}
+                    renderItem={({item, index}) => (
+                      <DateItem item={item} key={index} />
+                    )}
+                  />
+                )}
+                {rangeDate == null && isTeacher && (
+                  <View
+                    style={{
+                      width: width * 0.9,
+                      height: 100,
+                      justifyContent: 'space-evenly',
+                      alignItems: 'center',
+                      alignSelf: 'center',
+                    }}>
+                    <Text>To begin, let set Schedule for your class</Text>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: PRIMARY_COLOR,
+                        padding: 5,
+                        borderRadius: 15,
+                        height: 40,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                      onPress={() => {}}>
+                      <Text>Set schedule!</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
+            {selectedTab == 2 && (
+              <ScrollView>
+                <FlatList
+                  data={fileandfolder}
+                  renderItem={({item, index}) => {
+                    if (
+                      item.sign == 'fileImage' ||
+                      item.sign == 'fileMp4' ||
+                      item.sign == 'filePPT' ||
+                      item.sign == 'fileWord' ||
+                      item.sign == 'filePDF'
+                    ) {
+                      return <FileCard record={item} />;
+                    } else if (item.sign == 'folder') {
+                      return <FolderCard record={item} />;
+                    }
+                  }}
+                />
+                {createFolder && (
+                  <CreateFolder
+                    close={() => setCreateFolder(false)}
+                    teacherName={profileData?.name}
+                    classId={classId}
+                  />
+                )}
+              </ScrollView>
+            )}
+            {selectedTab == 3 && (
+              <FlatList
+                data={Record}
+                renderItem={({item, index}) => (
+                  <RecordingCard
+                    record={item}
+                    show={() => {
+                      navigation.push('ShowRecord', {
+                        url: item.File,
+                        name: item.Name,
+                      });
+                    }}
+                  />
+                )}
+              />
+            )}
+            {isTeacher && selectedTab != 3 && (
+              <TouchableOpacity
+                style={{
+                  position: 'absolute',
+                  marginLeft: screenWidth - 80,
+                  marginTop: screenHeight - 120,
+                  borderRadius: 25,
+                  width: 50,
+                  height: 50,
+                  backgroundColor: PRIMARY_COLOR,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  selectedTab == 1
+                    ? navigation.push('NewPost', {
+                        classId: classId,
+                        userInfo: profileData,
+                      })
+                    : setvisible(true);
+                }}>
+                {selectedTab == 1 && (
+                  <Icon name={'pen'} color="white" size={20} />
+                )}
+                {selectedTab == 2 && <PopupMenu />}
+                {/* {selectedTab == 3 && (
+              <Ionicons name={'arrow-up-outline'} size={20} color={'white'} />
+            )} */}
+              </TouchableOpacity>
+            )}
+            {Side()}
+          </View>
+        )}
+      </MeetingProvider>
+    );
+  }
 };
 const styles = StyleSheet.create({
   container: {
