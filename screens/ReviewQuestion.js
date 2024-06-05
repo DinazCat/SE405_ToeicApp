@@ -230,7 +230,7 @@ const ReviewQuestion = ({navigation, route}) => {
                     ? styles.ExplainFontTrue
                     : styles.ExplainFontFalse
                 }>
-                {questionList[ItemIndex] &&
+                {questionList &&
                 questionList[ItemIndex].Explain.SampleAnswer
                   ? 'Sample Answer'
                   : 'Script'}
@@ -367,7 +367,7 @@ const ReviewQuestion = ({navigation, route}) => {
                   color: 'black',
                   borderRadius: 15,
                 }}
-                value={teacherInputs[ItemIndex]}
+                value={teacherInputs?teacherInputs[ItemIndex]:''}
                 placeholder="Type here..."
                 placeholderTextColor={'rgba(0,0,0,0.8)'}
                 onChangeText={text => {
