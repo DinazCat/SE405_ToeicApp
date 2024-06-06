@@ -77,6 +77,9 @@ const MyTeacher = ({navigation}) => {
       const temp = item?.reviews?.find(e => (e.id = user.uid));
       setReview(temp.review);
       setRating(temp.rating);
+    } else {
+      setReview('');
+      setRating(5);
     }
   };
 
@@ -180,7 +183,7 @@ const styles = StyleSheet.create({
     borderColor: 'lightgray',
     borderWidth: 2,
     alignSelf: 'center',
-    marginTop: 200,
+    marginTop: '70%',
     position: 'absolute',
     display: 'flex',
     flexDirection: 'column',

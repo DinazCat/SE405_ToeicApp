@@ -14,8 +14,9 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import AppStyle from '../theme'
 import {useNavigation} from '@react-navigation/native';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color'
+import Api from '../api/Api';
 const {width, height} = Dimensions.get('window');
-const FolderCard = ({record}) => {
+const FolderCard = ({record, classId}) => {
   const navigation = useNavigation();
   const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
 
@@ -36,19 +37,21 @@ const PopupMenu = () =>{
     {
       title:"Delete",
       action:async()=>{
-        setvisible(false)
+        setvisible(false);
+        await Api.deleteFolder(record.idFolder)
+          await Api.deleteFile(record,classId);
       }
     },
-    {
-      title:'Edit',
-      action:()=>{
-        setvisible(false)
-      },
-    }
+    // {
+    //   title:'Edit',
+    //   action:()=>{
+    //     setvisible(false)
+    //   },
+    // }
   ];
   
   return(
-    <View style={{flexDirection:'row'}}>
+    <View style={{flexDirection:'column'}}>
      {visible&&<View style = {styles.popup}>
           {
             options.map((op,i)=>(
@@ -135,7 +138,7 @@ const styles = StyleSheet.create({
       borderWidth:1,
       backgroundColor:'#fff',
       width:62,
-      height:65,
+      height:45,
       textAlign:'center',
     },
     popupitem:

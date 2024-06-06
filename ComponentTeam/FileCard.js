@@ -16,7 +16,8 @@ import AppStyle from '../theme';
 import {useNavigation} from '@react-navigation/native';
 import {PRIMARY_COLOR, card_color} from '../assets/colors/color';
 const {width, height} = Dimensions.get('window');
-const FileCard = ({record}) => {
+import Api from '../api/Api';
+const FileCard = ({record, classId}) => {
   const navigation = useNavigation();
   const [screenWidth, setScreenWidth] = useState(
     Dimensions.get('window').width,
@@ -41,18 +42,19 @@ const FileCard = ({record}) => {
         title: 'Delete',
         action: async () => {
           setvisible(false);
+          await Api.deleteFile(record,classId)
         },
       },
-      {
-        title: 'Edit',
-        action: () => {
-          setvisible(false);
-        },
-      },
+      // {
+      //   title: 'Edit',
+      //   action: () => {
+      //     setvisible(false);
+      //   },
+      // },
     ];
 
     return (
-      <View style={{flexDirection: 'row'}}>
+      <View style={{flexDirection:'column'}}>
         {visible && (
           <View style={styles.popup}>
             {options.map((op, i) => (
@@ -132,8 +134,8 @@ const FileCard = ({record}) => {
             <Text style={[styles.UsernameText]}>{record?.Name}</Text>
           </TouchableOpacity>
           {record?.Time && <Text style={styles.PostTime}>{record?.Time}</Text>}
-          {record?.Time && (
-            <Text style={styles.PostTime}>By {record?.Time}</Text>
+          {record?.User && (
+            <Text style={styles.PostTime}>By {record?.User}</Text>
           )}
         </View>
         <View style={{flex: 1}} />
@@ -188,7 +190,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: '#fff',
     width: 62,
-    height: 65,
+    height: 45,
     textAlign: 'center',
   },
   popupitem: {

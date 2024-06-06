@@ -742,6 +742,22 @@ const checkTransaction = async (userId, classId) => {
     console.log('error: ', error.message);
   }
 };
+// router.put("/deleteFile/:classId", updateFolder);
+const deleteFile = async (data, classId) => {
+  try {
+    await client.put('/deleteFile/' + classId, data);
+  } catch (error) {
+    console.error('Error', error);
+  }
+};
+// router.delete("/deleteFolder/:Id", deleteNotification);
+const deleteFolder = async id => {
+  try {
+    await client.delete('/deleteFolder/' + id);
+  } catch (error) {
+    console.log('error: ', error.message);
+  }
+};
 export default {
   getVocabLesson,
   getVocabinLesson,
@@ -808,4 +824,6 @@ export default {
   getAllQuestion,
   getTestTeacher,
   checkTransaction,
+  deleteFile,
+  deleteFolder
 };

@@ -1,4 +1,12 @@
-import {View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+  ScrollView,
+} from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AppStyle from '../theme';
@@ -6,7 +14,8 @@ import CourseCard from '../ComponentTeam/CourseCard';
 import Api from '../api/Api';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { card_color } from '../assets/colors/color';
+import {card_color} from '../assets/colors/color';
+import {AuthContext} from '../navigation/AuthProvider';
 const sortList = [
   {
     label: `Cheap`,
@@ -23,13 +32,33 @@ const sortList = [
 ];
 
 const CourseList = ({navigation, route}) => {
+  const {user} = useContext(AuthContext);
   const [classes, setClasses] = useState([]);
   const teacherId = route.params?.teacherId;
   const [openDropdown, setOpenDropdown] = useState(false);
   const [sort, setSort] = useState('');
+  const [recommendClasses, setRecommendClasses] = useState([]);
+  const [otherClasses, setOtherClasses] = useState([]);
+
   const getAllClasses = async () => {
+    const currentUser = await Api.getUserData(user.uid);
     const data = await Api.getAllClasses();
     setClasses(data);
+
+    const recommendItems = [];
+    const othersItems = [];
+
+    data.forEach(classItem => {
+      if (
+        classItem.Level < currentUser.targetScore + 100 &&
+        classItem.Level > currentUser.targetScore - 100
+      ) {
+        recommendItems.push(classItem);
+      } else othersItems.push(classItem);
+    });
+
+    setRecommendClasses(recommendItems);
+    setOtherClasses(othersItems);
   };
   const getClassesByUserTeacher = async () => {
     const data = await Api.getClassesByUser(teacherId);
@@ -51,64 +80,72 @@ const CourseList = ({navigation, route}) => {
         </TouchableOpacity>
         <Text style={styles.header}>List of all courses</Text>
       </View>
-      <View style={{flex: 1, paddingTop: 10, zIndex:0}}>
-      
-      <View style={{flexDirection:'row', justifyContent:'center', zIndex:0}} >
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input}
-            placeholder="Enter content..."
-            placeholderTextColor={'#555'}
-            // onChangeText={text => {
-            //   setContent(text)
-            // }}
+      <View style={{flex: 1, paddingTop: 10}}>
+        <View style={{flexDirection: 'row'}}>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter content..."
+              placeholderTextColor={'#555'}
+              // onChangeText={text => {
+              //   setContent(text)
+              // }}
             />
-          <TouchableOpacity onPress={() => {}}>
-            <Ionicons name={'search-outline'} style={styles.IconButton}/>        
-          </TouchableOpacity>
-        </View>    
-      </View>
-      <DropDownPicker
+            <TouchableOpacity onPress={() => {}}>
+              <Ionicons name={'search-outline'} style={styles.IconButton} />
+            </TouchableOpacity>
+          </View>
+          <DropDownPicker
             items={sortList}
             placeholder="Sort"
             open={openDropdown}
-          setOpen={() => setOpenDropdown(!openDropdown)}
+            setOpen={() => setOpenDropdown(!openDropdown)}
             value={sort}
             containerStyle={{
-              height: 10,
-              width: 100,
-              margin: 10,
-              alignSelf:'flex-end',
+              height: 40,
+              width: 80,
             }}
-      
-            style={{backgroundColor: '#fafafa'}}
+            style={{borderRadius: 25}}
             itemStyle={{
               justifyContent: 'flex-start',
             }}
             dropDownStyle={{backgroundColor: '#fafafa'}}
             setValue={item => setSort(item)}
             maxHeight={100}
-            zIndex={1}
           />
-          <View style={{marginTop:10, flex:1}}>
-          {classes?.length !== 0 ? (
-          <FlatList
-            style={{flex: 1}}
-            data={classes}
-            renderItem={({item, index}) => (
-              <CourseCard key={index} item={item} navigation={navigation} />
-            )}
-          />
-        ) : (
-          <View style={{marginHorizontal: 10}}>
-            {teacherId && (
-              <Text style={{fontSize: 15}}>
-                Teacher doesn't have any courses yet.
-              </Text>
-            )}
-          </View>
-        )}
-          </View>
-       
+        </View>
+
+        <ScrollView style={{marginTop: 10, flex: 1}}>
+          <Text style={styles.textFont}>Recommend for you</Text>
+          {recommendClasses?.length !== 0 && (
+            <FlatList
+              style={{flex: 1}}
+              data={recommendClasses}
+              renderItem={({item, index}) => (
+                <CourseCard key={index} item={item} navigation={navigation} />
+              )}
+            />
+          )}
+          <Text style={styles.textFont}>Others</Text>
+          {otherClasses?.length !== 0 && (
+            <FlatList
+              style={{flex: 1}}
+              data={otherClasses}
+              renderItem={({item, index}) => (
+                <CourseCard key={index} item={item} navigation={navigation} />
+              )}
+            />
+          )}
+          {classes?.length === 0 && (
+            <View style={{marginHorizontal: 10}}>
+              {teacherId && (
+                <Text style={{fontSize: 15}}>
+                  Teacher doesn't have any courses yet.
+                </Text>
+              )}
+            </View>
+          )}
+        </ScrollView>
       </View>
     </View>
   );
@@ -131,18 +168,20 @@ const styles = StyleSheet.create({
     borderColor: '#555',
     borderRadius: 25,
     borderWidth: 1,
-    width: '90%',
+    width: '70%',
     height: 45,
+    marginLeft: 20,
+    marginRight: 10,
   },
-  input:{
+  input: {
     fontSize: 16,
-    width: '88%'
+    width: '88%',
   },
-  IconButton:{
-    color: '#555', 
-    fontSize: 25, 
+  IconButton: {
+    color: '#555',
+    fontSize: 25,
     padding: 5,
-    marginTop: 4
+    marginTop: 4,
     //marginLeft: 5
   },
   input1: {
@@ -155,6 +194,13 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     color: '#333',
     width: 100,
+  },
+  textFont: {
+    color: '#222',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 20,
+    marginBottom: 10,
   },
 });
 

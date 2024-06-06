@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const ipAddress = '192.168.1.10:3000';
+=======
+const ipAddress = '192.168.1.47:3000';
+>>>>>>> 63a10b64d19eb2f18bf8dcc383b42e92726e6f30
 const upImage = `http://${ipAddress}/upload`;
 const upVideo = `http://${ipAddress}/uploadvideo`;
 const upvideo2 = `http://${ipAddress}/uploadvideotoFirestore`;

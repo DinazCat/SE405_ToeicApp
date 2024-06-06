@@ -658,16 +658,21 @@ const QuestionScreen = ({navigation, route}) => {
 
     setHistory(list);
   }, []);
-  // useEffect(() => {
   const backAction = () => {
-    showAlert();
+
+    showAlert()
     return true;
   };
 
-  BackHandler.addEventListener('hardwareBackPress', backAction);
-
-  //   return () => backHandler.remove(); // Remove listener khi component unmount
-  // }, []);
+  useEffect(() => {
+    BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", backAction);
+    };
+  }, []);
   const showAlert = () => {
     if (buttonTitle != 'Explain')
       Alert.alert(

@@ -137,6 +137,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginTop: 10,
         marginBottom: 10,
+        color: '#000'
     },
     btnContainer: {
         flexDirection: 'row',

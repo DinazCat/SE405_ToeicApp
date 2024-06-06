@@ -21,6 +21,7 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import Api from '../api/Api';
 import {AuthContext} from '../navigation/AuthProvider';
+import {useFocusEffect} from '@react-navigation/native';
 
 
 const {width, height} = Dimensions.get('window');
@@ -112,9 +113,14 @@ console.log(data)
 setSchedule_(data)
 setIsLoad(true)
 }
-useEffect(() => {
-getAgendaOfUser();
-}, []);
+// useEffect(() => {
+// getAgendaOfUser();
+// }, []);
+useFocusEffect(
+  React.useCallback(() => {
+    getAgendaOfUser();
+  }, []),
+);
 const  loadItems = (day) => {
 
   setTimeout(() => {

@@ -41,9 +41,9 @@ const TeacherCard = ({item, navigation, writeReview, viewCourse}) => {
       />
       <Text style={styles.mainText}>{item.name}</Text>
       <View style={{flexDirection: 'row', alignSelf: 'center', gap: 2}}>
-        <Text>{item.rating}</Text>
+        <Text style={{color: '#444'}}>{item.rating}</Text>
         <FontAwesome name="star" color="orange" size={20} />
-        <Text>
+        <Text style={{color: '#444'}}>
           / {item.reviews?.length ? item.reviews.length : '0'} Reviews
         </Text>
       </View>

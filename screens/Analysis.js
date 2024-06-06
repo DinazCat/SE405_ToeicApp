@@ -465,8 +465,8 @@ const Analysis = ({navigation, route}) => {
   const checkProgress = Part => {
     if (Part == 'L1') {
       const rate =
-        profileData?.AnalysisPractice?.L1.Score /
-        profileData?.AnalysisPractice?.L1.Qty;
+        profileData?.AnalysisPractice?.L1?.Score /
+        profileData?.AnalysisPractice?.L1?.Qty;
       if (rate < 0.5) {
         return {
           m: 'In this part, your skills are still very poor, you need to put in more effort',
@@ -1060,7 +1060,7 @@ const Analysis = ({navigation, route}) => {
                       profileData
                         ? getRound(
                             profileData?.AnalysisPractice?.L1?.Score /
-                              profileData?.AnalysisPractice?.L1?.Qty,
+                              profileData?.AnalysisPractice?.L1?.Qty||0.0
                           )
                         : 0.0
                     }
@@ -1078,7 +1078,7 @@ const Analysis = ({navigation, route}) => {
                     {profileData
                       ? getRound(
                           profileData?.AnalysisPractice?.L1?.Score /
-                            profileData?.AnalysisPractice?.L1?.Qty,
+                            profileData?.AnalysisPractice?.L1?.Qty||0.0
                         )
                       : 0.0}
                   </Text>
@@ -1112,7 +1112,7 @@ const Analysis = ({navigation, route}) => {
                       profileData
                         ? getRound(
                             profileData?.AnalysisPractice?.L2?.Score /
-                              profileData?.AnalysisPractice?.L2?.Qty,
+                              profileData?.AnalysisPractice?.L2?.Qty||0.0
                           )
                         : 0.0
                     }
@@ -1130,7 +1130,7 @@ const Analysis = ({navigation, route}) => {
                     {profileData
                       ? getRound(
                           profileData?.AnalysisPractice?.L2?.Score /
-                            profileData?.AnalysisPractice?.L2?.Qty,
+                            profileData?.AnalysisPractice?.L2?.Qty || 0.0
                         )
                       : 0.0}
                   </Text>
@@ -1164,7 +1164,7 @@ const Analysis = ({navigation, route}) => {
                       profileData
                         ? getRound(
                             profileData?.AnalysisPractice?.L3?.Score /
-                              profileData?.AnalysisPractice?.L3?.Qty,
+                              profileData?.AnalysisPractice?.L3?.Qty||0.0
                           )
                         : 0.0
                     }
@@ -1182,7 +1182,7 @@ const Analysis = ({navigation, route}) => {
                     {profileData
                       ? getRound(
                           profileData?.AnalysisPractice?.L3?.Score /
-                            profileData?.AnalysisPractice?.L3?.Qty,
+                            profileData?.AnalysisPractice?.L3?.Qty||0.0
                         )
                       : 0.0}
                   </Text>
@@ -1216,7 +1216,7 @@ const Analysis = ({navigation, route}) => {
                       profileData
                         ? getRound(
                             profileData?.AnalysisPractice?.L4?.Score /
-                              profileData?.AnalysisPractice?.L4?.Qty,
+                              profileData?.AnalysisPractice?.L4?.Qty||0.0
                           )
                         : 0.0
                     }
@@ -1234,7 +1234,7 @@ const Analysis = ({navigation, route}) => {
                     {profileData
                       ? getRound(
                           profileData?.AnalysisPractice?.L4?.Score /
-                            profileData?.AnalysisPractice?.L4?.Qty,
+                            profileData?.AnalysisPractice?.L4?.Qty||0.0
                         )
                       : 0.0}
                   </Text>
@@ -1271,8 +1271,8 @@ const Analysis = ({navigation, route}) => {
                     progress={
                       profileData
                         ? profileData?.AnalysisPractice?.R1?.Score /
-                            profileData?.AnalysisPractice?.R1?.Qty || 0.1
-                        : 0.1
+                            profileData?.AnalysisPractice?.R1?.Qty || 0.0
+                        : 0.0
                     }
                     width={120}
                     height={10}
@@ -1288,8 +1288,8 @@ const Analysis = ({navigation, route}) => {
                     {profileData
                       ? getRound(
                           profileData?.AnalysisPractice?.R1?.Score /
-                            profileData?.AnalysisPractice?.R1?.Qty,
-                        ) || 0.1
+                            profileData?.AnalysisPractice?.R1?.Qty||0.0
+                        )
                       : 0.0}
                   </Text>
                 </View>
@@ -1322,7 +1322,7 @@ const Analysis = ({navigation, route}) => {
                       profileData
                         ? profileData?.AnalysisPractice?.R2?.Score /
                             profileData?.AnalysisPractice?.R2?.Qty || 0.0
-                        : 0.1
+                        : 0.0
                     }
                     width={120}
                     height={10}
@@ -1338,8 +1338,8 @@ const Analysis = ({navigation, route}) => {
                     {profileData
                       ? getRound(
                           profileData?.AnalysisPractice?.R2?.Score /
-                            profileData?.AnalysisPractice?.R2?.Qty,
-                        ) || 0.0
+                            profileData?.AnalysisPractice?.R2?.Qty || 0.0
+                        ) 
                       : 0.0}
                   </Text>
                 </View>
@@ -1371,8 +1371,8 @@ const Analysis = ({navigation, route}) => {
                     progress={
                       profileData
                         ? profileData?.AnalysisPractice?.R3?.Score /
-                            profileData?.AnalysisPractice?.R3?.Qty || 0.1
-                        : 0.1
+                            profileData?.AnalysisPractice?.R3?.Qty || 0.0
+                        : 0.0
                     }
                     width={120}
                     height={10}
@@ -1388,8 +1388,8 @@ const Analysis = ({navigation, route}) => {
                     {profileData
                       ? getRound(
                           profileData?.AnalysisPractice?.R3?.Score /
-                            profileData?.AnalysisPractice?.R3?.Qty,
-                        ) || 0.0
+                            profileData?.AnalysisPractice?.R3?.Qty || 0.0
+                        ) 
                       : 0.0}
                   </Text>
                 </View>
