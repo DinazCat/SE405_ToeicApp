@@ -10,6 +10,10 @@ import messaging from '@react-native-firebase/messaging';
 import Incomingvideocall from './utils/incoming-video-call';
 import Api from './api/Api';
 
+import { LogBox } from 'react-native';
+
+// Ignore specific log warning
+LogBox.ignoreLogs(['ReactImageView: Image source "null" doesn\'t exist']);
 register();
 
 console.disableYellowBox = true;

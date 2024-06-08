@@ -51,7 +51,6 @@ const optionList = [
   },
 ];
 
-
 const NewTeam = ({navigation, route}) => {
   const [className, setClassName] = useState('');
   const [description, setDescription] = useState('');
@@ -59,6 +58,7 @@ const NewTeam = ({navigation, route}) => {
   const [level, setLevel] = useState('');
   const [tuition, setTuition] = useState('');
   const [startDate, setStartDate] = useState(new Date());
+  const [hashtag, sethashtag] = useState('');
   const [endDate, setEndDate] = useState(() => {
     const date = new Date();
     date.setMonth(date.getMonth() + 1);
@@ -75,12 +75,12 @@ const NewTeam = ({navigation, route}) => {
   const onSave = async () => {
     const expectedEndDate = new Date(startDate);
     expectedEndDate.setMonth(expectedEndDate.getMonth() + 1);
-
+    const check = checkSkill()
     if (
       className === '' ||
       maximumStudents === '' ||
+      hashtag === ''||
       level === '' ||
-      tuition === '' ||
       description === ''
     ) {
       Alert.alert(
@@ -100,9 +100,9 @@ const NewTeam = ({navigation, route}) => {
         'Please re-enter current score',
       );
       return;
-    } else if (level > 990) {
+    } else if (level > check) {
       Alert.alert(
-        'Level cannot be more than 990!',
+        `Level cannot be more than ${check}!`,
         'Please re-enter current score',
       );
       return;
@@ -129,13 +129,34 @@ const NewTeam = ({navigation, route}) => {
       Description: description,
       TeacherName:auth().currentUser.displayName,
       PaymentPlan:state,
+      Skill:hashtag
     })
       .then(() => {
         navigation.navigate('Teams');
       })
       .catch(error => console.error(error));
   };
-
+const checkSkill = () =>{
+  if(hashtag=="Listening"){
+    return 495
+  }
+  else if(hashtag=="Reading"){
+    return 495
+  }
+  else if(hashtag=="Speaking"){
+    return 200
+  }
+  else if(hashtag=="Writting"){
+    return 200
+  }
+  else if(hashtag=="L&R"){
+    return 990
+  }
+  else if(hashtag=="S&W"){
+    return 400
+  }
+  return 0
+}
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -169,8 +190,93 @@ const NewTeam = ({navigation, route}) => {
           onChangeText={value => setMaximumStudents(value)}
           keyboardType="numeric"
         />
-
-        <Text style={styles.title}>Level: </Text>
+        <Text style={styles.title}>Choose skills that you teach: </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                backgroundColor: 'white',
+              }}>
+              <TouchableOpacity
+                style={[
+                  styles.panelButton,
+                  {backgroundColor: hashtag != "Listening" ? '#EAABAB' : 'white'},
+                ]}
+                onPress={() => {
+                  if (hashtag == 'Listening') sethashtag('');
+                  else sethashtag('Listening');
+                }}>
+                <Text style={[styles.panelButtonTitle]}>Listening</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.panelButton,
+                  {backgroundColor: hashtag != 'Reading' ? '#74A8C5' : 'white'},
+                ]}
+                onPress={() => {
+                  if (hashtag == 'Reading') sethashtag('');
+                  else sethashtag('Reading');
+                }}>
+                <Text style={[styles.panelButtonTitle]}>Reading</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.panelButton,
+                  {
+                    backgroundColor:
+                      hashtag != 'Speaking' ? '#FA9D68' : 'white',
+                  },
+                ]}
+                onPress={() => {
+                  if (hashtag == 'Speaking') sethashtag('');
+                  else sethashtag('Speaking');
+                }}>
+                <Text style={[styles.panelButtonTitle]}>Speaking</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.panelButton,
+                  {
+                    backgroundColor:
+                      hashtag != 'Writting' ? '#CF87DF' : 'white',
+                  },
+                ]}
+                onPress={() => {
+                  if (hashtag == 'Writting') sethashtag('');
+                  else sethashtag('Writting');
+                }}>
+                <Text style={[styles.panelButtonTitle]}>Writting</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.panelButton,
+                  {
+                    backgroundColor:
+                      hashtag != 'L&R' ? '#70DECE' : 'white',
+                  },
+                ]}
+                onPress={() => {
+                  if (hashtag == 'L&R') sethashtag('');
+                  else sethashtag('L&R');
+                }}>
+                <Text style={[styles.panelButtonTitle]}>L&R</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.panelButton,
+                  {
+                    backgroundColor:
+                      hashtag != 'S&W' ? '#BCE37A' : 'white',
+                  },
+                ]}
+                onPress={() => {
+                  if (hashtag == 'S&W') sethashtag('');
+                  else sethashtag('S&W');
+                }}>
+                <Text style={[styles.panelButtonTitle]}>S&W</Text>
+              </TouchableOpacity>
+              </View>
+        <Text style={styles.title}>Level target: max is {checkSkill()} </Text>
         <TextInput
           style={styles.input}
           onChangeText={value => setLevel(value)}
@@ -329,6 +435,19 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontWeight: '600',
     color: PRIMARY_COLOR,
+  },
+  panelButton: {
+    padding: 5,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginVertical: 5,
+    marginHorizontal: 10,
+  },
+  panelButtonTitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#222',
   },
 });
 

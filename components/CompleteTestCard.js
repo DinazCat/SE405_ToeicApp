@@ -54,9 +54,9 @@ const CompleteTestCard = ({navigation, route}) => {
       }
       const rate = parseInt((score * 100) / quantity);
       if (rate < 80) {
-        setIsPass(true);
-      } else if (rate >= 80) {
         setIsPass(false);
+      } else if (rate >= 80) {
+        setIsPass(true);
       }
       setScore(score);
       setQuantity(sum);

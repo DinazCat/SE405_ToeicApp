@@ -12,6 +12,7 @@ import 'react-native-url-polyfill/auto';
 import moment from 'moment';
 import axios from 'axios';
 import socketServices from '../api/socketService';
+import socketServices_onl from '../api/socketService_onl';
 import { useFocusEffect } from '@react-navigation/native';
 const paymentInfo = {
   accountNumber: 'Admin Number',
@@ -26,7 +27,7 @@ const RegisterCourse = ({navigation, route}) => {
   const [verify1, setVerify1] = useState(false)
   useFocusEffect(
     React.useCallback(() => {
-      socketServices.initializeSocket();
+      socketServices_onl.initializeSocket();
       getState()
     }, []),
   );
@@ -35,7 +36,7 @@ const RegisterCourse = ({navigation, route}) => {
   //   getState()
   // }, []);
   const getState= ()=>{
-    socketServices.on('transactionresult', async data => {
+    socketServices_onl.on('transactionresult', async data => {
       if(data.message=="success"&&data.userId==user.uid){
         console.log("đăng ký thành công")
         setVerify(true)
