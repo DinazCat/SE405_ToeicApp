@@ -782,9 +782,19 @@ const TeamRoom = ({navigation, route}) => {
                   handleMicToggle();
                 }}>
                 {isMicMuted == false ? (
-                  <FontAwesome name="microphone-slash" color="gray" size={20} />
+                  <FontAwesome
+                    name="microphone-slash"
+                    color="gray"
+                    size={20}
+                    style={{marginHorizontal: 5}}
+                  />
                 ) : (
-                  <FontAwesome name="microphone" color="black" size={20} />
+                  <FontAwesome
+                    name="microphone"
+                    color="gray"
+                    size={20}
+                    style={{marginHorizontal: 5}}
+                  />
                 )}
               </TouchableOpacity>
               <TouchableOpacity

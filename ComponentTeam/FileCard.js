@@ -42,7 +42,7 @@ const FileCard = ({record, classId}) => {
         title: 'Delete',
         action: async () => {
           setvisible(false);
-          await Api.deleteFile(record,classId)
+          await Api.deleteFile(record, classId);
         },
       },
       // {
@@ -54,7 +54,7 @@ const FileCard = ({record, classId}) => {
     ];
 
     return (
-      <View style={{flexDirection:'column'}}>
+      <View style={{flexDirection: 'column'}}>
         {visible && (
           <View style={styles.popup}>
             {options.map((op, i) => (
@@ -76,70 +76,74 @@ const FileCard = ({record, classId}) => {
     );
   };
   return (
-    <View
-      style={{
-        borderRadius: 15,
-        backgroundColor: card_color,
-        width: screenWidth * 0.9,
-        alignSelf: 'center',
-        elevation: 5,
-        marginTop: 10,
-      }}>
-      <View style={styles.UserInfoContainer}>
-        <TouchableOpacity>
-          {record.sign == 'fileImage' && (
-            <Image
-              style={styles.UserImage}
-              source={require('../assets/image.png')}
-            />
-          )}
-          {record.sign == 'fileMp4' && (
-            <Image
-              style={styles.UserImage}
-              source={require('../assets/video.png')}
-            />
-          )}
-          {record.sign == 'filePPT' && (
-            <Image
-              style={styles.UserImage}
-              source={require('../assets/ppt.png')}
-            />
-          )}
-          {record.sign == 'fileWord' && (
-            <Image
-              style={styles.UserImage}
-              source={require('../assets/word.png')}
-            />
-          )}
-          {record.sign == 'filePDF' && (
-            <Image
-              style={styles.UserImage}
-              source={require('../assets/business.png')}
-            />
-          )}
-        </TouchableOpacity>
-        <View style={styles.UserInfoTextContainer}>
-          <TouchableOpacity
-            onPress={() => {
-              if (record.sign == 'filePPT') {
-                Linking.openURL('https://' + record.Link);
-              } else {
-                navigation.navigate('FileViewScreen', {
-                  link: record.Link,
-                  sign: record.sign,
-                  name: record.Name,
-                });
-              }
-            }}>
-            <Text style={[styles.UsernameText]}>{record?.Name}</Text>
+    <View style={{paddingBottom: 5}}>
+      <View
+        style={{
+          borderRadius: 15,
+          backgroundColor: card_color,
+          width: screenWidth * 0.9,
+          alignSelf: 'center',
+          elevation: 5,
+          marginTop: 10,
+        }}>
+        <View style={styles.UserInfoContainer}>
+          <TouchableOpacity>
+            {record.sign == 'fileImage' && (
+              <Image
+                style={styles.UserImage}
+                source={require('../assets/image.png')}
+              />
+            )}
+            {record.sign == 'fileMp4' && (
+              <Image
+                style={styles.UserImage}
+                source={require('../assets/video.png')}
+              />
+            )}
+            {record.sign == 'filePPT' && (
+              <Image
+                style={styles.UserImage}
+                source={require('../assets/ppt.png')}
+              />
+            )}
+            {record.sign == 'fileWord' && (
+              <Image
+                style={styles.UserImage}
+                source={require('../assets/word.png')}
+              />
+            )}
+            {record.sign == 'filePDF' && (
+              <Image
+                style={styles.UserImage}
+                source={require('../assets/pdf.webp')}
+              />
+            )}
           </TouchableOpacity>
-          {record?.Time && <Text style={styles.PostTime}>{record?.Time}</Text>}
-          {record?.User && (
-            <Text style={styles.PostTime}>By {record?.User}</Text>
-          )}
+          <View style={styles.UserInfoTextContainer}>
+            <TouchableOpacity
+              onPress={() => {
+                if (record.sign == 'filePPT') {
+                  Linking.openURL('https://' + record.Link);
+                } else {
+                  navigation.navigate('FileViewScreen', {
+                    link: record.Link,
+                    sign: record.sign,
+                    name: record.Name,
+                  });
+                }
+              }}>
+              <Text style={[styles.UsernameText]}>{record?.Name}</Text>
+            </TouchableOpacity>
+            {record?.Time && (
+              <Text style={styles.PostTime}>{record?.Time}</Text>
+            )}
+            {record?.User && (
+              <Text style={styles.PostTime}>By {record?.User}</Text>
+            )}
+          </View>
+          <View style={{flex: 1}} />
+          <PopupMenu />
         </View>
-        <View style={{flex: 1}} />
-        <PopupMenu />
       </View>
     </View>
   );
@@ -160,7 +164,6 @@ const styles = StyleSheet.create({
   UserImage: {
     width: 46,
     height: 46,
-    borderRadius: 23,
   },
   UserInfoTextContainer: {
     flexDirection: 'column',
