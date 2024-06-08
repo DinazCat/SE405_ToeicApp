@@ -52,6 +52,7 @@ const AsignmentDetail2 = ({navigation, route}) => {
 
   useEffect(() => {
     const listener = async data => {
+      console.log(data);
       const submissions = assignment.submissions || [];
       const index = submissions.findIndex(sub => sub.userId === user.uid);
 
@@ -147,6 +148,7 @@ const AsignmentDetail2 = ({navigation, route}) => {
         assignmentId: assignment.id,
         userSubmissions: submissions,
       },
+      timeRemains: assignment.test.time,
     });
   };
 

@@ -463,6 +463,7 @@ const CreateAsignment2 = ({navigation, route}) => {
             onChange={(event, selectedDate) =>
               onDatePickerChange(event, selectedDate, 1)
             }
+            minimumDate={new Date()}
           />
         )}
         {showTimePicker1 && (
@@ -487,6 +488,7 @@ const CreateAsignment2 = ({navigation, route}) => {
             onChange={(event, selectedDate) =>
               onDatePickerChange(event, selectedDate, 2)
             }
+            minimumDate={new Date()}
           />
         )}
         {showTimePicker2 && (

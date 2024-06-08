@@ -335,6 +335,7 @@ const CreateAsignment = ({navigation, route}) => {
               is24Hour={true}
               display="default"
               onChange={onDatePickerChange}
+              minimumDate={new Date()}
             />
           )}
           {showTimePicker && (

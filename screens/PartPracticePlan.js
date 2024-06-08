@@ -302,6 +302,7 @@ const PartPracticePlan = ({navigation, route}) => {
                 numberofQuestion: 6,
                 isFromPL: true,
                 isAssessment: true,
+                timeRemains: 180,
               });
             }}>
             <View style={styles.TestIconWrapper}>
@@ -340,7 +341,6 @@ const PartPracticePlan = ({navigation, route}) => {
           <TouchableOpacity
             style={styles.AssessmentCardWrapper}
             onPress={async () => {
-              if (item.CompletedQuestion < item.NumberofQuestions) return;
               const questionList = await Api.getQuestion(12, 'ListenPart1');
               navigation.push('QuestionScreen', {
                 questionList: questionList,
@@ -351,6 +351,7 @@ const PartPracticePlan = ({navigation, route}) => {
                 isFromPL: true,
                 isAssessment: true,
                 isSkipLevelTest: true,
+                timeRemains: 360,
               });
             }}>
             <View style={styles.TestIconWrapper}>
@@ -370,7 +371,7 @@ const PartPracticePlan = ({navigation, route}) => {
               <View style={{flexDirection: 'row'}}>
                 <Text
                   style={[styles.TextStyle, {textAlign: 'left', fontSize: 16}]}>
-                  {currentTarget} questions -{' '}
+                  {currentTarget * 2} questions -{' '}
                 </Text>
                 <Ionicons name="time-outline" size={20} color={'#222'} />
                 <Text

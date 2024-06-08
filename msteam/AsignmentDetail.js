@@ -6,6 +6,7 @@ import {
   FlatList,
   ScrollView,
   Alert,
+  Image,
 } from 'react-native';
 import AppStyle from '../theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -18,6 +19,7 @@ import Api from '../api/Api';
 import uploadfile from '../api/uploadfile';
 import axios from 'axios';
 import FileItem from '../ComponentTeam/FileItem';
+import eventEmitter from '../utils/EventEmitter';
 
 const AsignmentDetail = ({navigation, route}) => {
   const {user, isTeacher} = useContext(AuthContext);
@@ -28,14 +30,58 @@ const AsignmentDetail = ({navigation, route}) => {
   );
   const [isPastDue, setPastDue] = useState(route.params?.isPastDue);
   const [isSubmitted, setSubmitted] = useState(route.params?.isSubmitted);
+  const [submissions, setSubmissions] = useState([]);
+  const [selectedReview, setSelectedReview] = useState();
+
+  const getMemberSubmissions = () => {
+    if (assignment.submissions) {
+      const allSubmissions = assignment.submissions;
+
+      allSubmissions.sort(
+        (a, b) => new Date(b.submitedTime) - new Date(a.submitedTime),
+      );
+
+      setSubmissions(allSubmissions);
+    }
+  };
+
+  const getCurrentUser = async () => {
+    const data = await Api.getUserData(user.uid);
+    setCurrentUser(data);
+  };
 
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const data = await Api.getUserData(user.uid);
-      setCurrentUser(data);
-    };
-
     getCurrentUser();
+    if (isTeacher) getMemberSubmissions();
+  }, []);
+
+  useEffect(() => {
+    const listener = async ({review, score}) => {
+      console.log(score);
+      const submission = {
+        ...selectedReview,
+        review: review,
+        score: score,
+      };
+
+      const submissions = assignment.submissions || [];
+      const index = submissions.findIndex(
+        sub => sub.userId === submission.userId,
+      );
+
+      if (index !== -1) {
+        submissions[index] = submission;
+      }
+
+      setSubmissions(submissions);
+
+      await Api.updateAsignment({submissions}, assignment.id);
+    };
+    eventEmitter.on('addReviewByTeacher2', listener);
+
+    return () => {
+      eventEmitter.removeListener('addReviewByTeacher2', listener);
+    };
   }, []);
 
   const pickFile = async () => {
@@ -200,9 +246,50 @@ const AsignmentDetail = ({navigation, route}) => {
       submissions.push(submission);
     }
 
-    await Api.updateAsignment(submissions, assignment.id);
+    await Api.updateAsignment({submissions}, assignment.id);
 
     setSubmitted(true);
+  };
+
+  const TableRow = ({item}) => {
+    return (
+      <View style={styles.row}>
+        <View style={styles.cell}>
+          <Image
+            style={styles.UserImage}
+            source={{
+              uri: item.userImg
+                ? item.userImg
+                : 'https://cdn-icons-png.flaticon.com/512/1946/1946429.png',
+            }}
+          />
+          <Text style={{color: '#444', fontSize: 15}}>{item.userName}</Text>
+        </View>
+        <Text style={styles.cell}>
+          {getTime(item.submitedTime)} {getDate(item.submitedTime)}
+        </Text>
+        <Text style={[styles.cell, {flex: 0.5}]}>
+          {assignment.point
+            ? item.score
+              ? item.score + '/' + assignment.point
+              : '_/' + assignment.point
+            : 'None'}
+        </Text>
+        <Text
+          onPress={() => {
+            setSelectedReview(item);
+            navigation.navigate('ReviewAsignment', {
+              submission: item,
+            });
+          }}
+          style={[
+            styles.cell,
+            {color: 'blue', textDecorationLine: 'underline', flex: 0.5},
+          ]}>
+          Review
+        </Text>
+      </View>
+    );
   };
 
   return (
@@ -319,9 +406,50 @@ const AsignmentDetail = ({navigation, route}) => {
         </Text>
 
         <Text style={[styles.KeyText, {marginTop: 10}]}>Comments: </Text>
-        <Text style={styles.UnderlineText} onPress={() => console.log(1)}>
-          See and post your comment here.
-        </Text>
+        {isTeacher ? (
+          <Text style={styles.UnderlineText} onPress={() => console.log(1)}>
+            See and post your comment here.
+          </Text>
+        ) : (
+          <Text
+            style={styles.UnderlineText}
+            onPress={() => {
+              const submissions = assignment.submissions || [];
+              const submission = submissions.find(
+                sub => sub.userId === user.uid,
+              );
+              navigation.navigate('ReviewAsignment', {
+                submission: submission,
+              });
+            }}>
+            See teacher's review here.
+          </Text>
+        )}
+
+        {isTeacher && (
+          <View>
+            <Text style={[styles.KeyText, {marginVertical: 10}]}>
+              Submissions:
+            </Text>
+            <View style={styles.headerRow}>
+              <Text style={[styles.cell, {fontWeight: 'bold'}]}>Member</Text>
+              <Text style={[styles.cell, {fontWeight: 'bold'}]}>
+                Submit Time
+              </Text>
+              <Text style={[styles.cell, {flex: 0.5, fontWeight: 'bold'}]}>
+                Points
+              </Text>
+              <Text style={[styles.cell, {flex: 0.5, fontWeight: 'bold'}]}>
+                Review
+              </Text>
+            </View>
+
+            <FlatList
+              data={submissions}
+              renderItem={({item, index}) => <TableRow item={item} />}
+            />
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -379,5 +507,26 @@ const styles = StyleSheet.create({
     marginRight: 10,
     fontSize: 17,
     textDecorationLine: 'underline',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f0f0',
+  },
+
+  row: {
+    flexDirection: 'row',
+  },
+  cell: {
+    flex: 1,
+    borderBottomWidth: 1,
+    borderColor: '#DDD',
+    padding: 5,
+    color: '#444',
+    fontSize: 15,
+  },
+  UserImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
   },
 });

@@ -50,6 +50,7 @@ const QuestionScreen = ({navigation, route}) => {
     numberofQuestion,
     isExplain,
     RemoveQinSavedQ,
+    timeRemains,
   } = route.params;
   const [soundL, setsoundL] = useState(null);
   const [ItemIndex, setItemIndex] = useState(0);
@@ -61,7 +62,7 @@ const QuestionScreen = ({navigation, route}) => {
   const [SavedQ, setSavedQ] = useState([]);
   const [recordingsList, setRecordingsList] = useState([]);
   const [history, setHistory] = useState([]);
-  const [timeRemaining, setTimeRemaining] = useState(180);
+  const [timeRemaining, setTimeRemaining] = useState(timeRemains);
   const recordsRef = useRef([]);
   const answersRef = useRef([]);
 
@@ -577,7 +578,7 @@ const QuestionScreen = ({navigation, route}) => {
   useEffect(() => {
     let intervalId;
 
-    if (loading) {
+    if (loading && timeRemains) {
       intervalId = setInterval(() => {
         setTimeRemaining(prevTime => {
           if (prevTime === 0) {
@@ -659,18 +660,14 @@ const QuestionScreen = ({navigation, route}) => {
     setHistory(list);
   }, []);
   const backAction = () => {
-
-    showAlert()
+    showAlert();
     return true;
   };
 
   useEffect(() => {
-    BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
-    );
+    BackHandler.addEventListener('hardwareBackPress', backAction);
     return () => {
-      BackHandler.removeEventListener("hardwareBackPress", backAction);
+      BackHandler.removeEventListener('hardwareBackPress', backAction);
     };
   }, []);
   const showAlert = () => {
@@ -871,7 +868,7 @@ const QuestionScreen = ({navigation, route}) => {
           />
         </TouchableOpacity>
         <View style={{flex: 1}} />
-        {route.params?.isAssessment && (
+        {timeRemaining && (
           <Text style={{color: 'white', fontSize: 20, marginRight: '5%'}}>
             {timeFormat(timeRemaining)}
           </Text>

@@ -19,6 +19,7 @@ import Test from '../screens/Test';
 import TestQuestions from '../screens/TestQuestions';
 import CompleteTestCard from '../components/CompleteTestCard';
 import InTestCard from '../components/InTestCard';
+import ReviewAssignment from '../msteam/ReviewAssignment';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
@@ -67,6 +68,11 @@ export default function AsignmentStack({navigation, route}) {
       <Stack.Screen
         name="BeforeNewAsignment"
         component={BeforeNewAsignment}
+        options={{header: () => null}}
+      />
+      <Stack.Screen
+        name="ReviewAsignment"
+        component={ReviewAssignment}
         options={{header: () => null}}
       />
       <Stack.Screen
