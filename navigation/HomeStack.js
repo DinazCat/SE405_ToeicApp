@@ -30,19 +30,6 @@ export default function HomeStack() {
   const [initialScreen, setInitialScreen] = useState();
   const [isLoading, setLoading] = useState(true);
   const isUserGoalDataNull = async () => {
-    // const userData = await Api.getAllUsers()
-    // .catch(error => console.error(error));
-    // userData.forEach((data) => {
-    //     if(data.id == user.uid && data.Target){
-    //         setInitialScreen('Homeinstack');
-    //         setLoading(false);
-    //     } else {
-    //         setInitialScreen('GetUserGoal');
-    //         setLoading(false);
-    //     }
-    // })
-    // setLoading(false);
-    // setInitialScreen('HomeinStack')
     const userData = await Api.getUserData(user.uid).catch(error =>
       console.error(error),
     );

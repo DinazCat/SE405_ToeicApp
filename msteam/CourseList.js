@@ -51,7 +51,8 @@ const CourseList = ({navigation, route}) => {
     data.forEach(classItem => {
       if (
         classItem.Level < currentUser.targetScore + 100 &&
-        classItem.Level > currentUser.targetScore - 100
+        classItem.Level > currentUser.targetScore - 100 &&
+        classItem.baseLevel < currentUser.currentScore + 100
       ) {
         recommendItems.push(classItem);
       } else othersItems.push(classItem);

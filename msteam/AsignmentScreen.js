@@ -152,7 +152,7 @@ const AsignmentScreen = ({navigation}) => {
             color: 'white',
             fontSize: 20,
           }}>
-          Asignment
+          Assignment
         </Text>
       </View>
       <View style={styles.tabWrapper}>

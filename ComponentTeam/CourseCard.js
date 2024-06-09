@@ -41,25 +41,37 @@ const CourseCard = ({navigation, item}) => {
           {item.MaximumStudents} students
         </Text>
       </View>
-      {item.PaymentPlan!='Total free'&&<Text style={styles.text}>
-        {'Tuition: '}
-        <Text style={[styles.bold]}>
-          {item.Tuition?.toLocaleString('it-IT', {
-            style: 'currency',
-            currency: 'VND',
-          })}
+      <Text style={styles.text}>
+        {'Skills: '}
+        <Text style={styles.bold}>{item.Skill}</Text>
+      </Text>
+      {item.PaymentPlan != 'Total free' && (
+        <Text style={styles.text}>
+          {'Tuition: '}
+          <Text style={[styles.bold]}>
+            {item.Tuition?.toLocaleString('it-IT', {
+              style: 'currency',
+              currency: 'VND',
+            })}
+          </Text>
         </Text>
-      </Text>}
+      )}
       <Text style={styles.text}>
         {'Duration: '}
         <Text style={styles.bold}>{item.Start_Date}</Text>
         {' - '}
         <Text style={styles.bold}>{item.Finish_Date}</Text>
       </Text>
-
-      <Text style={[styles.text,{color:'blue'}]}>
-        {">> "+item.PaymentPlan}
+      <Text style={styles.text}>
+        {'Suitable for base level: '}
+        <Text style={styles.bold}>
+          {item.baseLevel && item.baseLevel != 0 ? item.baseLevel : 'All'}
         </Text>
+      </Text>
+
+      <Text style={[styles.text, {color: 'blue'}]}>
+        {'>> ' + item.PaymentPlan}
+      </Text>
 
       <View style={styles.buttonWrapper}>
         <TouchableOpacity
@@ -71,8 +83,11 @@ const CourseCard = ({navigation, item}) => {
           style={isRegister ? styles.disabledButton : styles.button}
           disabled={isRegister}
           onPress={() => {
-
-            navigation.push('RegisterCourse', {course: item, from:'CourseCard'})}}>
+            navigation.push('RegisterCourse', {
+              course: item,
+              from: 'CourseCard',
+            });
+          }}>
           <Text style={isRegister ? styles.disabledText : styles.buttonText}>
             Register course
           </Text>

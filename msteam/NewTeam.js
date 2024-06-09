@@ -56,6 +56,7 @@ const NewTeam = ({navigation, route}) => {
   const [description, setDescription] = useState('');
   const [maximumStudents, setMaximumStudents] = useState('');
   const [level, setLevel] = useState('');
+  const [level1, setLevel1] = useState('');
   const [tuition, setTuition] = useState('');
   const [startDate, setStartDate] = useState(new Date());
   const [hashtag, sethashtag] = useState('');
@@ -69,18 +70,19 @@ const NewTeam = ({navigation, route}) => {
   const [openDropdown1, setOpenDropdown1] = useState(false);
   const [openDate1, setOpenDate1] = useState(false);
   const [openDate2, setOpenDate2] = useState(false);
-  const [state, setState] = useState('')
+  const [state, setState] = useState('');
   const {user} = useContext(AuthContext);
 
   const onSave = async () => {
     const expectedEndDate = new Date(startDate);
     expectedEndDate.setMonth(expectedEndDate.getMonth() + 1);
-    const check = checkSkill()
+    const check = checkSkill();
     if (
       className === '' ||
       maximumStudents === '' ||
-      hashtag === ''||
+      hashtag === '' ||
       level === '' ||
+      level1 === '' ||
       description === ''
     ) {
       Alert.alert(
@@ -94,11 +96,8 @@ const NewTeam = ({navigation, route}) => {
         'The maximum number of students must be greater than 0 and not exceed 100',
       );
       return;
-    } else if (level <= 0) {
-      Alert.alert(
-        'Level cannot be equal to 0!',
-        'Please re-enter current score',
-      );
+    } else if (level <= 0 || level1 < 0) {
+      Alert.alert('Level cannot be equal to 0!', 'Please re-enter level');
       return;
     } else if (level > check) {
       Alert.alert(
@@ -110,6 +109,12 @@ const NewTeam = ({navigation, route}) => {
       Alert.alert(
         'Invalid end date value!',
         'The end date must be at least 1 month greater than the start date',
+      );
+      return;
+    } else if (Number(level) < Number(level1)) {
+      Alert.alert(
+        `Target level is not smaller than base level!`,
+        'Please re-enter current score',
       );
       return;
     }
@@ -125,38 +130,34 @@ const NewTeam = ({navigation, route}) => {
       }/${startDate.getFullYear()}`,
       MaximumStudents: maximumStudents,
       Level: level,
+      baseLevel: level1,
       Tuition: tuition,
       Description: description,
-      TeacherName:auth().currentUser.displayName,
-      PaymentPlan:state,
-      Skill:hashtag
+      TeacherName: auth().currentUser.displayName,
+      PaymentPlan: state,
+      Skill: hashtag,
     })
       .then(() => {
         navigation.navigate('Teams');
       })
       .catch(error => console.error(error));
   };
-const checkSkill = () =>{
-  if(hashtag=="Listening"){
-    return 495
-  }
-  else if(hashtag=="Reading"){
-    return 495
-  }
-  else if(hashtag=="Speaking"){
-    return 200
-  }
-  else if(hashtag=="Writting"){
-    return 200
-  }
-  else if(hashtag=="L&R"){
-    return 990
-  }
-  else if(hashtag=="S&W"){
-    return 400
-  }
-  return 0
-}
+  const checkSkill = () => {
+    if (hashtag == 'Listening') {
+      return 495;
+    } else if (hashtag == 'Reading') {
+      return 495;
+    } else if (hashtag == 'Speaking') {
+      return 200;
+    } else if (hashtag == 'Writting') {
+      return 200;
+    } else if (hashtag == 'L&R') {
+      return 990;
+    } else if (hashtag == 'S&W') {
+      return 400;
+    }
+    return 0;
+  };
   return (
     <View style={styles.container}>
       <View style={AppStyle.viewstyle.component_upzone}>
@@ -191,92 +192,95 @@ const checkSkill = () =>{
           keyboardType="numeric"
         />
         <Text style={styles.title}>Choose skills that you teach: </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                backgroundColor: 'white',
-              }}>
-              <TouchableOpacity
-                style={[
-                  styles.panelButton,
-                  {backgroundColor: hashtag != "Listening" ? '#EAABAB' : 'white'},
-                ]}
-                onPress={() => {
-                  if (hashtag == 'Listening') sethashtag('');
-                  else sethashtag('Listening');
-                }}>
-                <Text style={[styles.panelButtonTitle]}>Listening</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.panelButton,
-                  {backgroundColor: hashtag != 'Reading' ? '#74A8C5' : 'white'},
-                ]}
-                onPress={() => {
-                  if (hashtag == 'Reading') sethashtag('');
-                  else sethashtag('Reading');
-                }}>
-                <Text style={[styles.panelButtonTitle]}>Reading</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.panelButton,
-                  {
-                    backgroundColor:
-                      hashtag != 'Speaking' ? '#FA9D68' : 'white',
-                  },
-                ]}
-                onPress={() => {
-                  if (hashtag == 'Speaking') sethashtag('');
-                  else sethashtag('Speaking');
-                }}>
-                <Text style={[styles.panelButtonTitle]}>Speaking</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.panelButton,
-                  {
-                    backgroundColor:
-                      hashtag != 'Writting' ? '#CF87DF' : 'white',
-                  },
-                ]}
-                onPress={() => {
-                  if (hashtag == 'Writting') sethashtag('');
-                  else sethashtag('Writting');
-                }}>
-                <Text style={[styles.panelButtonTitle]}>Writting</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.panelButton,
-                  {
-                    backgroundColor:
-                      hashtag != 'L&R' ? '#70DECE' : 'white',
-                  },
-                ]}
-                onPress={() => {
-                  if (hashtag == 'L&R') sethashtag('');
-                  else sethashtag('L&R');
-                }}>
-                <Text style={[styles.panelButtonTitle]}>L&R</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.panelButton,
-                  {
-                    backgroundColor:
-                      hashtag != 'S&W' ? '#BCE37A' : 'white',
-                  },
-                ]}
-                onPress={() => {
-                  if (hashtag == 'S&W') sethashtag('');
-                  else sethashtag('S&W');
-                }}>
-                <Text style={[styles.panelButtonTitle]}>S&W</Text>
-              </TouchableOpacity>
-              </View>
-        <Text style={styles.title}>Level target: max is {checkSkill()} </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            backgroundColor: 'white',
+          }}>
+          <TouchableOpacity
+            style={[
+              styles.panelButton,
+              {backgroundColor: hashtag != 'Listening' ? '#EAABAB' : '#f0f0f0'},
+            ]}
+            onPress={() => {
+              if (hashtag == 'Listening') sethashtag('');
+              else sethashtag('Listening');
+            }}>
+            <Text style={[styles.panelButtonTitle]}>Listening</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.panelButton,
+              {backgroundColor: hashtag != 'Reading' ? '#74A8C5' : '#f0f0f0'},
+            ]}
+            onPress={() => {
+              if (hashtag == 'Reading') sethashtag('');
+              else sethashtag('Reading');
+            }}>
+            <Text style={[styles.panelButtonTitle]}>Reading</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.panelButton,
+              {
+                backgroundColor: hashtag != 'Speaking' ? '#FA9D68' : '#f0f0f0',
+              },
+            ]}
+            onPress={() => {
+              if (hashtag == 'Speaking') sethashtag('');
+              else sethashtag('Speaking');
+            }}>
+            <Text style={[styles.panelButtonTitle]}>Speaking</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.panelButton,
+              {
+                backgroundColor: hashtag != 'Writting' ? '#CF87DF' : '#f0f0f0',
+              },
+            ]}
+            onPress={() => {
+              if (hashtag == 'Writting') sethashtag('');
+              else sethashtag('Writting');
+            }}>
+            <Text style={[styles.panelButtonTitle]}>Writting</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.panelButton,
+              {
+                backgroundColor: hashtag != 'L&R' ? '#70DECE' : '#f0f0f0',
+              },
+            ]}
+            onPress={() => {
+              if (hashtag == 'L&R') sethashtag('');
+              else sethashtag('L&R');
+            }}>
+            <Text style={[styles.panelButtonTitle]}>L&R</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.panelButton,
+              {
+                backgroundColor: hashtag != 'S&W' ? '#BCE37A' : '#f0f0f0',
+              },
+            ]}
+            onPress={() => {
+              if (hashtag == 'S&W') sethashtag('');
+              else sethashtag('S&W');
+            }}>
+            <Text style={[styles.panelButtonTitle]}>S&W</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.title}>Base Level:</Text>
+        <TextInput
+          style={styles.input}
+          onChangeText={value => setLevel1(value)}
+          keyboardType="numeric"
+        />
+        <Text style={styles.note}>Ex: Level 550+</Text>
+        <Text style={styles.title}>Target Level: max is {checkSkill()} </Text>
         <TextInput
           style={styles.input}
           onChangeText={value => setLevel(value)}
@@ -299,25 +303,26 @@ const checkSkill = () =>{
           listItemLabelStyle={{fontSize: 16, color: '#333'}}
           dropDownContainerStyle={{backgroundColor: '#fafafa'}}
         />
-        {state=='Pay charge'&&<View>
-        <Text style={styles.title}>Tuition: </Text>
-        <DropDownPicker
-          placeholder="Select a tuition"
-          items={tuitionList}
-          open={openDropdown}
-          setOpen={() => setOpenDropdown(!openDropdown)}
-          value={tuition}
-          setValue={item => setTuition(item)}
-          maxHeight={160}
-          style={[styles.input, {zIndex: 1}]}
-          placeholderStyle={{fontSize: 16, color: '#555'}}
-          labelStyle={{fontSize: 16, color: '#333'}}
-          listItemContainer={{height: 40}}
-          listItemLabelStyle={{fontSize: 16, color: '#333'}}
-          dropDownContainerStyle={{backgroundColor: '#fafafa'}}
-        />
-        </View>}
-       
+        {state == 'Pay charge' && (
+          <View>
+            <Text style={styles.title}>Tuition: </Text>
+            <DropDownPicker
+              placeholder="Select a tuition"
+              items={tuitionList}
+              open={openDropdown}
+              setOpen={() => setOpenDropdown(!openDropdown)}
+              value={tuition}
+              setValue={item => setTuition(item)}
+              maxHeight={160}
+              style={[styles.input, {zIndex: 1}]}
+              placeholderStyle={{fontSize: 16, color: '#555'}}
+              labelStyle={{fontSize: 16, color: '#333'}}
+              listItemContainer={{height: 40}}
+              listItemLabelStyle={{fontSize: 16, color: '#333'}}
+              dropDownContainerStyle={{backgroundColor: '#fafafa'}}
+            />
+          </View>
+        )}
 
         <View style={{flexDirection: 'row'}}>
           <View style={{flex: 1}}>

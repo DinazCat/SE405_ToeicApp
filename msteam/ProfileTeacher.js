@@ -230,6 +230,7 @@ const styles = StyleSheet.create({
     height: 150,
     alignSelf: 'center',
     marginTop: 5,
+    width: 300,
   },
   nameTeacher: {
     fontSize: 22,
